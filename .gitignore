@@ -1,0 +1,71 @@
+# Local tooling caches kept inside this workspace
+/.tooling/
+
+# .NET build and test output
+**/[Bb]in/
+**/[Oo]bj/
+**/TestResults/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+artifacts/
+
+# Visual Studio and VS Code local state
+.vs/
+.vscode/
+
+# JetBrains IDEs
+.idea/
+*.sln.iml
+
+# Flutter and Dart generated state
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+flutter_export_environment.sh
+
+# Android generated and local files
+**/android/.gradle/
+**/android/local.properties
+**/android/captures/
+*.jks
+*.keystore
+key.properties
+
+# iOS generated and local files
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/Runner.xcworkspace/xcuserdata/
+**/ios/Runner.xcodeproj/xcuserdata/
+
+# Secrets and local environment files
+.env
+.env.*
+!.env.example
+*.secrets.json
+secrets.json
+appsettings.*.local.json
+
+# Logs, coverage, and temporary files
+*.log
+coverage/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+~$*
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini

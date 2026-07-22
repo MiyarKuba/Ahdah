@@ -1,0 +1,6 @@
+@Ahdah_Api_HostAddress = https://localhost:7135
+
+GET {{Ahdah_Api_HostAddress}}/api/system/health
+Accept: application/json
+
+###
