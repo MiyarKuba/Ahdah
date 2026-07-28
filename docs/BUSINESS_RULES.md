@@ -26,7 +26,24 @@ This document records only known high-level rules. Detailed financial, approval,
 - Passwords are never stored or compared as plaintext. Framework password hashing and verification are mandatory, including explicit rehash handling.
 - Tenant membership for authenticated requests comes only from the validated `company_id` JWT claim.
 - Access tokens are short-lived. No refresh token or server revocation is available with the current schema; logout means client-side token discard.
-- Invitations and join requests are explicitly outside Phase 1.
+- Invitations and join requests are handled only through the separately documented schema-supported access phase.
+
+## Invitations and join requests
+
+- Managers can create, list, and cancel only invitations belonging to the `company_id` in their validated JWT. Cancellation is a non-destructive `Pending` to `Cancelled` transition and stores the existing cancellation timestamp; the schema has no cancellation-actor field.
+- Invitation roles are limited to `Deputy`, `Accountant`, `Supervisor`, and `Worker`. `Manager` can never be assigned through invitation or join-request workflows.
+- Invitation lifecycle values are exactly `Pending`, `Accepted`, `Expired`, and `Cancelled`.
+- A pending, unexpired invitation can be accepted once. Acceptance uses the invitation's company, phone, and role; the recipient cannot replace those values.
+- Invitation lifetime is configurable and defaults to 168 hours (7 days) in development. The manager receives the raw token only once; delivery is out of band.
+- Accepted `Supervisor` and `Worker` users become `Active` with identity `NotRequired` and receive authentication. `Deputy` and `Accountant` remain `PendingApproval` with identity `Pending` and receive no token. Acceptance never marks identity as verified.
+- Raw invitation tokens are not stored or logged. Token lookup uses a deterministic SHA-256 hash of the URL-safe token.
+- Join-request lifecycle values are exactly `Pending`, `Approved`, `Rejected`, and `Cancelled`; requested and assigned roles are limited to the same four non-manager roles.
+- Public join submission creates a `PendingApproval` same-company `app_user` and a linked `Pending` request atomically. Its password hash is stored only on `app_users`; the request contains no password information.
+- The approving manager chooses the final role; the applicant's requested role is provisional and informational only.
+- Approval updates the linked existing user rather than creating another. `Supervisor`/`Worker` become active; `Deputy`/`Accountant` remain pending unless identity is already legitimately verified.
+- Rejection marks the linked user `Rejected` without deleting it or erasing its password hash.
+- Rejection requires a non-blank reason up to 500 characters because the existing database constraint requires one for `Rejected` records.
+- Phone is globally unique, so the current schema supports one account/tenant membership per phone. Reapplication after rejection and company transfer require a future approved recovery workflow.
 
 ## Rules pending implementation review
 

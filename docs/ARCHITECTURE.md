@@ -16,7 +16,7 @@ ASP.NET Core controller-based API
 PostgreSQL 18 / ahdah_db / ahdah
 ```
 
-The backend has Database-First persistence integration plus Identity and Company Access Phase 1. Invitations, join requests, and other business modules remain unimplemented.
+The backend has Database-First persistence integration, Identity and Company Access Phase 1, and the schema-supported Invitations and Join Requests phase. Other business modules remain unimplemented.
 
 ## Flutter client
 
@@ -52,6 +52,18 @@ Access tokens are signed JWTs validated for issuer, audience, lifetime, signatur
 The HTTP-backed current-user context accepts tenant identity only from validated JWT claims. The authenticated current-user lookup filters `app_users` by both `company_id` and `user_id`, uses a read-only query, and requires both user and company status to be `Active`. Policies are `AuthenticatedUser`, `CompanyMember`, and `ManagerOnly`; `ManagerOnly` uses the exact stored role `Manager`.
 
 Refresh tokens are deferred. `user_devices` has device identity, platform, trust, activity, timestamps, and a push token, but no cryptographic refresh-token hash, expiry, rotation, or revocation semantics. The push token must never be repurposed. Logout is therefore client-side access-token discard, and no misleading server logout endpoint exists.
+
+## Invitations and join requests
+
+Application defines explicit access contracts, paged response models, role rules, invitation-token security, and focused invitation/join-request service interfaces. Infrastructure implements the EF Core workflows and cryptographic token service; API controllers own authorization and Problem Details mapping. Persistence entities and secret hashes never cross the API boundary.
+
+Manager operations derive `company_id` and user ID only from `ICurrentUserContext`, revalidate an active same-company manager, and include `company_id` in every tenant-owned query. Invitation cancellation and join-request decisions use explicit transactions and PostgreSQL `FOR UPDATE` row locks because neither table has `version_number`. Invitation acceptance also locks the invitation, locks its active company for the transaction, creates the user, and marks the invitation accepted atomically.
+
+Invitation creation uses validated `InvitationOptions` bound from `Access:Invitations:LifetimeHours`; development configures 168 hours. The token service generates 32 random bytes, returns a URL-safe token once, and persists only its SHA-256 hash. The lifetime remains application configuration and is not stored separately in PostgreSQL.
+
+Invitation acceptance uses the invitation's phone, company, and assigned role. The caller supplies only the one-time token, full name, password, and optional email. `Supervisor`/`Worker` become `Active` with identity `NotRequired` and receive authentication. `Deputy`/`Accountant` remain `PendingApproval` with identity `Pending` and receive no token.
+
+Public join submission resolves an active company by normalized code and creates the pending user plus pending request in one transaction. The password is hashed immediately and stored only on `app_users`. Approval locks and updates both records: non-sensitive roles activate, while sensitive roles require verified identity. Rejection marks the request and linked user rejected without deletion. SMS/email delivery, reapplication/account recovery, and Flutter UI are outside this phase.
 
 ## Modular Monolith
 

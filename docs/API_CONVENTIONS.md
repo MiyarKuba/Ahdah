@@ -11,6 +11,8 @@ These conventions establish the initial direction for future endpoints. The heal
 
 Identity Phase 1 uses the versioned routes `POST /api/v1/auth/register-company`, `POST /api/v1/auth/login`, and `GET /api/v1/auth/me`. The health route remains anonymous. No refresh or server logout route is published until secure server-side session storage exists.
 
+The completed Invitations and Join Requests phase publishes manager-only invitation creation/listing/cancellation and join-request listing/decisions. `POST /api/v1/invitations/accept` and `POST /api/v1/join-requests` are public. Public join submission uses company code rather than accepting `company_id`.
+
 ## JSON
 
 - Requests and responses use `application/json` unless an endpoint explicitly handles files.
@@ -45,6 +47,8 @@ Identity Phase 1 uses the versioned routes `POST /api/v1/auth/register-company`,
 - Responses include items and pagination metadata or an opaque continuation token.
 - Sort order must be deterministic, and filters must be explicitly allow-listed.
 
+Invitation and join-request listings use `page` (default 1) and `pageSize` (default 20, maximum 100), return `items`, `page`, `pageSize`, `totalCount`, and `totalPages`, and sort newest first with the resource UUID as a stable tie-breaker. Status filters accept only the exact documented lifecycle values.
+
 ## Correlation IDs
 
 - The API accepts a valid incoming correlation ID or generates one.
@@ -59,6 +63,7 @@ Identity Phase 1 uses the versioned routes `POST /api/v1/auth/register-company`,
 - Cross-tenant identifiers produce a non-disclosing authorization or not-found response according to the reviewed security policy.
 - JWT access tokens carry only `sub`, `company_id`, `role`, `jti`, and optional safe display `name`. Tenant context is never taken from client headers, query strings, route values, or bodies.
 - `GET /api/v1/auth/me` resolves both identifiers from validated claims and filters by both `company_id` and `user_id` before returning explicit safe DTOs.
+- Every manager invitation and join-request query revalidates the active manager and filters by the validated claim's `company_id`. Resource IDs never appear alone in persistence predicates.
 
 ## Authentication and authorization
 
@@ -66,6 +71,10 @@ Identity Phase 1 uses the versioned routes `POST /api/v1/auth/register-company`,
 - The non-secret defaults are issuer `Ahdah.Api`, audience `Ahdah.Clients`, and a 15-minute access-token lifetime. Signing keys are secret configuration and never belong in repository files.
 - Authorization policies are `AuthenticatedUser`, `CompanyMember`, and `ManagerOnly`. `CompanyMember` requires a valid GUID `company_id` claim. `ManagerOnly` additionally requires the exact `Manager` role.
 - Access-token responses use token type `Bearer` and an explicit UTC expiry. Password hashes and generated persistence entities never appear in API schemas or responses.
+- Invitation creation returns the raw URL-safe token once and never returns its hash. Its configured lifetime is 168 hours in development.
+- Invitation acceptance returns authentication only for immediately active `Supervisor`/`Worker` users. Sensitive roles return a pending-identity outcome without an access token. Invalid, expired, cancelled, and already-used tokens share one generic public response.
+- Public join submission returns a safe pending acknowledgement without user/company details or authentication. Invalid/inactive company codes use a generic non-enumerating response.
+- Invitation hashes, password hashes, raw passwords, and generated persistence entities are excluded from access response schemas. The raw invitation token appears only once in the successful creation response and as input to public acceptance.
 
 ## Idempotency for financial commands
 

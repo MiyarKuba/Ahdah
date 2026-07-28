@@ -41,3 +41,11 @@ Identity Phase 1 uses the existing `companies` and `app_users` mappings without 
 `user_devices` is not a session or refresh-token store. It has device identity, platform, push token, trust/activity flags, and device timestamps, but lacks refresh-token hash, expiration, rotation, and revocation fields. Application code must not store raw refresh tokens or repurpose `push_token`. Adding refresh support requires a separately approved database-first schema decision.
 
 Identity Phase 1 introduced no migration, initialization call, table, column, constraint, or other database structure change.
+
+## Invitation and join-request schema clarification
+
+`invitations` stores a globally unique `invitation_code_hash`, required phone, assigned non-manager role, required expiry, lifecycle status, creator, acceptance user/time, and cancellation time. Valid statuses are `Pending`, `Accepted`, `Expired`, and `Cancelled`. The table has no `version_number`, cancellation actor, recipient name/email, or invitation-lifetime default. The database only requires `expires_at > created_at`.
+
+`join_requests` requires `(company_id, user_id)` to reference an already-existing same-company `app_user`. It stores requested/assigned roles, status, message, reviewer, review notes, rejection reason, request/review/cancellation timestamps, and audit timestamps. Valid statuses are `Pending`, `Approved`, `Rejected`, and `Cancelled`. It has no applicant name, phone, email, password hash, approved-user reference distinct from `user_id`, or `version_number`.
+
+The completed access phase introduced no database change. Invitation lifetime is application configuration, while each invitation continues to store its required `expires_at`. Public join onboarding creates the required pending `app_user` first and then its linked request in one transaction; password hashes remain exclusively on `app_users`. Where invitation/join-request `version_number` is absent, transactional PostgreSQL row locks protect lifecycle transitions.

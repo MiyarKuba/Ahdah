@@ -2,7 +2,7 @@
 
 Ahdah is a multi-tenant platform for financial custody and construction operations. It is intended to help companies coordinate projects, custody balances, transfers, expenses, supplier obligations, worker claims, documents, audit trails, notifications, and scheduled reporting.
 
-This repository is currently in **Identity and Company Access — Phase 1**. The backend now supports company bootstrap registration, initial-manager creation, phone/password login, short-lived JWT access tokens, tenant-aware current-user resolution, and core authorization policies on top of the existing Database-First model.
+This repository is currently in **Invitations and Join Requests**. The backend preserves Identity Phase 1 and now adds the invitation and join-request operations safely supported by the existing Database-First model.
 
 ## Technology stack
 
@@ -62,6 +62,23 @@ Identity Phase 1 exposes:
 - `POST /api/v1/auth/login`
 - `GET /api/v1/auth/me`
 
+The access phase additionally exposes:
+
+- Manager-only `POST /api/v1/invitations`
+- Manager-only `GET /api/v1/invitations`
+- Public `POST /api/v1/invitations/accept`
+- Manager-only `POST /api/v1/invitations/{invitationId}/cancel`
+- Public `POST /api/v1/join-requests`
+- Manager-only `GET /api/v1/join-requests`
+- Manager-only `POST /api/v1/join-requests/{joinRequestId}/approve`
+- Manager-only `POST /api/v1/join-requests/{joinRequestId}/reject`
+
+Invitation creation uses the validated non-secret `Access:Invitations:LifetimeHours` option, which is 168 hours (7 days) in development. It stores only a SHA-256 hash and returns the URL-safe raw token once to the manager for out-of-band delivery. Raw tokens are never stored or logged.
+
+Invitation acceptance locks the pending invitation and uses only its company, phone, and role. `Supervisor` and `Worker` become active and receive authentication; `Deputy` and `Accountant` remain `PendingApproval` with identity status `Pending` and receive no token.
+
+Public join submission atomically creates a `PendingApproval` `app_user` and linked `Pending` `join_request`; the password hash exists only on `app_users`. Manager approval activates `Supervisor`/`Worker`, while unverified `Deputy`/`Accountant` remain pending identity verification. Rejection marks both the request and linked user rejected. Because phone is globally unique, reapplication or company transfer requires a future approved account-recovery workflow.
+
 Registration requires the existing schema's company code and E.164 manager phone format. It creates the company and its initial `Manager` in one PostgreSQL transaction and returns an access token. Login is phone-only because `app_users.phone_number` is globally unique, while email uniqueness is tenant-scoped.
 
 Refresh tokens and server-side logout are not exposed. The existing `user_devices` table stores device and push-notification metadata but has no refresh-token hash, expiration, rotation, or revocation fields. Clients must discard the short-lived access token to log out until an approved schema decision provides secure session storage.
@@ -107,4 +124,4 @@ The iOS project is preserved under `frontend\ahdah_app\ios`, but iOS builds and 
 
 Restore the repository-local EF tool with `dotnet tool restore`. Generated files under `backend/src/Ahdah.Infrastructure/Persistence/Generated` must not be manually edited. Database changes and re-scaffolding require explicit approval and review. Migrations, `EnsureCreated`, `EnsureDeleted`, and automatic schema updates are prohibited.
 
-See [PROJECT_STATUS.md](PROJECT_STATUS.md) for verified status and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the system shape. Generated persistence files remain infrastructure-only and are never returned through API contracts. Invitations, join requests, and Flutter authentication UI are not implemented in this phase.
+See [PROJECT_STATUS.md](PROJECT_STATUS.md) for verified status and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the system shape. Generated persistence files remain infrastructure-only and are never returned through API contracts. SMS/email delivery and Flutter authentication, invitation, and join-request UI remain unimplemented.

@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using Ahdah.Application.Abstractions.Authentication;
+using Ahdah.Application.Access.Services;
 using Ahdah.Application.Identity;
 using Ahdah.Application.Identity.Contracts;
 using Ahdah.Application.Identity.Models;
@@ -113,6 +114,8 @@ public sealed class IdentityApiTests(IdentityApiFactory factory)
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.DoesNotContain("passwordHash", body, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("tokenHash", body, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("invitationCodeHash", body, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Ahdah.Infrastructure.Persistence.Generated", body, StringComparison.Ordinal);
     }
 
@@ -142,13 +145,18 @@ public sealed class IdentityApiFactory : WebApplicationFactory<Program>
                 ["Authentication:Jwt:Audience"] = "Ahdah.Test.Client",
                 ["Authentication:Jwt:AccessTokenMinutes"] = "15",
                 ["Authentication:Jwt:SigningKey"] =
-                    "integration-test-signing-key-material-at-least-32-bytes"
+                    "integration-test-signing-key-material-at-least-32-bytes",
+                ["Access:Invitations:LifetimeHours"] = "168"
             }));
 
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<IIdentityService>();
             services.AddSingleton<IIdentityService, FakeIdentityService>();
+            services.RemoveAll<IInvitationService>();
+            services.AddSingleton<IInvitationService, FakeInvitationService>();
+            services.RemoveAll<IJoinRequestService>();
+            services.AddSingleton<IJoinRequestService, FakeJoinRequestService>();
         });
     }
 
