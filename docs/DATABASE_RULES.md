@@ -33,3 +33,11 @@ Generated context and entity files are isolated under `Ahdah.Infrastructure/Pers
 The API obtains `ConnectionStrings:AhdahDatabase` through ASP.NET Core configuration. Local development uses .NET User Secrets; production must use environment-based secret configuration. Credentials must never appear in repository files or generated source.
 
 No application startup path may apply migrations, call `EnsureCreated`, or repair schema automatically.
+
+## Identity schema clarification
+
+Identity Phase 1 uses the existing `companies` and `app_users` mappings without schema changes. `app_users.phone_number` is globally unique and constrained to E.164 format; company email uniqueness is scoped to `company_id`; company code uniqueness is case-insensitive. Existing `version_number` fields are configured as optimistic-concurrency tokens outside generated files.
+
+`user_devices` is not a session or refresh-token store. It has device identity, platform, push token, trust/activity flags, and device timestamps, but lacks refresh-token hash, expiration, rotation, and revocation fields. Application code must not store raw refresh tokens or repurpose `push_token`. Adding refresh support requires a separately approved database-first schema decision.
+
+Identity Phase 1 introduced no migration, initialization call, table, column, constraint, or other database structure change.

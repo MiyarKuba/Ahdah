@@ -66,6 +66,19 @@ public sealed class DatabasePersistenceTests
         Assert.DoesNotContain("Password=", source, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void Identity_persistence_never_assigns_plaintext_password_to_hash_field()
+    {
+        var identityServicePath = Path.Combine(
+            FindRepositoryRoot(),
+            "backend", "src", "Ahdah.Infrastructure", "Identity", "IdentityService.cs");
+        var source = File.ReadAllText(identityServicePath);
+
+        Assert.DoesNotContain("PasswordHash = request.Password", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("PasswordHash = request.Password.Trim", source, StringComparison.Ordinal);
+        Assert.Contains("PasswordHash = passwordHash", source, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
