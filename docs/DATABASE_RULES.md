@@ -9,7 +9,7 @@
 - Integration approach: database first
 - Source of truth: the existing database
 
-The database was designed and created before this application foundation. Initialization does not connect to it, inspect it, scaffold it, execute SQL, or alter it.
+The database was designed and created before the application. EF Core Database-First integration now maps the existing schema without changing it. The expected mapped base-table count is 91.
 
 ## Permanent safeguards
 
@@ -26,8 +26,10 @@ The database was designed and created before this application foundation. Initia
 - Connection strings, passwords, and other secrets must not be committed.
 - Flutter must never receive database credentials or connect directly to PostgreSQL.
 
-## Future integration expectations
+## Database-First integration
 
-A future, explicitly scoped task should add compatible EF Core and Npgsql packages, obtain credentials through a secure local mechanism, validate read-only connectivity, and scaffold only the `ahdah` schema without modifying the database. Generated output and schema assumptions must be reviewed before application use.
+Generated context and entity files are isolated under `Ahdah.Infrastructure/Persistence/Generated` and must not be manually edited. Custom persistence extensions belong outside that directory. Re-scaffolding requires a dedicated branch, explicit approval, and review.
+
+The API obtains `ConnectionStrings:AhdahDatabase` through ASP.NET Core configuration. Local development uses .NET User Secrets; production must use environment-based secret configuration. Credentials must never appear in repository files or generated source.
 
 No application startup path may apply migrations, call `EnsureCreated`, or repair schema automatically.

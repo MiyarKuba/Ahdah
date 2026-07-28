@@ -16,7 +16,7 @@ ASP.NET Core controller-based API
 PostgreSQL 18 / ahdah_db / ahdah
 ```
 
-The initialization phase contains no database connection and no business modules. The boundaries below are directions for later reviewed work, not implemented features.
+The backend now has a Database-First persistence integration. This is structural infrastructure only; it does not implement authentication or business modules.
 
 ## Flutter client
 
@@ -63,7 +63,7 @@ These boundaries require validation against the existing schema and approved bus
 
 ## PostgreSQL and database-first integration
 
-The existing `ahdah_db` database, `ahdah` schema, and 91 tables are the current source of truth. A later task will add EF Core and Npgsql through a controlled database-first workflow. The application must not call `EnsureCreated`, apply migrations automatically, or make destructive schema changes.
+The existing PostgreSQL 18 `ahdah_db` database, `ahdah` schema, and 91 mapped base tables are the source of truth. EF Core and Npgsql use a controlled Database-First workflow. Generated persistence models are isolated in `Ahdah.Infrastructure/Persistence/Generated`; they do not define the domain model. The connection string is supplied through configuration, using User Secrets locally and environment-based secret configuration in production. The application must not call `EnsureCreated`, apply migrations, or make destructive schema changes.
 
 Financial values use PostgreSQL `NUMERIC` and C# `decimal`. Financial ledger changes require explicit transactions and auditable behavior.
 

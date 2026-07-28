@@ -2,16 +2,16 @@
 
 Ahdah is a multi-tenant platform for financial custody and construction operations. It is intended to help companies coordinate projects, custody balances, transfers, expenses, supplier obligations, worker claims, documents, audit trails, notifications, and scheduled reporting.
 
-This repository is currently in the **Foundation / Initialization** phase. It contains buildable application shells and architecture guidance only; business features, authentication, and database integration have not started.
+This repository is currently in the **PostgreSQL Database-First Integration** phase. The backend has secure EF Core/Npgsql structural integration; business features and authentication have not started.
 
 ## Technology stack
 
 - Client: Flutter stable and Dart, targeting Android, iOS, and Web
 - API: controller-based ASP.NET Core Web API on .NET 10 and C#
 - Architecture: modular monolith with explicit internal boundaries
-- Database in a later phase: PostgreSQL 18, Entity Framework Core, and Npgsql using a database-first workflow
+- Database: PostgreSQL 18 (`ahdah_db`, schema `ahdah`), Entity Framework Core, and Npgsql using a database-first workflow
 
-No database package, connection string, credential, entity, scaffold, or migration is part of this foundation.
+The 91-table generated persistence model is isolated under Infrastructure. No credential or migration is stored in the repository.
 
 ## Repository structure
 
@@ -41,7 +41,7 @@ docs/                      Product and engineering guidance
 - Android Studio and an Android SDK for Android development
 - macOS with Xcode and CocoaPods for iOS build and testing
 
-PostgreSQL is not required for the foundation phase. Do not request or configure database credentials yet.
+For local database tooling or API startup, configure `ConnectionStrings:AhdahDatabase` in the API project's .NET User Secrets. Never store the value in repository files. Production must supply it through environment-based secret configuration.
 
 ## Build the backend
 
@@ -91,8 +91,8 @@ The repository does not launch or manage an emulator automatically.
 
 The iOS project is preserved under `frontend\ahdah_app\ios`, but iOS builds and tests require macOS, Xcode, and the relevant Apple signing setup. They cannot be performed on Windows.
 
-## Current phase
+## Database-First workflow
 
-Foundation / Initialization. See [PROJECT_STATUS.md](PROJECT_STATUS.md) for verified status and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the intended system shape.
+Restore the repository-local EF tool with `dotnet tool restore`. Generated files under `backend/src/Ahdah.Infrastructure/Persistence/Generated` must not be manually edited. Database changes and re-scaffolding require explicit approval and review. Migrations, `EnsureCreated`, `EnsureDeleted`, and automatic schema updates are prohibited.
 
-**Database integration has not started.** The existing PostgreSQL database remains the source of truth and was not accessed or modified during initialization.
+See [PROJECT_STATUS.md](PROJECT_STATUS.md) for verified status and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the system shape. Database integration is infrastructure only and is not business-feature implementation.
