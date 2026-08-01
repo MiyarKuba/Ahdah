@@ -4,10 +4,12 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using Ahdah.Application.Abstractions.Authentication;
 using Ahdah.Application.Access.Services;
+using Ahdah.Application.CompanyMembers.Services;
 using Ahdah.Application.Identity;
 using Ahdah.Application.Identity.Contracts;
 using Ahdah.Application.Identity.Models;
 using Ahdah.Application.Identity.Services;
+using Ahdah.Application.Projects.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -211,6 +213,10 @@ public sealed class IdentityApiFactory : WebApplicationFactory<Program>
             services.AddSingleton<IInvitationService, FakeInvitationService>();
             services.RemoveAll<IJoinRequestService>();
             services.AddSingleton<IJoinRequestService, FakeJoinRequestService>();
+            services.RemoveAll<ICompanyMemberService>();
+            services.AddSingleton<ICompanyMemberService, FakeCompanyMemberService>();
+            services.RemoveAll<IProjectService>();
+            services.AddScoped<IProjectService, FakeProjectService>();
         });
     }
 

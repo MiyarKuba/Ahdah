@@ -13,6 +13,8 @@ Identity Phase 1 uses the versioned routes `POST /api/v1/auth/register-company`,
 
 The completed Invitations and Join Requests phase publishes manager-only invitation creation/listing/cancellation and join-request listing/decisions. `POST /api/v1/invitations/accept` and `POST /api/v1/join-requests` are public. Public join submission uses company code rather than accepting `company_id`.
 
+Company structure publishes `GET /api/v1/company/members`, `GET /api/v1/company/members/{memberId}`, and the project collection/detail/create/patch, supervisor-replacement, and members routes under `/api/v1/projects`. No route accepts `company_id`, creator IDs, database timestamps, or version internals other than the explicit expected project version required for mutations.
+
 ## JSON
 
 - Requests and responses use `application/json` unless an endpoint explicitly handles files.
@@ -51,6 +53,8 @@ The Flutter client mirrors the OpenAPI contract with handwritten immutable model
 
 Invitation and join-request listings use `page` (default 1) and `pageSize` (default 20, maximum 100), return `items`, `page`, `pageSize`, `totalCount`, and `totalPages`, and sort newest first with the resource UUID as a stable tie-breaker. Status filters accept only the exact documented lifecycle values.
 
+Company-member and project collections reuse that exact page-number response shape and bounds. Members sort by name then UUID. Projects sort by creation time then UUID, newest first. Company members accept exact role/status filters and a 2–100 character name/phone prefix search. Projects accept exact project status and a 2–100 character name/address prefix search. Tenant and record visibility filters are applied before count and pagination.
+
 ## Correlation IDs
 
 - The API accepts a valid incoming correlation ID or generates one.
@@ -73,6 +77,7 @@ Invitation and join-request listings use `page` (default 1) and `pageSize` (defa
 - JWT Bearer validation requires issuer, audience, expiration, signature, and the configured signing key. Signed tokens and a small explicit clock skew are required.
 - The non-secret defaults are issuer `Ahdah.Api`, audience `Ahdah.Clients`, and a 15-minute access-token lifetime. Signing keys are secret configuration and never belong in repository files.
 - Authorization policies are `AuthenticatedUser`, `CompanyMember`, and `ManagerOnly`. `CompanyMember` requires a valid GUID `company_id` claim. `ManagerOnly` additionally requires the exact `Manager` role.
+- `CompanyDirectoryViewer` permits exact roles `Manager` and `Deputy`. `ProjectViewer` permits the five verified company roles but never replaces tenant and assignment predicates. Accountant and Deputy project reads omit `contractValue`; Supervisor reads require active assignment; Worker receives no project records with the current schema.
 - Access-token responses use token type `Bearer` and an explicit UTC expiry. Password hashes and generated persistence entities never appear in API schemas or responses.
 - Invitation creation returns the raw URL-safe token once and never returns its hash. Its configured lifetime is 168 hours in development.
 - Invitation acceptance returns authentication only for immediately active `Supervisor`/`Worker` users. Sensitive roles return a pending-identity outcome without an access token. Invalid, expired, cancelled, and already-used tokens share one generic public response.
@@ -80,8 +85,9 @@ Invitation and join-request listings use `page` (default 1) and `pageSize` (defa
 
 ## Browser CORS
 
-The API applies the named `FlutterClient` CORS policy before authentication and authorization. Allowed origins come from the non-secret `Cors:AllowedOrigins` configuration. Development explicitly allows `http://localhost:5173` and `http://127.0.0.1:5173`; no wildcard or `AllowAnyOrigin` policy exists, credentials are not enabled, and only the required `GET`, `POST`, and `OPTIONS` methods plus `Authorization`, `Content-Type`, and `Accept` headers are allowed. Production has no permissive origin default and must configure each deployed HTTPS origin explicitly.
+The API applies the named `FlutterClient` CORS policy before authentication and authorization. Allowed origins come from the non-secret `Cors:AllowedOrigins` configuration. Development explicitly allows `http://localhost:5173` and `http://127.0.0.1:5173`; no wildcard or `AllowAnyOrigin` policy exists, credentials are not enabled, and only the required `GET`, `POST`, `PATCH`, `PUT`, and `OPTIONS` methods plus `Authorization`, `Content-Type`, and `Accept` headers are allowed. Production has no permissive origin default and must configure each deployed HTTPS origin explicitly.
 - Invitation hashes, password hashes, raw passwords, and generated persistence entities are excluded from access response schemas. The raw invitation token appears only once in the successful creation response and as input to public acceptance.
+- Company-member responses exclude password, login/lockout, status-reason, approval, token, and identity-evidence internals. Project responses exclude tenant/creator/cancellation internals and omit `contractValue` unless the caller is Manager.
 
 ## Idempotency for financial commands
 

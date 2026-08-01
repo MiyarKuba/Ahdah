@@ -1,6 +1,7 @@
 using System.Text;
 using Ahdah.Application.Abstractions.Authentication;
 using Ahdah.Application.Abstractions.Context;
+using Ahdah.Application.Access;
 using Ahdah.Application.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -73,6 +74,27 @@ public static class AuthenticationDependencyInjection
                     .RequireAssertion(context => Guid.TryParse(
                         context.User.FindFirst(AhdahClaimTypes.CompanyId)?.Value,
                         out _)))
+            .AddPolicy(AhdahAuthorizationPolicies.CompanyDirectoryViewer,
+                policy => policy
+                    .RequireAuthenticatedUser()
+                    .RequireClaim(AhdahClaimTypes.CompanyId)
+                    .RequireAssertion(context => Guid.TryParse(
+                        context.User.FindFirst(AhdahClaimTypes.CompanyId)?.Value,
+                        out _))
+                    .RequireRole(IdentityConstants.ManagerRole, AccessConstants.DeputyRole))
+            .AddPolicy(AhdahAuthorizationPolicies.ProjectViewer,
+                policy => policy
+                    .RequireAuthenticatedUser()
+                    .RequireClaim(AhdahClaimTypes.CompanyId)
+                    .RequireAssertion(context => Guid.TryParse(
+                        context.User.FindFirst(AhdahClaimTypes.CompanyId)?.Value,
+                        out _))
+                    .RequireRole(
+                        IdentityConstants.ManagerRole,
+                        AccessConstants.DeputyRole,
+                        AccessConstants.AccountantRole,
+                        AccessConstants.SupervisorRole,
+                        AccessConstants.WorkerRole))
             .AddPolicy(AhdahAuthorizationPolicies.ManagerOnly,
                 policy => policy
                     .RequireAuthenticatedUser()

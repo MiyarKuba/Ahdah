@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using Ahdah.Application.Access.Models;
+using Ahdah.Application.CompanyMembers.Models;
+using Ahdah.Application.Projects.Models;
 using Ahdah.Infrastructure.Persistence.Generated.Context;
 using Ahdah.Infrastructure.Persistence.Generated.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -110,6 +112,63 @@ public sealed class DatabasePersistenceTests
         Assert.DoesNotContain("Ahdah.Infrastructure.Persistence.Generated", accessControllerSource);
         Assert.DoesNotContain("InvitationCodeHash", accessControllerSource);
         Assert.DoesNotContain("PasswordHash", accessControllerSource);
+    }
+
+    [Fact]
+    public void Company_structure_contracts_do_not_expose_persistence_or_security_internals()
+    {
+        var responseTypes = new[]
+        {
+            typeof(CompanyMemberSummary),
+            typeof(CompanyMemberDetails),
+            typeof(ProjectDetails),
+            typeof(ProjectOwnerSummary),
+            typeof(ProjectSupervisorSummary),
+            typeof(ProjectMemberSummary)
+        };
+
+        Assert.All(responseTypes, type => Assert.DoesNotContain(
+            type.GetProperties(),
+            property => property.Name.Contains("Hash", StringComparison.OrdinalIgnoreCase)
+                || property.Name.Contains("Password", StringComparison.OrdinalIgnoreCase)
+                || property.Name.Contains("CompanyId", StringComparison.OrdinalIgnoreCase)
+                || property.Name.Contains("CreatedBy", StringComparison.OrdinalIgnoreCase)));
+
+        var controllerDirectory = Path.Combine(
+            FindRepositoryRoot(), "backend", "src", "Ahdah.Api", "Controllers");
+        var source = string.Join(
+            Environment.NewLine,
+            new[] { "CompanyMembersController.cs", "ProjectsController.cs" }
+                .Select(name => File.ReadAllText(Path.Combine(controllerDirectory, name))));
+
+        Assert.DoesNotContain("Ahdah.Infrastructure.Persistence.Generated", source);
+        Assert.DoesNotContain("AppUser", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("ProjectOwner ", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Company_structure_persistence_enforces_tenant_and_assignment_scope()
+    {
+        var infrastructureRoot = Path.Combine(
+            FindRepositoryRoot(), "backend", "src", "Ahdah.Infrastructure");
+        var memberSource = File.ReadAllText(Path.Combine(
+            infrastructureRoot, "CompanyMembers", "CompanyMemberService.cs"));
+        var projectSource = File.ReadAllText(Path.Combine(
+            infrastructureRoot, "Projects", "ProjectService.cs"));
+
+        Assert.Contains("user.CompanyId == caller.Value.CompanyId", memberSource);
+        Assert.Contains("user.CompanyId == caller.Value.CompanyId && user.UserId == memberId", memberSource);
+        Assert.Contains("project.CompanyId == caller.CompanyId", projectSource);
+        Assert.Contains("project.CompanyId == caller.CompanyId", projectSource);
+        Assert.Contains("assignment.CompanyId == caller.CompanyId", projectSource);
+        Assert.Contains("assignment.SupervisorUserId == caller.UserId", projectSource);
+        Assert.Contains("user.CompanyId == companyId", projectSource);
+        Assert.Contains("user.Role == AccessConstants.SupervisorRole", projectSource);
+        Assert.DoesNotContain("FindAsync", memberSource);
+        Assert.DoesNotContain("FindAsync", projectSource);
+        Assert.Contains("BeginTransactionAsync", projectSource);
+        Assert.Contains("RemovedByUserId", projectSource);
+        Assert.DoesNotContain("ProjectSupervisors.Remove", projectSource);
     }
 
     [Fact]

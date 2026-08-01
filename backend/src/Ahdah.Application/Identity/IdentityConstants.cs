@@ -18,5 +18,7 @@ public static class AhdahAuthorizationPolicies
 {
     public const string AuthenticatedUser = "AuthenticatedUser";
     public const string CompanyMember = "CompanyMember";
+    public const string CompanyDirectoryViewer = "CompanyDirectoryViewer";
+    public const string ProjectViewer = "ProjectViewer";
     public const string ManagerOnly = "ManagerOnly";
 }

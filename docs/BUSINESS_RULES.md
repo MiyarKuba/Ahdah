@@ -50,11 +50,24 @@ This document records only known high-level rules. Detailed financial, approval,
 - The raw invitation token is displayed once after creation for explicit copying and approved out-of-band delivery. It is not stored in client state or local persistence, and closing the result intentionally makes it unrecoverable from the Flutter client.
 - Client-side validation mirrors known request constraints for usability but never replaces API validation or authorization. Pending and status screens translate internal values into safe Arabic/English explanations and do not promise email or push updates.
 
+## Company structure rules
+
+- Manager and Deputy may read the tenant company directory. Accountant directory access remains unapproved; Supervisor and Worker have no full-directory access.
+- Manager may list/view all tenant projects, create projects, update non-financial metadata, and replace the active supervisor set. Deputy is project read-only.
+- Accountant may list/view tenant project identity and structure but never receives contract value and cannot view project members in this phase.
+- Supervisor may list/view only projects proven by an active `project_supervisors` row and may view active supervisor members of those projects. Worker has no project visibility because the schema has no worker/project membership relationship.
+- Project contract value is required, positive `NUMERIC(18,2)`. Manager alone supplies it during creation and receives it in responses. Direct changes are deferred to the schema's separate project-contract-change review/history workflow.
+- A project requires a same-company project owner. Creation either verifies an existing active owner by tenant and owner ID or creates the supplied owner atomically; no automatic matching or merging occurs.
+- A supervisor candidate must be an active same-company user with exact role `Supervisor`. Replacement preserves history by ending old active assignment rows rather than deleting them.
+- New projects start as `Active`. Metadata updates may retain or transition between `Active` and `Paused`. `Completed`, `FinanciallyClosed`, and `Cancelled` transitions remain deferred.
+- Project completion and financial closure do not imply or calculate advance settlement, supplier debt payment, invoice delivery, manager-fund settlement, or transfer/reallocation completion in this phase.
+- Existing-member role/status mutations, identity verification, project-member writes, financial modules, and Flutter company-structure UI remain deferred.
+
 ## Rules pending implementation review
 
 - Company onboarding after initial bootstrap, suspension, and tenant membership lifecycle
-- Role capabilities for managers, deputies, accountants, supervisors, workers, and administrators
-- Project responsibility assignment and delegation
+- Additional role delegation beyond the approved company-directory/project matrix
+- Project worker membership and assignment writes
 - Funding-source eligibility and availability
 - Custody issue, balance, transfer, and return rules
 - Transfer initiation, acceptance, rejection, reversal, and approval rules

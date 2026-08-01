@@ -79,6 +79,16 @@ Invitation acceptance uses the invitation's phone, company, and assigned role. T
 
 Public join submission resolves an active company by normalized code and creates the pending user plus pending request in one transaction. The password is hashed immediately and stored only on `app_users`. Approval locks and updates both records: non-sensitive roles activate, while sensitive roles require verified identity. Rejection marks the request and linked user rejected without deletion. SMS/email delivery, reapplication/account recovery, and Flutter UI are outside this phase.
 
+## Company structure and projects
+
+Application owns explicit company-member/project requests, response models, visibility capabilities, lifecycle validation, and service interfaces. Infrastructure owns tenant-filtered EF queries and the generated `app_users`, `projects`, `project_owners`, and `project_supervisors` mappings. API owns the company-directory and project controllers, focused authorization policies, HTTP statuses, and safe Problem Details. Generated persistence entities never cross these boundaries.
+
+`CompanyDirectoryViewer` permits only Manager and Deputy because Accountant directory access is not approved by the existing business documentation. `ProjectViewer` admits the five verified roles to the controller, but record-level filtering remains authoritative: Manager, Deputy, and Accountant see tenant projects; Supervisor queries require an active same-project supervisor assignment; Worker queries return no records because no worker/project assignment exists.
+
+Project reads are projected into explicit DTOs. Contract value is selected only for Manager and is JSON-omitted when unavailable. Creation derives company and creator from `ICurrentUserContext`, uses the required schema owner relationship, and atomically creates a new owner/project/optional supervisor assignment or verifies an existing same-company active owner. Supervisor replacement locks the tenant project, ends prior active assignment rows without deletion, creates a new row when needed, and advances project optimistic concurrency.
+
+Only `Active` and `Paused` are mutable lifecycle values in this phase. `Completed`, `FinanciallyClosed`, and `Cancelled` require additional fields and/or deferred financial/business checks. Direct contract-value changes are also deferred because `project_contract_changes` provides a distinct reason/review/history workflow. No financial module is implemented by the company-structure services.
+
 ## Modular Monolith
 
 A modular monolith provides one deployable backend while keeping high-cohesion business areas explicit. Modules will share process hosting and operational tooling but should communicate through defined application contracts rather than reaching into one another's internals.

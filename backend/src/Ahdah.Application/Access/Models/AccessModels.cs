@@ -59,7 +59,8 @@ public enum AccessResultStatus
     Invalid,
     NotFound,
     Conflict,
-    Unauthorized
+    Unauthorized,
+    Forbidden
 }
 
 public sealed record AccessResult<T>(AccessResultStatus Status, T? Value = default)

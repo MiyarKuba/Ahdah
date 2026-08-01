@@ -14,5 +14,13 @@ public partial class AhdahDbContext
         modelBuilder.Entity<Company>()
             .Property(company => company.VersionNumber)
             .IsConcurrencyToken();
+
+        modelBuilder.Entity<Project>()
+            .Property(project => project.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<ProjectOwner>()
+            .Property(owner => owner.VersionNumber)
+            .IsConcurrencyToken();
     }
 }

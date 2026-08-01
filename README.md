@@ -2,7 +2,7 @@
 
 Ahdah is a multi-tenant platform for financial custody and construction operations. It is intended to help companies coordinate projects, custody balances, transfers, expenses, supplier obligations, worker claims, documents, audit trails, notifications, and scheduled reporting.
 
-This repository is currently in **Flutter Authenticated Shell and Access Administration**. The Android, iOS, and Web client now includes an authoritative role-aware application shell plus manager invitation and join-request administration; business and financial modules remain deferred.
+This repository is currently in **Company Structure — Projects and Member Visibility**. The backend now exposes tenant-safe company-directory and construction-project APIs, including schema-backed owner creation/reuse and supervisor replacement history. Flutter project/member UI and all financial workflows remain deferred.
 
 ## Technology stack
 
@@ -72,6 +72,19 @@ The access phase additionally exposes:
 - Manager-only `GET /api/v1/join-requests`
 - Manager-only `POST /api/v1/join-requests/{joinRequestId}/approve`
 - Manager-only `POST /api/v1/join-requests/{joinRequestId}/reject`
+
+The company-structure phase additionally exposes:
+
+- Manager/Deputy `GET /api/v1/company/members`
+- Manager/Deputy `GET /api/v1/company/members/{memberId}`
+- Role-filtered `GET /api/v1/projects`
+- Role-filtered `GET /api/v1/projects/{projectId}`
+- Manager-only `POST /api/v1/projects`
+- Manager-only `PATCH /api/v1/projects/{projectId}`
+- Manager-only `PUT /api/v1/projects/{projectId}/supervisor`
+- Schema-limited `GET /api/v1/projects/{projectId}/members`
+
+Manager and Deputy see all company projects; Accountant sees basic project structure without contract value; Supervisor sees only actively assigned projects; Worker sees no projects because the schema has no worker/project relationship. Project-member results contain active supervisor assignments only. Manager alone receives contract value and may set it during creation. Later contract-value changes are deferred to the existing `project_contract_changes` approval/history model, and `Completed`, `FinanciallyClosed`, and `Cancelled` transitions remain deferred.
 
 Invitation creation uses the validated non-secret `Access:Invitations:LifetimeHours` option, which is 168 hours (7 days) in development. It stores only a SHA-256 hash and returns the URL-safe raw token once to the manager for out-of-band delivery. Raw tokens are never stored or logged.
 
