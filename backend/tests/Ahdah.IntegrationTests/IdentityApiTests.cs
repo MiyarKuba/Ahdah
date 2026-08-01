@@ -119,6 +119,40 @@ public sealed class IdentityApiTests(IdentityApiFactory factory)
         Assert.DoesNotContain("Ahdah.Infrastructure.Persistence.Generated", body, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task Configured_flutter_web_origin_receives_controlled_cors_headers()
+    {
+        using var client = factory.CreateSecureClient();
+        using var request = new HttpRequestMessage(HttpMethod.Options, "/api/v1/auth/login");
+        request.Headers.Add("Origin", "http://localhost:5173");
+        request.Headers.Add("Access-Control-Request-Method", "POST");
+        request.Headers.Add("Access-Control-Request-Headers", "authorization,content-type");
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(
+            "http://localhost:5173",
+            Assert.Single(response.Headers.GetValues("Access-Control-Allow-Origin")));
+        var allowedHeaders = Assert.Single(response.Headers.GetValues("Access-Control-Allow-Headers"));
+        Assert.Contains("authorization", allowedHeaders, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("content-type", allowedHeaders, StringComparison.OrdinalIgnoreCase);
+        Assert.False(response.Headers.Contains("Access-Control-Allow-Credentials"));
+    }
+
+    [Fact]
+    public async Task Unconfigured_origin_receives_no_cors_allow_origin_header()
+    {
+        using var client = factory.CreateSecureClient();
+        using var request = new HttpRequestMessage(HttpMethod.Options, "/api/v1/auth/login");
+        request.Headers.Add("Origin", "https://untrusted.example");
+        request.Headers.Add("Access-Control-Request-Method", "POST");
+
+        var response = await client.SendAsync(request);
+
+        Assert.False(response.Headers.Contains("Access-Control-Allow-Origin"));
+    }
+
     private static ClaimsPrincipal CreatePrincipal(params Claim[] claims) => new(
         new ClaimsIdentity(claims, "Test", AhdahClaimTypes.Name, AhdahClaimTypes.Role));
 }

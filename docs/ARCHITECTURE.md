@@ -24,6 +24,12 @@ Flutter provides one shared product experience across Android, iOS, and Web. Pre
 
 The client is not a trusted enforcement boundary. Authorization, tenant isolation, financial invariants, and audit behavior must be enforced by the API even if the client also provides contextual validation.
 
+The authentication foundation uses feature-first presentation/data/domain boundaries, Riverpod as the authoritative session and locale state mechanism, `go_router` for guarded routes, and one Dio API client. Request/response models are explicit handwritten mappings of the published camelCase API contracts; persistence entities and decoded JWT claims are not client domain models.
+
+`API_BASE_URL` is required through `String.fromEnvironment` and normalized by `AppConfig`. Android/iOS access tokens use platform secure storage. Web access tokens exist only in runtime memory and intentionally disappear on refresh. Startup reads the platform token store and calls `/api/v1/auth/me`; a 401 clears the local token, while a network failure preserves a potentially valid mobile token and shows a retry state. Logout is local token deletion because no refresh or revocation endpoint exists.
+
+Arabic is the default locale, English is optional, and only the non-secret locale preference is persisted. Pages share responsive, keyboard-safe Material 3 layouts across mobile, tablet, and Web rather than duplicating platform screens. See [FLUTTER_DEVELOPMENT.md](FLUTTER_DEVELOPMENT.md) for the complete client structure and platform networking policy.
+
 ## ASP.NET Core Web API
 
 The .NET 10 API is controller based and owns the public HTTP contract. It is responsible for authentication and authorization when introduced, tenant context resolution, input validation, application orchestration, transaction boundaries, persistence access, audit production, and safe integration with external services.

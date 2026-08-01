@@ -2,7 +2,7 @@
 
 Ahdah is a multi-tenant platform for financial custody and construction operations. It is intended to help companies coordinate projects, custody balances, transfers, expenses, supplier obligations, worker claims, documents, audit trails, notifications, and scheduled reporting.
 
-This repository is currently in **Invitations and Join Requests**. The backend preserves Identity Phase 1 and now adds the invitation and join-request operations safely supported by the existing Database-First model.
+This repository is currently in **Flutter Authentication and Company Onboarding**. The Android, iOS, and Web client now integrates the completed identity, invitation-acceptance, and join-request submission contracts; business and financial modules remain deferred.
 
 ## Technology stack
 
@@ -94,15 +94,17 @@ dotnet test backend\Ahdah.sln
 From `frontend\ahdah_app`:
 
 ```powershell
-flutter pub get
-flutter run -d chrome
+C:\dev\flutter\bin\flutter.bat pub get
+C:\dev\flutter\bin\flutter.bat run -d chrome --web-port 5173 --dart-define=API_BASE_URL=http://localhost:5231
 ```
 
 For a release build:
 
 ```powershell
-flutter build web
+C:\dev\flutter\bin\flutter.bat build web --release --dart-define=API_BASE_URL=http://localhost:5231
 ```
+
+`API_BASE_URL` is required and has no silent production default. Deployed builds must use HTTPS. Web access tokens are deliberately memory-only, so a browser refresh requires a new login.
 
 ## Run Flutter on Android
 
@@ -111,17 +113,25 @@ Start a device or emulator yourself, then run these commands from `frontend\ahda
 ```powershell
 flutter doctor
 flutter devices
-flutter run -d <android-device-id>
+C:\dev\flutter\bin\flutter.bat run -d <android-device-id> --dart-define=API_BASE_URL=http://10.0.2.2:5231
 ```
 
-The repository does not launch or manage an emulator automatically.
+The emulator reaches the local HTTP API through `10.0.2.2`. A physical device uses the development computer's LAN address without committing that address. Local cleartext support exists only in Android's debug source set; release networking remains HTTPS-oriented. The repository does not launch or manage an emulator automatically.
+
+The Android debug APK build has passed with Gradle 9.1.0:
+
+```powershell
+C:\dev\flutter\bin\flutter.bat build apk --debug --dart-define=API_BASE_URL=http://10.0.2.2:5231
+```
+
+The first build downloaded Gradle 9.1.0 and installed the required NDK, Android SDK platforms, and CMake. The resulting APK is `frontend/ahdah_app/build/app/outputs/flutter-apk/app-debug.apk`. This verifies the build artifact only; the app has not been run on an emulator or physical device.
 
 ## iOS development
 
-The iOS project is preserved under `frontend\ahdah_app\ios`, but iOS builds and tests require macOS, Xcode, and the relevant Apple signing setup. They cannot be performed on Windows.
+The iOS project permits local-network development through the narrow ATS `NSAllowsLocalNetworking` setting rather than disabling ATS globally. Use `localhost:5231` for the simulator or the development computer's LAN address for a physical device. iOS remains unbuilt on Windows; builds, signing, and simulator/device verification require macOS, Xcode, and the relevant Apple setup.
 
 ## Database-First workflow
 
 Restore the repository-local EF tool with `dotnet tool restore`. Generated files under `backend/src/Ahdah.Infrastructure/Persistence/Generated` must not be manually edited. Database changes and re-scaffolding require explicit approval and review. Migrations, `EnsureCreated`, `EnsureDeleted`, and automatic schema updates are prohibited.
 
-See [PROJECT_STATUS.md](PROJECT_STATUS.md) for verified status and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the system shape. Generated persistence files remain infrastructure-only and are never returned through API contracts. SMS/email delivery and Flutter authentication, invitation, and join-request UI remain unimplemented.
+See [PROJECT_STATUS.md](PROJECT_STATUS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and [docs/FLUTTER_DEVELOPMENT.md](docs/FLUTTER_DEVELOPMENT.md) for verified status, architecture, security decisions, routes, and run commands. Generated persistence files remain infrastructure-only and are never returned through API contracts. SMS/email invitation delivery, manager administration UI, and business dashboards remain unimplemented.

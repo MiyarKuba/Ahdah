@@ -44,6 +44,8 @@ This document records only known high-level rules. Detailed financial, approval,
 - Rejection marks the linked user `Rejected` without deleting it or erasing its password hash.
 - Rejection requires a non-blank reason up to 500 characters because the existing database constraint requires one for `Rejected` records.
 - Phone is globally unique, so the current schema supports one account/tenant membership per phone. Reapplication after rejection and company transfer require a future approved recovery workflow.
+- Flutter presents requested roles as provisional, never offers `Manager`, and sends the exact invariant API role value rather than the localized label. Join submission does not authenticate the applicant. Invitation acceptance authenticates only when the API returns an access token; pending sensitive roles are shown as requiring identity verification without inventing a verification workflow.
+- Client-side validation mirrors known request constraints for usability but never replaces API validation or authorization. Pending and status screens translate internal values into safe Arabic/English explanations and do not promise email or push updates.
 
 ## Rules pending implementation review
 

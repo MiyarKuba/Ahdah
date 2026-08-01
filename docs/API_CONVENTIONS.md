@@ -20,6 +20,8 @@ The completed Invitations and Join Requests phase publishes manager-only invitat
 - Contracts are explicit; persistence models are never returned directly.
 - Optional, absent, empty, and null values must have documented meanings.
 
+The Flutter client mirrors the OpenAPI contract with handwritten immutable models and explicit JSON parsing. Nullable constructor properties in current onboarding request schemas are sent as explicit `null` keys where the OpenAPI document marks the property required but nullable. Passwords, access tokens, and invitation tokens are never logged or placed in route/query state.
+
 ## Time
 
 - API timestamps represent UTC and use ISO 8601 values with an explicit `Z` or UTC offset.
@@ -74,6 +76,10 @@ Invitation and join-request listings use `page` (default 1) and `pageSize` (defa
 - Invitation creation returns the raw URL-safe token once and never returns its hash. Its configured lifetime is 168 hours in development.
 - Invitation acceptance returns authentication only for immediately active `Supervisor`/`Worker` users. Sensitive roles return a pending-identity outcome without an access token. Invalid, expired, cancelled, and already-used tokens share one generic public response.
 - Public join submission returns a safe pending acknowledgement without user/company details or authentication. Invalid/inactive company codes use a generic non-enumerating response.
+
+## Browser CORS
+
+The API applies the named `FlutterClient` CORS policy before authentication and authorization. Allowed origins come from the non-secret `Cors:AllowedOrigins` configuration. Development explicitly allows `http://localhost:5173` and `http://127.0.0.1:5173`; no wildcard or `AllowAnyOrigin` policy exists, credentials are not enabled, and only the required `GET`, `POST`, and `OPTIONS` methods plus `Authorization`, `Content-Type`, and `Accept` headers are allowed. Production has no permissive origin default and must configure each deployed HTTPS origin explicitly.
 - Invitation hashes, password hashes, raw passwords, and generated persistence entities are excluded from access response schemas. The raw invitation token appears only once in the successful creation response and as input to public acceptance.
 
 ## Idempotency for financial commands
