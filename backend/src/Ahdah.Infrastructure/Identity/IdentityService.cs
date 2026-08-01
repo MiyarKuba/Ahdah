@@ -147,7 +147,12 @@ public sealed class IdentityService(
             .AsNoTracking()
             .Where(user => user.CompanyId == companyId && user.UserId == userId)
             .Select(user => new CurrentUserResult(
-                new UserSummary(user.UserId, user.FullName, user.Role, user.Status),
+                new UserSummary(
+                    user.UserId,
+                    user.FullName,
+                    user.Role,
+                    user.Status,
+                    user.IdentityVerificationStatus),
                 new CompanySummary(
                     user.Company.CompanyId,
                     user.Company.CompanyName,
@@ -183,7 +188,7 @@ public sealed class IdentityService(
     }
 
     private static UserSummary MapUser(AppUser user) =>
-        new(user.UserId, user.FullName, user.Role, user.Status);
+        new(user.UserId, user.FullName, user.Role, user.Status, user.IdentityVerificationStatus);
 
     private static CompanySummary MapCompany(Company company) =>
         new(company.CompanyId, company.CompanyName, company.CompanyCode, company.Status);

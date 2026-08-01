@@ -117,6 +117,26 @@ public sealed class IdentityApiTests(IdentityApiFactory factory)
         Assert.DoesNotContain("tokenHash", body, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("invitationCodeHash", body, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Ahdah.Infrastructure.Persistence.Generated", body, StringComparison.Ordinal);
+        Assert.Contains("identityVerificationStatus", body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Me_returns_authoritative_identity_verification_status()
+    {
+        using var client = factory.CreateSecureClient();
+        var tokenService = factory.Services.GetRequiredService<IAccessTokenService>();
+        var token = tokenService.CreateToken(new AccessTokenSubject(
+            IdentityApiFactory.UserId,
+            IdentityApiFactory.CompanyId,
+            IdentityConstants.ManagerRole,
+            "Test Manager"));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
+
+        var response = await client.GetAsync("/api/v1/auth/me");
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("\"identityVerificationStatus\":\"Verified\"", body, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -210,7 +230,12 @@ public sealed class IdentityApiFactory : WebApplicationFactory<Program>
         public Task<IdentityResult<CurrentUserResult>> GetCurrentUserAsync(
             CancellationToken cancellationToken)
         {
-            var user = new UserSummary(UserId, "Test Manager", IdentityConstants.ManagerRole, "Active");
+            var user = new UserSummary(
+                UserId,
+                "Test Manager",
+                IdentityConstants.ManagerRole,
+                "Active",
+                IdentityConstants.VerifiedIdentityStatus);
             var company = new CompanySummary(CompanyId, "Test Company", "TEST01", "Active");
             return Task.FromResult(IdentityResult<CurrentUserResult>.Success(
                 new CurrentUserResult(user, company, IdentityConstants.ManagerRole)));

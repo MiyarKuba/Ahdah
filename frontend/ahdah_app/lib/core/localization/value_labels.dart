@@ -44,4 +44,22 @@ abstract final class ValueLabels {
         'Rejected' => l10n.identityRejected,
         _ => l10n.unknownValue,
       };
+
+  static String invitationStatus(AppLocalizations l10n, String value) =>
+      switch (value) {
+        'Pending' => l10n.invitationStatusPending,
+        'Accepted' => l10n.invitationStatusAccepted,
+        'Expired' => l10n.invitationStatusExpired,
+        'Cancelled' => l10n.invitationStatusCancelled,
+        _ => l10n.unknownValue,
+      };
+
+  static String joinRequestStatus(AppLocalizations l10n, String value) =>
+      switch (value) {
+        'Pending' => l10n.joinStatusPending,
+        'Approved' => l10n.joinStatusApproved,
+        'Rejected' => l10n.joinStatusRejected,
+        'Cancelled' => l10n.joinStatusCancelled,
+        _ => l10n.unknownValue,
+      };
 }

@@ -65,6 +65,7 @@ Invitation and join-request listings use `page` (default 1) and `pageSize` (defa
 - Cross-tenant identifiers produce a non-disclosing authorization or not-found response according to the reviewed security policy.
 - JWT access tokens carry only `sub`, `company_id`, `role`, `jti`, and optional safe display `name`. Tenant context is never taken from client headers, query strings, route values, or bodies.
 - `GET /api/v1/auth/me` resolves both identifiers from validated claims and filters by both `company_id` and `user_id` before returning explicit safe DTOs.
+- The safe `/auth/me` user summary includes `identityVerificationStatus` alongside name, role, and user status. IDs remain part of the transport contract for server/client identity continuity but authenticated UI pages do not display them.
 - Every manager invitation and join-request query revalidates the active manager and filters by the validated claim's `company_id`. Resource IDs never appear alone in persistence predicates.
 
 ## Authentication and authorization

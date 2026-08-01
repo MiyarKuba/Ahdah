@@ -7,6 +7,7 @@ const _user = {
   'fullName': 'Test User',
   'role': 'Worker',
   'status': 'Active',
+  'identityVerificationStatus': 'NotRequired',
 };
 const _company = {
   'companyId': 'f29b18bb-9954-46c5-ad07-bd48db68bb55',

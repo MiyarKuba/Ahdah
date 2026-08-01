@@ -62,6 +62,20 @@ abstract final class Validators {
         : invalid;
   }
 
+  static String? rejectionReason(
+    String? value,
+    String required,
+    String invalid,
+  ) {
+    final normalized = value?.trim() ?? '';
+    if (normalized.isEmpty) return required;
+    return normalized.length <= 500 &&
+            !normalized.contains('\n') &&
+            !normalized.contains('\r')
+        ? null
+        : invalid;
+  }
+
   static String? invitationToken(
     String? value,
     String required,

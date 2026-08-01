@@ -25,12 +25,14 @@ final class AuthenticatedUser {
     required this.fullName,
     required this.role,
     required this.status,
+    required this.identityVerificationStatus,
   });
 
   final String userId;
   final String fullName;
   final String role;
   final String status;
+  final String identityVerificationStatus;
 
   factory AuthenticatedUser.fromJson(Map<String, Object?> json) =>
       AuthenticatedUser(
@@ -38,6 +40,8 @@ final class AuthenticatedUser {
         fullName: json['fullName']! as String,
         role: json['role']! as String,
         status: json['status']! as String,
+        identityVerificationStatus:
+            json['identityVerificationStatus'] as String? ?? 'Unknown',
       );
 }
 

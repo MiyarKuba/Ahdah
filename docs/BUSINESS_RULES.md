@@ -45,6 +45,9 @@ This document records only known high-level rules. Detailed financial, approval,
 - Rejection requires a non-blank reason up to 500 characters because the existing database constraint requires one for `Rejected` records.
 - Phone is globally unique, so the current schema supports one account/tenant membership per phone. Reapplication after rejection and company transfer require a future approved recovery workflow.
 - Flutter presents requested roles as provisional, never offers `Manager`, and sends the exact invariant API role value rather than the localized label. Join submission does not authenticate the applicant. Invitation acceptance authenticates only when the API returns an access token; pending sensitive roles are shown as requiring identity verification without inventing a verification workflow.
+- Manager access-administration UI may create/list/cancel invitations and list/approve/reject join requests only. It does not manage existing members, alter existing member roles, or perform identity verification.
+- A manager-selected join approval role is final for the decision request. `Deputy` and `Accountant` outcomes explicitly communicate pending identity verification when returned by the server; `Supervisor` and `Worker` may activate according to the server outcome.
+- The raw invitation token is displayed once after creation for explicit copying and approved out-of-band delivery. It is not stored in client state or local persistence, and closing the result intentionally makes it unrecoverable from the Flutter client.
 - Client-side validation mirrors known request constraints for usability but never replaces API validation or authorization. Pending and status screens translate internal values into safe Arabic/English explanations and do not promise email or push updates.
 
 ## Rules pending implementation review

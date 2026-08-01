@@ -7,6 +7,9 @@ abstract final class AppRoutes {
   static const acceptInvitation = 'acceptInvitation';
   static const pending = 'pending';
   static const home = 'home';
+  static const invitations = 'invitations';
+  static const joinRequestsAdmin = 'joinRequestsAdmin';
+  static const account = 'account';
   static const unavailable = 'unavailable';
 
   static const splashPath = '/';
@@ -17,5 +20,8 @@ abstract final class AppRoutes {
   static const acceptInvitationPath = '/accept-invitation';
   static const pendingPath = '/pending';
   static const homePath = '/home';
+  static const invitationsPath = '/access/invitations';
+  static const joinRequestsPath = '/access/join-requests';
+  static const accountPath = '/account';
   static const unavailablePath = '/unavailable';
 }

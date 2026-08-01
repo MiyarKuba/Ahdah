@@ -356,7 +356,12 @@ public sealed class InvitationService(
 
     private AuthenticationResult CreateAuthentication(AppUser user, Company company)
     {
-        var userSummary = new UserSummary(user.UserId, user.FullName, user.Role, user.Status);
+        var userSummary = new UserSummary(
+            user.UserId,
+            user.FullName,
+            user.Role,
+            user.Status,
+            user.IdentityVerificationStatus);
         var companySummary = new CompanySummary(
             company.CompanyId,
             company.CompanyName,

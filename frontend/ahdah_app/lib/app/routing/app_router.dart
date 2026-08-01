@@ -2,6 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/authenticated_home/presentation/home_page.dart';
+import '../../features/account/presentation/account_page.dart';
+import '../../features/access/domain/role_capabilities.dart';
+import '../../features/access/presentation/invitations/invitations_page.dart';
+import '../../features/access/presentation/join_requests/join_requests_page.dart';
+import '../../features/authenticated_shell/presentation/authenticated_shell.dart';
 import '../../features/authentication/presentation/login_page.dart';
 import '../../features/authentication/presentation/splash_page.dart';
 import '../../features/authentication/presentation/welcome_page.dart';
@@ -21,7 +26,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final location = state.matchedLocation;
       final isSplash = location == AppRoutes.splashPath;
-      final isHome = location == AppRoutes.homePath;
+      final authenticatedPaths = {
+        AppRoutes.homePath,
+        AppRoutes.invitationsPath,
+        AppRoutes.joinRequestsPath,
+        AppRoutes.accountPath,
+      };
+      final isAuthenticatedPath = authenticatedPaths.contains(location);
+      final isManagerPath =
+          location == AppRoutes.invitationsPath ||
+          location == AppRoutes.joinRequestsPath;
       final isUnavailable = location == AppRoutes.unavailablePath;
       final isOnboarding = {
         AppRoutes.welcomePath,
@@ -37,15 +51,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         SessionStatus.temporarilyUnavailable =>
           isUnavailable ? null : AppRoutes.unavailablePath,
         SessionStatus.authenticated =>
-          isHome
-              ? null
+          isManagerPath &&
+                  !RoleCapabilities.forRole(
+                    session.current?.role,
+                  ).canManageAccess
+              ? AppRoutes.homePath
               : (isOnboarding || isSplash || isUnavailable)
               ? AppRoutes.homePath
               : null,
         SessionStatus.sessionExpired =>
-          isHome || isSplash || isUnavailable ? AppRoutes.loginPath : null,
+          isAuthenticatedPath || isSplash || isUnavailable
+              ? AppRoutes.loginPath
+              : null,
         SessionStatus.unauthenticated =>
-          isHome || isSplash || isUnavailable ? AppRoutes.welcomePath : null,
+          isAuthenticatedPath || isSplash || isUnavailable
+              ? AppRoutes.welcomePath
+              : null,
       };
     },
     routes: [
@@ -88,10 +109,31 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               : null,
         ),
       ),
-      GoRoute(
-        path: AppRoutes.homePath,
-        name: AppRoutes.home,
-        builder: (context, state) => const HomePage(),
+      ShellRoute(
+        builder: (context, state, child) =>
+            AuthenticatedShell(location: state.uri.path, child: child),
+        routes: [
+          GoRoute(
+            path: AppRoutes.homePath,
+            name: AppRoutes.home,
+            builder: (context, state) => const HomePage(),
+          ),
+          GoRoute(
+            path: AppRoutes.invitationsPath,
+            name: AppRoutes.invitations,
+            builder: (context, state) => const InvitationsPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.joinRequestsPath,
+            name: AppRoutes.joinRequestsAdmin,
+            builder: (context, state) => const JoinRequestsPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.accountPath,
+            name: AppRoutes.account,
+            builder: (context, state) => const AccountPage(),
+          ),
+        ],
       ),
       GoRoute(
         path: AppRoutes.unavailablePath,

@@ -10,7 +10,8 @@ public sealed record UserSummary(
     Guid UserId,
     string FullName,
     string Role,
-    string Status);
+    string Status,
+    string IdentityVerificationStatus);
 
 public sealed record AuthenticationResult(
     string AccessToken,

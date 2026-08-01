@@ -267,6 +267,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unauthorizedError => 'Your session is no longer valid.';
 
   @override
+  String get permissionDenied =>
+      'You do not have permission to perform this action.';
+
+  @override
   String get serverError =>
       'The service is temporarily unavailable. Please try again later.';
 
@@ -313,4 +317,242 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noAccount => 'New to Ahdah?';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navInvitations => 'Invitations';
+
+  @override
+  String get navJoinRequests => 'Join requests';
+
+  @override
+  String get navAccount => 'Account';
+
+  @override
+  String welcomeUser(String name) {
+    return 'Welcome, $name';
+  }
+
+  @override
+  String get managerOverviewBody =>
+      'Manage how people join your company without exposing sensitive account data.';
+
+  @override
+  String get memberOverviewBody =>
+      'Your authenticated company workspace is ready for the next approved product modules.';
+
+  @override
+  String get identityStatus => 'Identity status';
+
+  @override
+  String get accessAdministration => 'Access administration';
+
+  @override
+  String get invitationShortcutBody =>
+      'Create, review, and cancel company invitations.';
+
+  @override
+  String get joinRequestShortcutBody =>
+      'Review and decide pending company join requests.';
+
+  @override
+  String get financialModulesDeferred =>
+      'Financial, project, supplier, settlement, and reporting modules are not implemented in this phase.';
+
+  @override
+  String get accountTitle => 'Account and session';
+
+  @override
+  String get language => 'Application language';
+
+  @override
+  String get cancelAction => 'Cancel';
+
+  @override
+  String get finishAction => 'Finish';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get statusFilter => 'Status filter';
+
+  @override
+  String get allStatuses => 'All statuses';
+
+  @override
+  String get assignedRole => 'Assigned role';
+
+  @override
+  String get createdAt => 'Created';
+
+  @override
+  String get expiresAt => 'Expires';
+
+  @override
+  String get acceptedAt => 'Accepted';
+
+  @override
+  String get cancelledAt => 'Cancelled';
+
+  @override
+  String get requestedAt => 'Requested';
+
+  @override
+  String get reviewedAt => 'Reviewed';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get requestMessage => 'Request message';
+
+  @override
+  String get reviewNotes => 'Review notes';
+
+  @override
+  String get reviewNotesOptional => 'Review notes (optional)';
+
+  @override
+  String get rejectionReason => 'Rejection reason';
+
+  @override
+  String get invalidRejectionReason =>
+      'Use 1–500 characters without line breaks.';
+
+  @override
+  String get invitationStatusPending => 'Pending';
+
+  @override
+  String get invitationStatusAccepted => 'Accepted';
+
+  @override
+  String get invitationStatusExpired => 'Expired';
+
+  @override
+  String get invitationStatusCancelled => 'Cancelled';
+
+  @override
+  String get joinStatusPending => 'Pending';
+
+  @override
+  String get joinStatusApproved => 'Approved';
+
+  @override
+  String get joinStatusRejected => 'Rejected';
+
+  @override
+  String get joinStatusCancelled => 'Cancelled';
+
+  @override
+  String get createInvitation => 'Create invitation';
+
+  @override
+  String get noInvitationsTitle => 'No invitations found';
+
+  @override
+  String get noInvitationsBody =>
+      'Create an invitation or change the status filter.';
+
+  @override
+  String get retryLoadingMore => 'Retry loading more';
+
+  @override
+  String get cancelInvitation => 'Cancel invitation';
+
+  @override
+  String get cancelInvitationTitle => 'Cancel this invitation?';
+
+  @override
+  String get cancelInvitationBody =>
+      'Cancellation prevents this invitation from being accepted in the future. The record will remain visible.';
+
+  @override
+  String get invitationCancelled => 'The invitation was cancelled.';
+
+  @override
+  String get invitationCreatedTitle => 'Invitation created';
+
+  @override
+  String get oneTimeTokenWarning =>
+      'This token is shown once. Copy it now and deliver it securely; it cannot be recovered later.';
+
+  @override
+  String get invitationDeliveryNotImplemented =>
+      'SMS and email delivery are not implemented. Share the token through an approved secure channel.';
+
+  @override
+  String get copyToken => 'Copy token';
+
+  @override
+  String get tokenCopied => 'Invitation token copied.';
+
+  @override
+  String get invitationCreationConflict =>
+      'An active invitation or account conflicts with these details.';
+
+  @override
+  String get accessConflictError =>
+      'This record changed on the server. Refresh and try again.';
+
+  @override
+  String get invitationNotFound => 'The invitation is no longer available.';
+
+  @override
+  String get joinRequestNotFound => 'The join request is no longer available.';
+
+  @override
+  String get notFoundError => 'The requested record is unavailable.';
+
+  @override
+  String get noJoinRequestsTitle => 'No join requests found';
+
+  @override
+  String get noJoinRequestsBody =>
+      'There are no requests for the selected status.';
+
+  @override
+  String get approve => 'Approve';
+
+  @override
+  String get reject => 'Reject';
+
+  @override
+  String get approveJoinRequestTitle => 'Approve join request';
+
+  @override
+  String get approveJoinRequestBody =>
+      'Confirm the final role. The applicant\'s requested role is informational only.';
+
+  @override
+  String get sensitiveRoleApprovalNotice =>
+      'Deputy and accountant accounts may remain pending until identity verification is completed.';
+
+  @override
+  String get standardRoleApprovalNotice =>
+      'Supervisor and worker accounts may be activated immediately according to server rules.';
+
+  @override
+  String get approvedAndActivated =>
+      'The request was approved and the account was activated.';
+
+  @override
+  String get approvedPendingIdentity =>
+      'The request was approved and is pending identity verification.';
+
+  @override
+  String get rejectJoinRequestTitle => 'Reject join request';
+
+  @override
+  String get rejectJoinRequestBody =>
+      'The rejected record will remain visible and the applicant will not be able to sign in.';
+
+  @override
+  String get rejectionLoginNotice =>
+      'Rejection prevents this applicant from signing in. Provide a clear reason.';
+
+  @override
+  String get joinRequestRejected => 'The join request was rejected.';
 }

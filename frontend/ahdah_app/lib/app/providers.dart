@@ -8,6 +8,8 @@ import '../core/network/auth_interceptor.dart';
 import '../core/security/access_token_store.dart';
 import '../core/security/access_token_store_factory.dart';
 import '../features/authentication/data/auth_repository.dart';
+import '../features/access/data/api_access_repository.dart';
+import '../features/access/domain/access_repository.dart';
 
 final appConfigProvider = Provider<AppConfig>(
   (ref) => throw StateError('AppConfig must be supplied during bootstrap.'),
@@ -45,4 +47,8 @@ final apiClientProvider = Provider<ApiClient>(
 
 final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => ApiAuthRepository(ref.watch(apiClientProvider)),
+);
+
+final accessRepositoryProvider = Provider<AccessRepository>(
+  (ref) => ApiAccessRepository(ref.watch(apiClientProvider)),
 );

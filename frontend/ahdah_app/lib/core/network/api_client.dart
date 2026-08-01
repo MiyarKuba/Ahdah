@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../../features/authentication/domain/identity_models.dart';
 import '../../features/authentication/domain/identity_requests.dart';
+import '../../features/access/domain/access_models.dart';
 import '../errors/app_exception.dart';
 import '../errors/problem_details.dart';
 import 'api_endpoints.dart';
@@ -68,6 +69,95 @@ final class ApiClient {
     return JoinRequestAcknowledgement.fromJson(_body(response));
   }
 
+  Future<AccessPage<Invitation>> listInvitations({
+    required int page,
+    required int pageSize,
+    String? status,
+  }) async {
+    final response = await _send(
+      () => _dio.get<Map<String, Object?>>(
+        ApiEndpoints.invitations,
+        queryParameters: {
+          'page': page,
+          'pageSize': pageSize,
+          'status': ?status,
+        },
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return AccessPage.fromJson(_body(response), Invitation.fromJson);
+  }
+
+  Future<CreatedInvitation> createInvitation(
+    CreateInvitationInput input,
+  ) async {
+    final response = await _send(
+      () => _dio.post<Map<String, Object?>>(
+        ApiEndpoints.invitations,
+        data: input.toJson(),
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return CreatedInvitation.fromJson(_body(response));
+  }
+
+  Future<Invitation> cancelInvitation(String invitationId) async {
+    final response = await _send(
+      () => _dio.post<Map<String, Object?>>(
+        ApiEndpoints.cancelInvitation(invitationId),
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return Invitation.fromJson(_body(response));
+  }
+
+  Future<AccessPage<JoinRequest>> listJoinRequests({
+    required int page,
+    required int pageSize,
+    String? status,
+  }) async {
+    final response = await _send(
+      () => _dio.get<Map<String, Object?>>(
+        ApiEndpoints.joinRequests,
+        queryParameters: {
+          'page': page,
+          'pageSize': pageSize,
+          'status': ?status,
+        },
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return AccessPage.fromJson(_body(response), JoinRequest.fromJson);
+  }
+
+  Future<JoinRequestDecision> approveJoinRequest(
+    String joinRequestId,
+    ApproveJoinRequestInput input,
+  ) async {
+    final response = await _send(
+      () => _dio.post<Map<String, Object?>>(
+        ApiEndpoints.approveJoinRequest(joinRequestId),
+        data: input.toJson(),
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return JoinRequestDecision.fromJson(_body(response));
+  }
+
+  Future<JoinRequestDecision> rejectJoinRequest(
+    String joinRequestId,
+    RejectJoinRequestInput input,
+  ) async {
+    final response = await _send(
+      () => _dio.post<Map<String, Object?>>(
+        ApiEndpoints.rejectJoinRequest(joinRequestId),
+        data: input.toJson(),
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return JoinRequestDecision.fromJson(_body(response));
+  }
+
   Future<bool> health() async {
     await _send(() => _dio.get<Map<String, Object?>>(ApiEndpoints.health));
     return true;
@@ -116,6 +206,7 @@ final class ApiClient {
       400 => AppException(AppExceptionKind.validation, problem: problem),
       401 => AppException(AppExceptionKind.unauthorized, problem: problem),
       403 => AppException(AppExceptionKind.forbidden, problem: problem),
+      404 => AppException(AppExceptionKind.notFound, problem: problem),
       409 => AppException(AppExceptionKind.conflict, problem: problem),
       final int status when status >= 500 => AppException(
         AppExceptionKind.server,

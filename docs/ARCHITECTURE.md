@@ -30,6 +30,12 @@ The authentication foundation uses feature-first presentation/data/domain bounda
 
 Arabic is the default locale, English is optional, and only the non-secret locale preference is persisted. Pages share responsive, keyboard-safe Material 3 layouts across mobile, tablet, and Web rather than duplicating platform screens. See [FLUTTER_DEVELOPMENT.md](FLUTTER_DEVELOPMENT.md) for the complete client structure and platform networking policy.
 
+Authenticated features are hosted by one nested `go_router` shell. Compact layouts use a Material 3 `NavigationBar`; widths of 840 logical pixels and above use a persistent `NavigationRail`, while the feature pages remain shared. Stable URLs are `/home`, `/access/invitations`, `/access/join-requests`, and `/account`. `RoleCapabilities` derives manager access only from the authoritative `/auth/me` role. Navigation hiding and router redirects are both applied, but server authorization remains authoritative. Unknown roles receive only Home and Account.
+
+Access administration has handwritten domain models, an `AccessRepository` over the existing Dio client and bearer interceptor, focused Riverpod list/write controllers, and shared status/error/empty/confirmation widgets. Lists use the backend page-number contract and exact status values. Write controllers prevent duplicate submission and never retry automatically. A 401 invokes centralized session expiry; network failures keep the potentially valid mobile session and remain retryable.
+
+The one-time invitation creation token is returned directly to dialog-local state. It never enters list models, provider state, routes, preferences, secure storage, browser storage, diagnostics, or logs. Closing the result drops the reference and refreshes the non-secret list. SMS/email delivery is outside the client.
+
 ## ASP.NET Core Web API
 
 The .NET 10 API is controller based and owns the public HTTP contract. It is responsible for authentication and authorization when introduced, tenant context resolution, input validation, application orchestration, transaction boundaries, persistence access, audit production, and safe integration with external services.
@@ -54,6 +60,8 @@ Company registration normalizes supported text inputs and creates one company pl
 Passwords use ASP.NET Core `PasswordHasher<TUser>`. Verification uses the framework API, and `SuccessRehashNeeded` causes a tracked, concurrency-aware hash replacement together with `updated_at` and `version_number` advancement.
 
 Access tokens are signed JWTs validated for issuer, audience, lifetime, signature, and signing key with a small clock skew. Claims are limited to `sub`, `company_id`, `role`, `jti`, and `name`. Signing key material is supplied only through secret configuration.
+
+The safe user summary returned by authentication and `/auth/me` includes `identityVerificationStatus` so the client can present authoritative account state without decoding claims or accessing persistence models.
 
 The HTTP-backed current-user context accepts tenant identity only from validated JWT claims. The authenticated current-user lookup filters `app_users` by both `company_id` and `user_id`, uses a read-only query, and requires both user and company status to be `Active`. Policies are `AuthenticatedUser`, `CompanyMember`, and `ManagerOnly`; `ManagerOnly` uses the exact stored role `Manager`.
 

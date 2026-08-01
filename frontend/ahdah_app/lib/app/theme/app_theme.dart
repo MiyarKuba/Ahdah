@@ -20,12 +20,12 @@ abstract final class AppTheme {
       cardTheme: const CardThemeData(elevation: 0, margin: EdgeInsets.zero),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: const Size(64, 52),
           textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+        style: OutlinedButton.styleFrom(minimumSize: const Size(64, 52)),
       ),
     );
   }

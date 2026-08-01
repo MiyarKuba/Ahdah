@@ -264,6 +264,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get unauthorizedError => 'لم تعد جلستك صالحة.';
 
   @override
+  String get permissionDenied => 'ليست لديك صلاحية لتنفيذ هذا الإجراء.';
+
+  @override
   String get serverError => 'الخدمة غير متاحة مؤقتًا. حاول لاحقًا.';
 
   @override
@@ -306,4 +309,238 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get noAccount => 'جديد في عُهدة؟';
+
+  @override
+  String get navHome => 'الرئيسية';
+
+  @override
+  String get navInvitations => 'الدعوات';
+
+  @override
+  String get navJoinRequests => 'طلبات الانضمام';
+
+  @override
+  String get navAccount => 'الحساب';
+
+  @override
+  String welcomeUser(String name) {
+    return 'مرحبًا، $name';
+  }
+
+  @override
+  String get managerOverviewBody =>
+      'أدر طرق انضمام الأشخاص إلى شركتك من دون كشف بيانات الحساب الحساسة.';
+
+  @override
+  String get memberOverviewBody =>
+      'مساحة شركتك الموثقة جاهزة لوحدات المنتج المعتمدة التالية.';
+
+  @override
+  String get identityStatus => 'حالة الهوية';
+
+  @override
+  String get accessAdministration => 'إدارة الوصول';
+
+  @override
+  String get invitationShortcutBody => 'أنشئ دعوات الشركة وراجعها وألغها.';
+
+  @override
+  String get joinRequestShortcutBody =>
+      'راجع طلبات الانضمام واتخذ القرار بشأنها.';
+
+  @override
+  String get financialModulesDeferred =>
+      'وحدات المال والمشاريع والموردين والتسويات والتقارير غير منفذة في هذه المرحلة.';
+
+  @override
+  String get accountTitle => 'الحساب والجلسة';
+
+  @override
+  String get language => 'لغة التطبيق';
+
+  @override
+  String get cancelAction => 'إلغاء';
+
+  @override
+  String get finishAction => 'إنهاء';
+
+  @override
+  String get refresh => 'تحديث';
+
+  @override
+  String get statusFilter => 'تصفية حسب الحالة';
+
+  @override
+  String get allStatuses => 'كل الحالات';
+
+  @override
+  String get assignedRole => 'الدور المعيّن';
+
+  @override
+  String get createdAt => 'تاريخ الإنشاء';
+
+  @override
+  String get expiresAt => 'تاريخ الانتهاء';
+
+  @override
+  String get acceptedAt => 'تاريخ القبول';
+
+  @override
+  String get cancelledAt => 'تاريخ الإلغاء';
+
+  @override
+  String get requestedAt => 'تاريخ الطلب';
+
+  @override
+  String get reviewedAt => 'تاريخ المراجعة';
+
+  @override
+  String get email => 'البريد الإلكتروني';
+
+  @override
+  String get requestMessage => 'رسالة الطلب';
+
+  @override
+  String get reviewNotes => 'ملاحظات المراجعة';
+
+  @override
+  String get reviewNotesOptional => 'ملاحظات المراجعة (اختيارية)';
+
+  @override
+  String get rejectionReason => 'سبب الرفض';
+
+  @override
+  String get invalidRejectionReason =>
+      'استخدم من 1 إلى 500 حرف من دون أسطر جديدة.';
+
+  @override
+  String get invitationStatusPending => 'قيد الانتظار';
+
+  @override
+  String get invitationStatusAccepted => 'مقبولة';
+
+  @override
+  String get invitationStatusExpired => 'منتهية';
+
+  @override
+  String get invitationStatusCancelled => 'ملغاة';
+
+  @override
+  String get joinStatusPending => 'قيد الانتظار';
+
+  @override
+  String get joinStatusApproved => 'مقبول';
+
+  @override
+  String get joinStatusRejected => 'مرفوض';
+
+  @override
+  String get joinStatusCancelled => 'ملغى';
+
+  @override
+  String get createInvitation => 'إنشاء دعوة';
+
+  @override
+  String get noInvitationsTitle => 'لا توجد دعوات';
+
+  @override
+  String get noInvitationsBody => 'أنشئ دعوة أو غيّر تصفية الحالة.';
+
+  @override
+  String get retryLoadingMore => 'إعادة محاولة تحميل المزيد';
+
+  @override
+  String get cancelInvitation => 'إلغاء الدعوة';
+
+  @override
+  String get cancelInvitationTitle => 'هل تريد إلغاء هذه الدعوة؟';
+
+  @override
+  String get cancelInvitationBody =>
+      'يمنع الإلغاء قبول هذه الدعوة لاحقًا، وسيظل السجل ظاهرًا.';
+
+  @override
+  String get invitationCancelled => 'تم إلغاء الدعوة.';
+
+  @override
+  String get invitationCreatedTitle => 'تم إنشاء الدعوة';
+
+  @override
+  String get oneTimeTokenWarning =>
+      'يظهر هذا الرمز مرة واحدة. انسخه الآن وسلّمه بأمان، إذ لا يمكن استعادته لاحقًا.';
+
+  @override
+  String get invitationDeliveryNotImplemented =>
+      'إرسال الرسائل النصية والبريد الإلكتروني غير منفذ. شارك الرمز عبر قناة آمنة معتمدة.';
+
+  @override
+  String get copyToken => 'نسخ الرمز';
+
+  @override
+  String get tokenCopied => 'تم نسخ رمز الدعوة.';
+
+  @override
+  String get invitationCreationConflict =>
+      'توجد دعوة نشطة أو حساب يتعارض مع هذه البيانات.';
+
+  @override
+  String get accessConflictError =>
+      'تغيّر هذا السجل على الخادم. حدّث القائمة وحاول مجددًا.';
+
+  @override
+  String get invitationNotFound => 'لم تعد الدعوة متاحة.';
+
+  @override
+  String get joinRequestNotFound => 'لم يعد طلب الانضمام متاحًا.';
+
+  @override
+  String get notFoundError => 'السجل المطلوب غير متاح.';
+
+  @override
+  String get noJoinRequestsTitle => 'لا توجد طلبات انضمام';
+
+  @override
+  String get noJoinRequestsBody => 'لا توجد طلبات بالحالة المحددة.';
+
+  @override
+  String get approve => 'موافقة';
+
+  @override
+  String get reject => 'رفض';
+
+  @override
+  String get approveJoinRequestTitle => 'الموافقة على طلب الانضمام';
+
+  @override
+  String get approveJoinRequestBody =>
+      'أكّد الدور النهائي. الدور الذي طلبه المتقدم للمعلومة فقط.';
+
+  @override
+  String get sensitiveRoleApprovalNotice =>
+      'قد يظل حساب النائب أو المحاسب قيد الانتظار إلى أن يكتمل التحقق من الهوية.';
+
+  @override
+  String get standardRoleApprovalNotice =>
+      'قد يُفعّل حساب المشرف أو العامل فورًا وفق قواعد الخادم.';
+
+  @override
+  String get approvedAndActivated => 'تمت الموافقة على الطلب وتفعيل الحساب.';
+
+  @override
+  String get approvedPendingIdentity =>
+      'تمت الموافقة على الطلب وهو بانتظار التحقق من الهوية.';
+
+  @override
+  String get rejectJoinRequestTitle => 'رفض طلب الانضمام';
+
+  @override
+  String get rejectJoinRequestBody =>
+      'سيظل السجل المرفوض ظاهرًا ولن يتمكن المتقدم من تسجيل الدخول.';
+
+  @override
+  String get rejectionLoginNotice =>
+      'يمنع الرفض هذا المتقدم من تسجيل الدخول. اكتب سببًا واضحًا.';
+
+  @override
+  String get joinRequestRejected => 'تم رفض طلب الانضمام.';
 }

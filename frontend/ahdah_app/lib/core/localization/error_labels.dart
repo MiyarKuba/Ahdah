@@ -10,10 +10,16 @@ String localizedError(AppLocalizations l10n, AppException error) {
     'invitations.acceptance_conflict' => l10n.conflictError,
     'join_requests.submission_unavailable' => l10n.joinUnavailable,
     'join_requests.submission_conflict' => l10n.conflictError,
+    'invitations.creation_conflict' => l10n.invitationCreationConflict,
+    'invitations.concurrency_conflict' ||
+    'join_requests.concurrency_conflict' => l10n.accessConflictError,
+    'invitations.not_found' => l10n.invitationNotFound,
+    'join_requests.not_found' => l10n.joinRequestNotFound,
     _ => switch (error.kind) {
       AppExceptionKind.validation => l10n.validationError,
-      AppExceptionKind.unauthorized ||
-      AppExceptionKind.forbidden => l10n.unauthorizedError,
+      AppExceptionKind.unauthorized => l10n.unauthorizedError,
+      AppExceptionKind.forbidden => l10n.permissionDenied,
+      AppExceptionKind.notFound => l10n.notFoundError,
       AppExceptionKind.conflict => l10n.conflictError,
       AppExceptionKind.network => l10n.networkError,
       AppExceptionKind.timeout => l10n.timeoutError,

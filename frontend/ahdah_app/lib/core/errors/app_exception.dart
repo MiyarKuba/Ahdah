@@ -5,6 +5,7 @@ enum AppExceptionKind {
   validation,
   unauthorized,
   forbidden,
+  notFound,
   conflict,
   network,
   timeout,

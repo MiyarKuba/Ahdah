@@ -79,4 +79,15 @@ void main() {
     expect(controller.state.status, SessionStatus.unauthenticated);
     expect(controller.state.current, isNull);
   });
+
+  test('access API 401 expiry clears token and transitions safely', () async {
+    final store = FakeAccessTokenStore('valid-token');
+    final controller = SessionController(FakeAuthRepository(), store);
+    await controller.bootstrap();
+
+    await controller.expire();
+
+    expect(store.token, isNull);
+    expect(controller.state.status, SessionStatus.sessionExpired);
+  });
 }

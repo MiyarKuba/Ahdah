@@ -590,6 +590,12 @@ abstract class AppLocalizations {
   /// **'Your session is no longer valid.'**
   String get unauthorizedError;
 
+  /// No description provided for @permissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have permission to perform this action.'**
+  String get permissionDenied;
+
   /// No description provided for @serverError.
   ///
   /// In en, this message translates to:
@@ -673,6 +679,438 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New to Ahdah?'**
   String get noAccount;
+
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navInvitations.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitations'**
+  String get navInvitations;
+
+  /// No description provided for @navJoinRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Join requests'**
+  String get navJoinRequests;
+
+  /// No description provided for @navAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get navAccount;
+
+  /// No description provided for @welcomeUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome, {name}'**
+  String welcomeUser(String name);
+
+  /// No description provided for @managerOverviewBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage how people join your company without exposing sensitive account data.'**
+  String get managerOverviewBody;
+
+  /// No description provided for @memberOverviewBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your authenticated company workspace is ready for the next approved product modules.'**
+  String get memberOverviewBody;
+
+  /// No description provided for @identityStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity status'**
+  String get identityStatus;
+
+  /// No description provided for @accessAdministration.
+  ///
+  /// In en, this message translates to:
+  /// **'Access administration'**
+  String get accessAdministration;
+
+  /// No description provided for @invitationShortcutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Create, review, and cancel company invitations.'**
+  String get invitationShortcutBody;
+
+  /// No description provided for @joinRequestShortcutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Review and decide pending company join requests.'**
+  String get joinRequestShortcutBody;
+
+  /// No description provided for @financialModulesDeferred.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial, project, supplier, settlement, and reporting modules are not implemented in this phase.'**
+  String get financialModulesDeferred;
+
+  /// No description provided for @accountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account and session'**
+  String get accountTitle;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Application language'**
+  String get language;
+
+  /// No description provided for @cancelAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancelAction;
+
+  /// No description provided for @finishAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get finishAction;
+
+  /// No description provided for @refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// No description provided for @statusFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Status filter'**
+  String get statusFilter;
+
+  /// No description provided for @allStatuses.
+  ///
+  /// In en, this message translates to:
+  /// **'All statuses'**
+  String get allStatuses;
+
+  /// No description provided for @assignedRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned role'**
+  String get assignedRole;
+
+  /// No description provided for @createdAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Created'**
+  String get createdAt;
+
+  /// No description provided for @expiresAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires'**
+  String get expiresAt;
+
+  /// No description provided for @acceptedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted'**
+  String get acceptedAt;
+
+  /// No description provided for @cancelledAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get cancelledAt;
+
+  /// No description provided for @requestedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested'**
+  String get requestedAt;
+
+  /// No description provided for @reviewedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed'**
+  String get reviewedAt;
+
+  /// No description provided for @email.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// No description provided for @requestMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Request message'**
+  String get requestMessage;
+
+  /// No description provided for @reviewNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Review notes'**
+  String get reviewNotes;
+
+  /// No description provided for @reviewNotesOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Review notes (optional)'**
+  String get reviewNotesOptional;
+
+  /// No description provided for @rejectionReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection reason'**
+  String get rejectionReason;
+
+  /// No description provided for @invalidRejectionReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 1–500 characters without line breaks.'**
+  String get invalidRejectionReason;
+
+  /// No description provided for @invitationStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get invitationStatusPending;
+
+  /// No description provided for @invitationStatusAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted'**
+  String get invitationStatusAccepted;
+
+  /// No description provided for @invitationStatusExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get invitationStatusExpired;
+
+  /// No description provided for @invitationStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get invitationStatusCancelled;
+
+  /// No description provided for @joinStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get joinStatusPending;
+
+  /// No description provided for @joinStatusApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get joinStatusApproved;
+
+  /// No description provided for @joinStatusRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get joinStatusRejected;
+
+  /// No description provided for @joinStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get joinStatusCancelled;
+
+  /// No description provided for @createInvitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Create invitation'**
+  String get createInvitation;
+
+  /// No description provided for @noInvitationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No invitations found'**
+  String get noInvitationsTitle;
+
+  /// No description provided for @noInvitationsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an invitation or change the status filter.'**
+  String get noInvitationsBody;
+
+  /// No description provided for @retryLoadingMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry loading more'**
+  String get retryLoadingMore;
+
+  /// No description provided for @cancelInvitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel invitation'**
+  String get cancelInvitation;
+
+  /// No description provided for @cancelInvitationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this invitation?'**
+  String get cancelInvitationTitle;
+
+  /// No description provided for @cancelInvitationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancellation prevents this invitation from being accepted in the future. The record will remain visible.'**
+  String get cancelInvitationBody;
+
+  /// No description provided for @invitationCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'The invitation was cancelled.'**
+  String get invitationCancelled;
+
+  /// No description provided for @invitationCreatedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation created'**
+  String get invitationCreatedTitle;
+
+  /// No description provided for @oneTimeTokenWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This token is shown once. Copy it now and deliver it securely; it cannot be recovered later.'**
+  String get oneTimeTokenWarning;
+
+  /// No description provided for @invitationDeliveryNotImplemented.
+  ///
+  /// In en, this message translates to:
+  /// **'SMS and email delivery are not implemented. Share the token through an approved secure channel.'**
+  String get invitationDeliveryNotImplemented;
+
+  /// No description provided for @copyToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy token'**
+  String get copyToken;
+
+  /// No description provided for @tokenCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation token copied.'**
+  String get tokenCopied;
+
+  /// No description provided for @invitationCreationConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'An active invitation or account conflicts with these details.'**
+  String get invitationCreationConflict;
+
+  /// No description provided for @accessConflictError.
+  ///
+  /// In en, this message translates to:
+  /// **'This record changed on the server. Refresh and try again.'**
+  String get accessConflictError;
+
+  /// No description provided for @invitationNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'The invitation is no longer available.'**
+  String get invitationNotFound;
+
+  /// No description provided for @joinRequestNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'The join request is no longer available.'**
+  String get joinRequestNotFound;
+
+  /// No description provided for @notFoundError.
+  ///
+  /// In en, this message translates to:
+  /// **'The requested record is unavailable.'**
+  String get notFoundError;
+
+  /// No description provided for @noJoinRequestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No join requests found'**
+  String get noJoinRequestsTitle;
+
+  /// No description provided for @noJoinRequestsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no requests for the selected status.'**
+  String get noJoinRequestsBody;
+
+  /// No description provided for @approve.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get approve;
+
+  /// No description provided for @reject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get reject;
+
+  /// No description provided for @approveJoinRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve join request'**
+  String get approveJoinRequestTitle;
+
+  /// No description provided for @approveJoinRequestBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm the final role. The applicant\'s requested role is informational only.'**
+  String get approveJoinRequestBody;
+
+  /// No description provided for @sensitiveRoleApprovalNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Deputy and accountant accounts may remain pending until identity verification is completed.'**
+  String get sensitiveRoleApprovalNotice;
+
+  /// No description provided for @standardRoleApprovalNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Supervisor and worker accounts may be activated immediately according to server rules.'**
+  String get standardRoleApprovalNotice;
+
+  /// No description provided for @approvedAndActivated.
+  ///
+  /// In en, this message translates to:
+  /// **'The request was approved and the account was activated.'**
+  String get approvedAndActivated;
+
+  /// No description provided for @approvedPendingIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'The request was approved and is pending identity verification.'**
+  String get approvedPendingIdentity;
+
+  /// No description provided for @rejectJoinRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject join request'**
+  String get rejectJoinRequestTitle;
+
+  /// No description provided for @rejectJoinRequestBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The rejected record will remain visible and the applicant will not be able to sign in.'**
+  String get rejectJoinRequestBody;
+
+  /// No description provided for @rejectionLoginNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection prevents this applicant from signing in. Provide a clear reason.'**
+  String get rejectionLoginNotice;
+
+  /// No description provided for @joinRequestRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'The join request was rejected.'**
+  String get joinRequestRejected;
 }
 
 class _AppLocalizationsDelegate

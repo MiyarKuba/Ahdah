@@ -84,6 +84,11 @@ final class SessionController extends StateNotifier<SessionState> {
 
   Future<void> retry() => bootstrap(force: true);
 
+  Future<void> expire() async {
+    await _tokenStore.clear();
+    state = const SessionState.sessionExpired();
+  }
+
   Future<void> logout() async {
     await _tokenStore.clear();
     state = const SessionState.unauthenticated();

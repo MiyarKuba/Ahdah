@@ -2,7 +2,7 @@
 
 Ahdah is a multi-tenant platform for financial custody and construction operations. It is intended to help companies coordinate projects, custody balances, transfers, expenses, supplier obligations, worker claims, documents, audit trails, notifications, and scheduled reporting.
 
-This repository is currently in **Flutter Authentication and Company Onboarding**. The Android, iOS, and Web client now integrates the completed identity, invitation-acceptance, and join-request submission contracts; business and financial modules remain deferred.
+This repository is currently in **Flutter Authenticated Shell and Access Administration**. The Android, iOS, and Web client now includes an authoritative role-aware application shell plus manager invitation and join-request administration; business and financial modules remain deferred.
 
 ## Technology stack
 
@@ -82,6 +82,16 @@ Public join submission atomically creates a `PendingApproval` `app_user` and lin
 Registration requires the existing schema's company code and E.164 manager phone format. It creates the company and its initial `Manager` in one PostgreSQL transaction and returns an access token. Login is phone-only because `app_users.phone_number` is globally unique, while email uniqueness is tenant-scoped.
 
 Refresh tokens and server-side logout are not exposed. The existing `user_devices` table stores device and push-notification metadata but has no refresh-token hash, expiration, rotation, or revocation fields. Clients must discard the short-lived access token to log out until an approved schema decision provides secure session storage.
+
+## Authenticated Flutter shell and access administration
+
+Authenticated routes use one responsive `go_router` shell: `/home`, `/access/invitations`, `/access/join-requests`, and `/account`. Mobile uses a Material 3 `NavigationBar`; layouts at 840 logical pixels and wider use `NavigationRail`. The authoritative role from `GET /api/v1/auth/me` drives centralized `RoleCapabilities`: only `Manager` sees or may route to invitation and join-request administration, while known non-manager and unknown future roles receive the safe Home/Account shell. Backend 403 responses remain authoritative.
+
+Manager invitation administration lists exact page-based API results, filters by verified lifecycle values, creates invitations with phone and a non-manager role, and cancels only pending invitations after confirmation. The raw creation token is held only in the one-time dialog call stack, is copied only by explicit user action, is never persisted or routed, and is discarded when the dialog closes. SMS/email delivery remains intentionally unimplemented.
+
+Manager join-request administration lists and filters paginated requests, then approves a manager-selected non-manager role or rejects with the backend-required reason. Approval surfaces the exact `ApprovedAndActivated` or `ApprovedPendingIdentityVerification` outcome. Deputy and Accountant decisions explain identity verification; no access token or internal tenant/user identifier is displayed or sent.
+
+The shared account page displays safe authoritative current-user, company, role, account, and identity-verification status data, supports Arabic/English switching, and performs local logout by deleting the local access token. A minimal backend DTO correction adds `identityVerificationStatus` to the existing safe user summary; it introduces no endpoint, database, or persistence-model change.
 
 ## Run backend tests
 
