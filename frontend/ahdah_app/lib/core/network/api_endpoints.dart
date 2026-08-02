@@ -5,9 +5,15 @@ abstract final class ApiEndpoints {
   static const acceptInvitation = '/api/v1/invitations/accept';
   static const invitations = '/api/v1/invitations';
   static const joinRequests = '/api/v1/join-requests';
+  static const projects = '/api/v1/projects';
+  static const companyMembers = '/api/v1/company/members';
   static const health = '/api/system/health';
 
   static String cancelInvitation(String id) => '$invitations/$id/cancel';
   static String approveJoinRequest(String id) => '$joinRequests/$id/approve';
   static String rejectJoinRequest(String id) => '$joinRequests/$id/reject';
+  static String project(String id) => '$projects/$id';
+  static String projectSupervisor(String id) => '$projects/$id/supervisor';
+  static String projectMembers(String id) => '$projects/$id/members';
+  static String companyMember(String id) => '$companyMembers/$id';
 }

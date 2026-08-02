@@ -6,82 +6,128 @@ Ahdah — عُهدة
 
 ## Current phase
 
-Company Structure — Projects and Member Visibility
+Flutter Company Structure — Projects and Member Directory
 
 ## Date
 
 2026-08-01
 
-## Actual schema findings
+## Workspace and branch
 
-- `projects` is the construction project/site table. It requires tenant, owner, project name, site address, positive `contract_value NUMERIC(18,2)`, contract/start dates, status, creator, `version_number`, and timestamps.
-- Exact project statuses are `Active`, `Paused`, `Completed`, `FinanciallyClosed`, and `Cancelled`. Completion and cancellation statuses require companion fields.
-- `project_owners` is the required client/owner record, linked by tenant-composite `(company_id, project_owner_id)`. Phone is tenant-unique; non-null email is tenant-scoped case-insensitive unique.
-- `project_supervisors` is a history table. Active rows have no removal data; inactive rows require remover, time, and reason. It has no version field.
-- `project_contract_changes` is a separate reason/review/history model with types `Increase`/`Decrease`/`Correction`, statuses `PendingApproval`/`Approved`/`Rejected`/`Cancelled`, and one pending row per project. It is not implemented in this non-financial phase; its singular generated navigation also needs future mapping review before history queries.
-- No generic project-member, worker-project, user-project assignment, client, or separate site table exists. Project members can only mean active supervisor assignments.
+- Workspace confirmed before edits: `C:\dev\Ahdah`.
+- Branch confirmed before edits: `feat/flutter-company-structure`.
+- The working tree was clean at the initial safety gate.
 
-Tables used by runtime services: `companies`, `app_users`, `project_owners`, `projects`, and `project_supervisors`. `project_contract_changes` was inspected but is not written.
+## Backend contracts consumed
 
-## Endpoints implemented
+- Manager/Deputy `GET /api/v1/company/members` and `GET /api/v1/company/members/{memberId}`.
+- Role-filtered `GET /api/v1/projects` and `GET /api/v1/projects/{projectId}`.
+- Manager-only `POST /api/v1/projects`, `PATCH /api/v1/projects/{projectId}`, and `PUT /api/v1/projects/{projectId}/supervisor`.
+- Capability/record-filtered `GET /api/v1/projects/{projectId}/members`.
+- Exact `items`, `page`, `pageSize`, `totalCount`, and `totalPages` pagination metadata.
+- Exact member list/detail, project/owner/supervisor/member, create/update/assignment, validation, Problem Details, and camelCase JSON contracts were inspected from controllers, Application contracts/models, validation attributes, OpenAPI setup/coverage, and existing integration tests. No generated EF entity is consumed.
 
-- Manager/Deputy `GET /api/v1/company/members`
-- Manager/Deputy `GET /api/v1/company/members/{memberId}`
-- Role/assignment-filtered `GET /api/v1/projects`
-- Role/assignment-filtered `GET /api/v1/projects/{projectId}`
-- Manager-only `POST /api/v1/projects`
-- Manager-only `PATCH /api/v1/projects/{projectId}`
-- Manager-only `PUT /api/v1/projects/{projectId}/supervisor`
-- Schema-limited `GET /api/v1/projects/{projectId}/members`
+## Flutter architecture
 
-Omitted endpoints: member mutation/verification routes; project-member assignment writes; supervisor unassignment; project completion, financial closure, and cancellation; contract-value change workflow; owner CRUD. Reasons are missing approved behavior, absent schema relationship, required history/financial workflow, or out-of-phase scope.
+- Added feature-first `features/projects/{domain,data,presentation}` with handwritten immutable models, exact request inputs, an API repository, focused Riverpod controllers, and responsive list/detail/create/edit/supervisor/member pages.
+- Added parallel `features/company_members` list/detail architecture with distinct safe list/detail models and a read-only repository.
+- Extended the existing Dio client, bearer interceptor, Problem Details handling, session-expiry flow, localization mappings, shared widgets, Riverpod, and `go_router`; no package was added or changed.
+- Contract values remain nullable decimal text. Manager creation validates the text and emits it as an exact JSON number without a `double` conversion. No financial arithmetic exists.
 
-## Visibility and security
+## Routes and guards
 
-| Role | Directory | Projects | Contract value | Project members | Writes |
+- `/projects`
+- `/projects/new`
+- `/projects/:projectId`
+- `/projects/:projectId/edit`
+- `/projects/:projectId/supervisor`
+- `/projects/:projectId/members`
+- `/company/members`
+- `/company/members/:memberId`
+
+Central `RoleCapabilities` drives both navigation and router redirects. Worker and unknown roles cannot route to projects. Non-Managers cannot route to create/edit/supervisor pages. Accountant cannot route to project members. Only Manager and Deputy can route to the company directory. Unauthenticated access still follows the authoritative session redirect, and backend 403 responses remain authoritative without clearing valid tokens.
+
+## Role visibility
+
+| Role | Navigation and reads | Project writes | Project supervisors | Contract value | Directory |
 |---|---|---|---|---|---|
-| Manager | All | All | Included | Active supervisors | Create/update/replace supervisor |
-| Deputy | All | All | Omitted | Active supervisors | None |
-| Accountant | Denied | All | Omitted | Denied | None |
-| Supervisor | Denied | Active assignments only | Omitted | Assigned-project supervisors | None |
-| Worker | Denied | None; schema has no link | Omitted | None | None |
+| Manager | All tenant projects | Create, safe update, replace supervisor | Yes | Yes | Read-only |
+| Deputy | All tenant projects | None | Yes | No | Read-only |
+| Accountant | All tenant projects | None | No | No | No |
+| Supervisor | Active assignments only | None | Assigned-project summaries | No | No |
+| Worker | No project relationship | None | No | No | No |
+| Unknown | Safe Home/Account minimum | None | No | No | No |
 
-`CompanyDirectoryViewer` and `ProjectViewer` policies were added. Existing `ManagerOnly` remains the mutation policy. Policies never replace tenant/record filtering.
+## Project list and detail
 
-Contract value is manager-only and JSON-omitted from non-manager responses. Manager must supply a positive, two-decimal value during creation. Direct changes are deferred because the existing contract-change history/review table must not be bypassed.
+- Initial loading, mobile pull-to-refresh, explicit refresh, localized empty/retry, server status filter/search, page size 20, stable deduplication, load-more recovery, and stale-response suppression are implemented.
+- One-character searches are never sent; search is capped at 100 characters and debounced without another package.
+- Supervisor empty messaging says only assigned projects appear. No page sweep or totals are calculated.
+- Detail displays only actual project, owner, date, status, contact, description/note, supervisor, and useful timestamp fields. It exposes only capability-approved actions.
+- A non-Manager never renders contract value, including when a fake response incorrectly contains it.
 
-## Project behavior
+## Manager project creation and owner behavior
 
-Creation derives company and creator from validated current-user context, accepts exactly one existing owner ID or new owner contract, verifies optional supervisor by tenant/ID/role/status, starts `Active`, and uses one transaction for owner/project/assignment state. PostgreSQL `23505` maps to safe 409.
+- The form uses actual accepted fields: project/site/contact, positive two-decimal contract value, contract/start/expected-end dates, description/notes, complete `newOwner`, and optional supervisor.
+- Initial status is not selectable and therefore remains backend-fixed `Active`. No terminal/final status action exists.
+- No safe owner-list endpoint exists, so normal users receive the atomic new-owner flow. No raw existing-owner UUID input or invented owner list exists. Existing-owner selection remains a documented API limitation.
+- Duplicate submit is prevented; writes are not retried automatically. Success refreshes the list and routes to authoritative detail.
 
-PATCH requires expected version and supports safe non-financial metadata plus only `Active`/`Paused` status. Terminal/cancellation/financial fields and contract value are excluded. Nullable optional metadata cannot be cleared in this contract; null means unchanged.
+## Manager metadata update
 
-Supervisor replacement locks the tenant project, verifies expected version and an active exact Supervisor, non-destructively ends prior active assignments, adds the selected assignment if required, increments project version, and commits atomically. Project member reads return paginated active supervisors only.
+- Authoritative detail is loaded before editing and supplies `expectedVersion`.
+- Only changed supported metadata is sent. Owner is read-only, contract value is absent, nullable clearing is not invented, and only `Active`/`Paused` are selectable.
+- HTTP 409 remains explicit and provides a reload action; it is never automatically retried.
 
-## Pagination and filtering
+## Supervisor assignment and project supervisor view
 
-All new lists reuse `items`, `page`, `pageSize`, `totalCount`, and `totalPages`; page starts at 1, default size is 20, maximum is 100. Member role/status and project status accept only exact verified values. Searches are trimmed, 2–100 characters, prefix-based, and parameterized. Tenant/visibility filters run before count and page selection.
+- The selector requests `role=Supervisor`, `status=Active`, bounded search, and page size 20, then defensively filters the page again. No arbitrary user ID entry is shown.
+- Current active supervisors are displayed. Replacement requires confirmation and states that the server ends assignments without deleting history. Unassignment is absent.
+- The members route is titled Project supervisors and explains that it represents active supervision assignments only, not workers or complete project staff. It is paginated and read-only.
 
-## Packages and verification
+## Company member directory
 
-- Package changes: none.
-- Restore: `dotnet restore backend\Ahdah.sln` passed; all projects were up to date.
-- Build: `dotnet build backend\Ahdah.sln` passed with 0 warnings and 0 errors.
-- Tests: `dotnet test backend\Ahdah.sln` passed; 114 total (63 unit, 51 integration), 0 failed, 0 skipped.
-- OpenAPI: development document builds in integration tests and exposes explicit DTOs/routes without generated entities or password/hash fields.
-- PostgreSQL mutation status: none. Only a `BEGIN TRANSACTION READ ONLY` catalog inspection followed by `ROLLBACK` was executed; no real write endpoint was called.
-- Generated EF status: unchanged.
-- Migration status: none created or run. No `EnsureCreated`, `EnsureDeleted`, or `Database.Migrate` exists.
-- Flutter status: unchanged; no Flutter command was run.
+- Manager and Deputy receive server-filtered role/status/search, page size 20, refresh, stable deduplication, retry, load-more recovery, localized empty states, responsive cards, and safe detail navigation.
+- List presentation does not invent phone/email fields omitted by the list DTO. Detail uses the exact endpoint for safe contact and timestamps.
+- List and detail are explicitly read-only. There are no role, status, deletion, activation/suspension, or identity-verification actions.
+
+## Error, session, localization, and accessibility behavior
+
+- Existing AppException/Problem Details mappings cover validation, 401 expiry, 403 permission denial without token deletion, 404 unavailable records, 409 stale conflicts, server errors, timeout, and network retry.
+- Lists preserve loaded data after load-more failure. Create/update/supervisor writes prevent duplicates and do not auto-retry.
+- Arabic RTL and English LTR resources cover navigation, filters, statuses, forms, validation, empty/error/conflict states, project terminology, active-supervision wording, and read-only member presentation. Unknown values use a safe fallback.
+- Pages use SafeArea through the authenticated shell, constrained responsive layouts, keyboard-safe scrolling, text-labelled status chips, tooltips, semantic loading controls, and practical Material touch/focus behavior.
+
+## Flutter verification
+
+- Package changes: none. `flutter pub get` passed; 11 newer incompatible package versions were informational only.
+- Format: `dart format --output=none --set-exit-if-changed lib test` passed; 90 files, 0 changed.
+- Analyze: `flutter analyze` passed with no issues.
+- Tests: `flutter test` passed; 104 total, 0 failed.
+- Tests use fake repositories/token stores and controlled Dio adapters; no real project/member API or PostgreSQL workflow was called.
+- Web: release build passed with `API_BASE_URL=http://localhost:5231`; output is `frontend/ahdah_app/build/web`. The build reported a non-fatal missing Cupertino-icons font warning while Material icons were present, and the Wasm dry run succeeded.
+- Android: debug APK build passed with `API_BASE_URL=http://10.0.2.2:5231`; output is `frontend/ahdah_app/build/app/outputs/flutter-apk/app-debug.apk`. The app was not launched on an emulator or device.
+- iOS: shared Dart/source compatibility and narrow `NSAllowsLocalNetworking` ATS configuration were inspected. No iOS build was attempted on Windows. The repository currently has no checked-in `ios/Podfile`; macOS/Xcode/CocoaPods generation/resolution, signing, simulator, and device verification remain pending.
+
+## Backend, database, and generated-file status
+
+- Backend source changes: none.
+- Backend restore/build/tests: not rerun because backend files did not change. The prior verified baseline remains 114 passing backend tests, but this task makes no new backend-test claim.
+- PostgreSQL mutation: none during this task. No real API write, database command, catalog query, migration, or schema operation was executed.
+- Generated EF files: unchanged.
+- Migrations: none created or run. No `EnsureCreated`, `EnsureDeleted`, or `Database.Migrate` was introduced.
+- Financial modules: none added.
 
 ## Warnings and limitations
 
-- Worker project visibility cannot be implemented until an approved genuine worker/project relationship exists.
-- Accountant directory and project-member access remain denied because current business documentation does not approve them.
-- The database permits multiple distinct active supervisors; API reads expose an array. The focused replacement route normalizes managed replacements to the selected active supervisor while retaining history.
-- Owner list/management is not exposed; project creation can atomically create an owner or reuse a known active tenant owner ID.
-- Contract change, completion, financial closure, cancellation, and all financial balances/workflows remain deferred.
+- Existing-owner selection needs a future safe owner-directory API; creation currently uses only the supported atomic new-owner UX.
+- Worker project visibility cannot exist until an approved real worker/project relationship exists.
+- Project members remain active supervisor assignments only because the schema has no generic project-member relationship.
+- Direct contract-value changes, completion, cancellation, and financial closure remain deferred.
+- Member role/status mutations and identity verification remain deferred.
+- The Web build's Cupertino-icons font warning is non-fatal and no Cupertino icon dependency was added in this task.
+- iOS verification requires macOS and Xcode; the missing checked-in Podfile should be reviewed/generated there before the first iOS build.
 
 ## Exact recommended next task
 
-Implement the Flutter projects/sites and company-member directory UI using the completed company-structure APIs, without implementing financial advances or expenses yet.
+Design and implement the backend Advances foundation using the existing advances, advance funding, distribution, settlement, return, balance, and approval tables without modifying the PostgreSQL schema.

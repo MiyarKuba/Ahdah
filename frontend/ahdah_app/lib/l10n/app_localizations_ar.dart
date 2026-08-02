@@ -204,7 +204,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get homeFoundationBody =>
-      'جلسة عُهدة الآمنة جاهزة. وحدات الأعمال والمال ليست ضمن هذه المرحلة.';
+      'جلسة عُهدة الآمنة وأدوات الشركة المعتمدة جاهزة. الوحدات المالية مؤجلة.';
 
   @override
   String get company => 'الشركة';
@@ -350,7 +350,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get financialModulesDeferred =>
-      'وحدات المال والمشاريع والموردين والتسويات والتقارير غير منفذة في هذه المرحلة.';
+      'العُهد والمصروفات والموردون والتسويات والديون والتقارير غير منفذة في هذه المرحلة.';
 
   @override
   String get accountTitle => 'الحساب والجلسة';
@@ -543,4 +543,216 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get joinRequestRejected => 'تم رفض طلب الانضمام.';
+
+  @override
+  String get navProjects => 'المشاريع';
+
+  @override
+  String get navCompanyMembers => 'أعضاء الشركة';
+
+  @override
+  String get projectsTitle => 'المشاريع والمواقع';
+
+  @override
+  String get companyMembersTitle => 'دليل أعضاء الشركة';
+
+  @override
+  String get searchProjects => 'ابحث باسم المشروع أو عنوان الموقع';
+
+  @override
+  String get searchMembers => 'ابحث بالاسم أو الهاتف';
+
+  @override
+  String get searchMinimum => 'أدخل حرفين على الأقل للبحث.';
+
+  @override
+  String get roleFilter => 'تصفية حسب الدور';
+
+  @override
+  String get allRoles => 'كل الأدوار';
+
+  @override
+  String get projectStatusActive => 'نشط';
+
+  @override
+  String get projectStatusPaused => 'متوقف مؤقتًا';
+
+  @override
+  String get projectStatusCompleted => 'مكتمل';
+
+  @override
+  String get projectStatusFinanciallyClosed => 'مغلق ماليًا';
+
+  @override
+  String get projectStatusCancelled => 'ملغى';
+
+  @override
+  String get projectName => 'اسم المشروع';
+
+  @override
+  String get siteAddress => 'عنوان الموقع';
+
+  @override
+  String get ownerClient => 'مالك المشروع / العميل';
+
+  @override
+  String get ownerName => 'اسم المالك';
+
+  @override
+  String get contractValue => 'قيمة العقد';
+
+  @override
+  String get contractValueLyd => 'قيمة العقد (د.ل)';
+
+  @override
+  String get contractDate => 'تاريخ العقد';
+
+  @override
+  String get startDate => 'تاريخ البدء';
+
+  @override
+  String get expectedEndDate => 'تاريخ الانتهاء المتوقع';
+
+  @override
+  String get actualEndDate => 'تاريخ الانتهاء الفعلي';
+
+  @override
+  String get descriptionOptional => 'الوصف (اختياري)';
+
+  @override
+  String get notesOptional => 'ملاحظات (اختيارية)';
+
+  @override
+  String get contactPhoneOptional => 'هاتف التواصل للمشروع (اختياري)';
+
+  @override
+  String get addressOptional => 'العنوان (اختياري)';
+
+  @override
+  String get assignedSupervisor => 'المشرف المعيّن';
+
+  @override
+  String get assignedSupervisors => 'المشرفون المعيّنون';
+
+  @override
+  String get createProject => 'إنشاء مشروع';
+
+  @override
+  String get editProject => 'تعديل المشروع';
+
+  @override
+  String get assignSupervisor => 'تعيين مشرف';
+
+  @override
+  String get replaceSupervisor => 'استبدال المشرف';
+
+  @override
+  String get projectDetails => 'تفاصيل المشروع';
+
+  @override
+  String get projectMembersTitle => 'مشرفو المشروع';
+
+  @override
+  String get activeSupervisionAssignmentsBody =>
+      'تعرض هذه الصفحة تعيينات الإشراف النشطة فقط، وليست دليلًا كاملًا للعاملين في المشروع.';
+
+  @override
+  String get noProjectsTitle => 'لا توجد مشاريع';
+
+  @override
+  String get noProjectsBody => 'غيّر عوامل التصفية أو أنشئ أول مشروع.';
+
+  @override
+  String get noAssignedProjectsBody =>
+      'تظهر هنا فقط المشاريع المعيّنة لك حاليًا.';
+
+  @override
+  String get noMembersTitle => 'لا يوجد أعضاء شركة';
+
+  @override
+  String get noMembersBody => 'غيّر تصفية الدور أو الحالة أو البحث.';
+
+  @override
+  String get memberDetails => 'تفاصيل العضو';
+
+  @override
+  String get directoryReadOnly => 'دليل أعضاء الشركة للعرض فقط.';
+
+  @override
+  String get projectCreated => 'تم إنشاء المشروع.';
+
+  @override
+  String get projectUpdated => 'تم تحديث المشروع.';
+
+  @override
+  String get supervisorAssigned => 'تم تحديث تعيين المشرف.';
+
+  @override
+  String get projectChangedConflict =>
+      'تغيّر هذا المشروع على الخادم. أعد تحميله قبل المحاولة مجددًا.';
+
+  @override
+  String get reloadProject => 'إعادة تحميل المشروع';
+
+  @override
+  String get newOwnerTitle => 'عميل / مالك جديد';
+
+  @override
+  String get existingOwnerUnavailable =>
+      'لا يتوفر حاليًا دليل آمن للملاك. ينشئ هذا النموذج المالك والمشروع في معاملة واحدة.';
+
+  @override
+  String get chooseSupervisor => 'اختيار مشرف';
+
+  @override
+  String get optionalSupervisor => 'المشرف الأولي (اختياري)';
+
+  @override
+  String get noSupervisor => 'لا يوجد مشرف نشط';
+
+  @override
+  String get replaceSupervisorTitle => 'هل تريد استبدال المشرف النشط؟';
+
+  @override
+  String get replaceSupervisorBody =>
+      'سينتهي التعيين السابق ولن يُحذف. يحتفظ الخادم بسجل التعيينات.';
+
+  @override
+  String get supervisorHistoryNotice =>
+      'يحافظ استبدال المشرف على سجل التعيينات السابقة في الخادم.';
+
+  @override
+  String get saveAction => 'حفظ';
+
+  @override
+  String get selectDate => 'اختيار التاريخ';
+
+  @override
+  String get clearAction => 'مسح';
+
+  @override
+  String get viewDetails => 'عرض التفاصيل';
+
+  @override
+  String get invalidRequiredText => 'أدخل قيمة غير فارغة ضمن الطول المسموح.';
+
+  @override
+  String get invalidContractValue =>
+      'أدخل قيمة موجبة بمنزلتين عشريتين كحد أقصى وبحد أقصى 16 رقمًا صحيحًا.';
+
+  @override
+  String get invalidDateOrder =>
+      'لا يمكن أن يسبق تاريخ الانتهاء المتوقع تاريخ البدء.';
+
+  @override
+  String get supervisorPickerEmpty => 'لا يوجد مشرفون نشطون يطابقون البحث.';
+
+  @override
+  String get updatedAt => 'تاريخ التحديث';
+
+  @override
+  String get assignedAt => 'تاريخ التعيين';
+
+  @override
+  String get readOnly => 'للعرض فقط';
 }

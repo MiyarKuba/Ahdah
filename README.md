@@ -2,7 +2,7 @@
 
 Ahdah is a multi-tenant platform for financial custody and construction operations. It is intended to help companies coordinate projects, custody balances, transfers, expenses, supplier obligations, worker claims, documents, audit trails, notifications, and scheduled reporting.
 
-This repository is currently in **Company Structure — Projects and Member Visibility**. The backend now exposes tenant-safe company-directory and construction-project APIs, including schema-backed owner creation/reuse and supervisor replacement history. Flutter project/member UI and all financial workflows remain deferred.
+This repository is currently in **Flutter Company Structure — Projects and Member Directory**. The backend exposes tenant-safe company-directory and construction-project APIs, and Flutter now consumes them through role-aware responsive Projects/Sites and read-only Company Member Directory features. All financial workflows remain deferred.
 
 ## Technology stack
 
@@ -106,6 +106,16 @@ Manager join-request administration lists and filters paginated requests, then a
 
 The shared account page displays safe authoritative current-user, company, role, account, and identity-verification status data, supports Arabic/English switching, and performs local logout by deleting the local access token. A minimal backend DTO correction adds `identityVerificationStatus` to the existing safe user summary; it introduces no endpoint, database, or persistence-model change.
 
+## Flutter projects and company directory
+
+The authenticated shell now adds stable project routes at `/projects`, `/projects/new`, `/projects/:projectId`, `/projects/:projectId/edit`, `/projects/:projectId/supervisor`, and `/projects/:projectId/members`, plus read-only directory routes at `/company/members` and `/company/members/:memberId`. Central `RoleCapabilities` drives both navigation and router guards: Worker and unknown roles receive no project access, project writes are Manager-only, the directory is Manager/Deputy-only, and project-supervisor summaries follow the backend matrix.
+
+Project and member lists use server-side status/role/search filters, page size 20, stable ID deduplication, refresh, recoverable load-more errors, and responsive cards. Searches are capped at 100 characters and one-character searches are never sent. Supervisor empty states explicitly say that only assigned projects appear.
+
+Manager creation uses the backend's atomic `newOwner` flow because no safe owner-directory endpoint exists; Flutter never exposes a raw owner UUID. Contract value is validated and transported as decimal text emitted as an exact JSON number without binary floating-point conversion, and is rendered only when Manager capability allows it. Metadata updates send only changed supported fields with the authoritative `expectedVersion`, expose only `Active` and `Paused`, and never edit contract value. Supervisor replacement selects only server-filtered active exact Supervisors, requires confirmation when replacing, and explains that assignment history is preserved.
+
+The project-members route is labelled as active supervision assignments, not workers or complete project staff. The company directory and member detail are read-only and contain no role, status, deletion, or identity-verification mutations. Both features are localized in Arabic RTL and English LTR and share the same mobile/tablet/Web implementation.
+
 ## Run backend tests
 
 ```powershell
@@ -157,4 +167,4 @@ The iOS project permits local-network development through the narrow ATS `NSAllo
 
 Restore the repository-local EF tool with `dotnet tool restore`. Generated files under `backend/src/Ahdah.Infrastructure/Persistence/Generated` must not be manually edited. Database changes and re-scaffolding require explicit approval and review. Migrations, `EnsureCreated`, `EnsureDeleted`, and automatic schema updates are prohibited.
 
-See [PROJECT_STATUS.md](PROJECT_STATUS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and [docs/FLUTTER_DEVELOPMENT.md](docs/FLUTTER_DEVELOPMENT.md) for verified status, architecture, security decisions, routes, and run commands. Generated persistence files remain infrastructure-only and are never returned through API contracts. SMS/email invitation delivery, manager administration UI, and business dashboards remain unimplemented.
+See [PROJECT_STATUS.md](PROJECT_STATUS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and [docs/FLUTTER_DEVELOPMENT.md](docs/FLUTTER_DEVELOPMENT.md) for verified status, architecture, security decisions, routes, and run commands. Generated persistence files remain infrastructure-only and are never returned through API contracts. SMS/email invitation delivery, member mutations, project closure/contract-change workflows, and business/financial dashboards remain unimplemented.

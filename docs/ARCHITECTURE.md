@@ -34,6 +34,14 @@ Authenticated features are hosted by one nested `go_router` shell. Compact layou
 
 Access administration has handwritten domain models, an `AccessRepository` over the existing Dio client and bearer interceptor, focused Riverpod list/write controllers, and shared status/error/empty/confirmation widgets. Lists use the backend page-number contract and exact status values. Write controllers prevent duplicate submission and never retry automatically. A 401 invokes centralized session expiry; network failures keep the potentially valid mobile session and remain retryable.
 
+Projects and company members follow the same feature-first boundaries. `features/projects` contains handwritten immutable transport/domain models, exact create/update/supervisor inputs, an API repository, focused list/detail/member/write controllers, and responsive list/detail/forms. `features/company_members` contains separate list/detail models because the list intentionally omits contact fields, a read-only repository, focused controllers, and responsive pages. Neither feature imports persistence models or adds another state-management package.
+
+The authenticated shell additionally owns `/projects`, `/projects/new`, `/projects/:projectId`, `/projects/:projectId/edit`, `/projects/:projectId/supervisor`, `/projects/:projectId/members`, `/company/members`, and `/company/members/:memberId`. Central `RoleCapabilities` guards project visibility, Manager mutation routes, project-supervisor visibility, directory access, contract-value rendering, and Supervisor assigned-only messaging. Navigation hiding is paired with route redirects; backend authorization and record filtering remain authoritative.
+
+Project/member lists preserve server filters while refreshing, reset to page 1 when filters change, debounce bounded searches without a dependency, ignore stale search responses, deduplicate by stable IDs, and retain loaded data after a load-more failure. Creation and mutation controllers suppress duplicate submissions and do not retry writes. A 401 expires the central session; 403 remains a permission error; 404 is safe/unavailable; and 409 presents an explicit reload flow.
+
+Contract value crosses Flutter as decimal text. Creation validates its exact decimal grammar and replaces a private JSON marker with that validated token so the API receives a JSON number without a `double` conversion. No financial arithmetic occurs. Presentation additionally checks Manager capability, so a malformed response containing `contractValue` is still not rendered for Deputy, Accountant, or Supervisor.
+
 The one-time invitation creation token is returned directly to dialog-local state. It never enters list models, provider state, routes, preferences, secure storage, browser storage, diagnostics, or logs. Closing the result drops the reference and refreshes the non-secret list. SMS/email delivery is outside the client.
 
 ## ASP.NET Core Web API

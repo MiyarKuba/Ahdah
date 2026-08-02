@@ -2,7 +2,7 @@
 
 ## Scope
 
-The Flutter client targets Android, iOS, and Web. It implements startup/session verification, company onboarding, a responsive authenticated shell, role-aware navigation, manager invitation administration, manager join-request review, and a shared account/session page. Existing-member management, identity proofing, projects, financial workflows, dashboards, notifications, and offline transaction queues remain deferred.
+The Flutter client targets Android, iOS, and Web. It implements startup/session verification, company onboarding, a responsive authenticated shell, role-aware navigation, manager invitation administration, manager join-request review, Projects/Sites, a read-only Company Member Directory, and a shared account/session page. Member mutations, identity proofing, project closure/contract changes, financial workflows, dashboards, notifications, and offline transaction queues remain deferred.
 
 ## Architecture
 
@@ -16,6 +16,8 @@ The client under `frontend/ahdah_app/lib` is feature first:
 Riverpod is used without code generation. `SessionController` is the single authoritative session state with `bootstrapping`, `unauthenticated`, `authenticated`, `temporarilyUnavailable`, and `sessionExpired` states. `go_router` guards use that server-verified state, never the presence of a token alone.
 
 Manager access administration uses a focused `AccessRepository` and manually parsed immutable models. Invitation and join-request lists have separate Riverpod controllers for filter/pagination state. Invitation creation/cancellation and join approval/rejection each have focused write controllers. Duplicate page loads and submissions are suppressed, filter changes reset to page 1, pages deduplicate by stable resource ID, and loading-more failures preserve existing data.
+
+Projects use `features/projects/{domain,data,presentation}` with manually parsed `ProjectDetails`, owner/supervisor/member summaries, exact request inputs, one `ProjectRepository`, and focused list/detail/member/create/update/supervisor controllers. Company members use the parallel `features/company_members` structure with distinct list/detail shapes and no write contract. No package was added for these features.
 
 ## API configuration
 
@@ -71,7 +73,19 @@ iOS uses the narrow ATS `NSAllowsLocalNetworking` setting, not `NSAllowsArbitrar
 
 Named routes are `/`, `/welcome`, `/login`, `/register-company`, `/join-request`, `/accept-invitation`, `/pending`, `/home`, `/access/invitations`, `/access/join-requests`, `/account`, and `/unavailable`. The four authenticated destinations share one `ShellRoute`. Bootstrapping remains on splash, authenticated users are redirected away from onboarding to home, and unauthenticated shell access redirects to welcome. Invitation tokens and passwords never appear in paths, query parameters, or typed results.
 
-`RoleCapabilities` maps the authoritative role from `/auth/me` to client capabilities. `Manager` receives Home, Invitations, Join Requests, and Account. Deputy, Accountant, Supervisor, Worker, and unknown future roles receive Home and Account. Manager pages are also protected by redirect logic, so hiding destinations is not the only guard. Backend authorization remains authoritative.
+Project routes are `/projects`, `/projects/new`, `/projects/:projectId`, `/projects/:projectId/edit`, `/projects/:projectId/supervisor`, and `/projects/:projectId/members`. Directory routes are `/company/members` and `/company/members/:memberId`.
+
+`RoleCapabilities` maps the authoritative role from `/auth/me` to client capabilities. Manager receives Home, Projects, Company Members, Invitations, Join Requests, and Account. Deputy receives Home, Projects, Company Members, and Account. Accountant and Supervisor receive Home, Projects, and Account, although Supervisor results remain assigned-only. Worker and unknown future roles receive Home and Account. Manager mutation routes, directory routes, project routes, and member-summary routes each have capability redirects, so hiding destinations is never the only guard. Backend authorization remains authoritative.
+
+## Project and directory behavior
+
+Lists use page 1, page size 20, server-provided total pages, exact API filters, and 2–100 character server search. Search is debounced with `Timer`; one-character input is not sent. Refresh preserves filters, filter changes reset pagination, stale responses are ignored, and load-more failures retain existing rows. Mobile pull-to-refresh and explicit refresh actions share one implementation; wider layouts increase information density without duplicating screens.
+
+Project detail renders exact DTO fields. Contract value appears only for Manager capability even if a fake response includes it for another role. New projects always use atomic new-owner creation in the current UI because the backend has no safe owner-list endpoint; no raw owner GUID field is exposed. Contract input is validated as a positive `NUMERIC(18,2)`-compatible decimal string and is not parsed through `double`.
+
+Manager metadata editing loads authoritative detail, sends only changed supported fields with `expectedVersion`, offers only `Active` and `Paused`, and cannot clear nullable metadata because the backend defines null as unchanged. Contract value and terminal lifecycle actions are absent. Supervisor replacement queries the directory with exact `role=Supervisor` and `status=Active`, filters the returned page again defensively, requires confirmation when replacing, and never models history as deletion or exposes unassignment.
+
+`/projects/:projectId/members` is presented as active supervision assignments only. The directory list and detail are read-only and contain no role/status/deletion/identity actions. All new strings and status mappings exist in Arabic and English, with unknown values using the existing safe fallback.
 
 ## Localization and presentation
 

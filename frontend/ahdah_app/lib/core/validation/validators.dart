@@ -90,6 +90,41 @@ abstract final class Validators {
       const {'Deputy', 'Accountant', 'Supervisor', 'Worker'}.contains(value)
       ? null
       : message;
+
+  static String? boundedText(
+    String? value,
+    int maximum,
+    String required,
+    String invalid,
+  ) {
+    final normalized = value?.trim() ?? '';
+    if (normalized.isEmpty) return required;
+    return normalized.length <= maximum &&
+            !normalized.contains('\n') &&
+            !normalized.contains('\r')
+        ? null
+        : invalid;
+  }
+
+  static String? optionalBoundedText(
+    String? value,
+    int maximum,
+    String invalid,
+  ) {
+    final normalized = value?.trim() ?? '';
+    if (normalized.isEmpty) return null;
+    return normalized.length <= maximum &&
+            !normalized.contains('\n') &&
+            !normalized.contains('\r')
+        ? null
+        : invalid;
+  }
+
+  static String? contractValue(String? value, String message) {
+    final normalized = value?.trim() ?? '';
+    final pattern = RegExp(r'^(?:0*[1-9][0-9]{0,15})(?:\.[0-9]{1,2})?$');
+    return pattern.hasMatch(normalized) ? null : message;
+  }
 }
 
 final class UpperCaseTextFormatter extends TextInputFormatter {

@@ -3,6 +3,9 @@ import 'package:dio/dio.dart';
 import '../../features/authentication/domain/identity_models.dart';
 import '../../features/authentication/domain/identity_requests.dart';
 import '../../features/access/domain/access_models.dart';
+import '../../features/company_members/domain/company_member_models.dart';
+import '../../features/projects/domain/project_models.dart';
+import '../../features/projects/domain/project_requests.dart';
 import '../errors/app_exception.dart';
 import '../errors/problem_details.dart';
 import 'api_endpoints.dart';
@@ -156,6 +159,127 @@ final class ApiClient {
       ),
     );
     return JoinRequestDecision.fromJson(_body(response));
+  }
+
+  Future<ProjectPage> listProjects({
+    required int page,
+    required int pageSize,
+    String? status,
+    String? search,
+  }) async {
+    final response = await _send(
+      () => _dio.get<Map<String, Object?>>(
+        ApiEndpoints.projects,
+        queryParameters: {
+          'page': page,
+          'pageSize': pageSize,
+          'status': ?status,
+          'search': ?search,
+        },
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return ProjectPage.fromJson(_body(response));
+  }
+
+  Future<ProjectDetails> getProject(String projectId) async {
+    final response = await _send(
+      () => _dio.get<Map<String, Object?>>(
+        ApiEndpoints.project(projectId),
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return ProjectDetails.fromJson(_body(response));
+  }
+
+  Future<ProjectDetails> createProject(ProjectCreateInput input) async {
+    final response = await _send(
+      () => _dio.post<Map<String, Object?>>(
+        ApiEndpoints.projects,
+        data: input.toJsonBody(),
+        options: Options(
+          contentType: Headers.jsonContentType,
+          extra: const {requiresAuthenticationKey: true},
+        ),
+      ),
+    );
+    return ProjectDetails.fromJson(_body(response));
+  }
+
+  Future<ProjectDetails> updateProject(
+    String projectId,
+    ProjectUpdateInput input,
+  ) async {
+    final response = await _send(
+      () => _dio.patch<Map<String, Object?>>(
+        ApiEndpoints.project(projectId),
+        data: input.toJson(),
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return ProjectDetails.fromJson(_body(response));
+  }
+
+  Future<ProjectDetails> assignProjectSupervisor(
+    String projectId,
+    SupervisorAssignmentInput input,
+  ) async {
+    final response = await _send(
+      () => _dio.put<Map<String, Object?>>(
+        ApiEndpoints.projectSupervisor(projectId),
+        data: input.toJson(),
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return ProjectDetails.fromJson(_body(response));
+  }
+
+  Future<ProjectMemberPage> listProjectMembers(
+    String projectId, {
+    required int page,
+    required int pageSize,
+  }) async {
+    final response = await _send(
+      () => _dio.get<Map<String, Object?>>(
+        ApiEndpoints.projectMembers(projectId),
+        queryParameters: {'page': page, 'pageSize': pageSize},
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return ProjectMemberPage.fromJson(_body(response));
+  }
+
+  Future<CompanyMemberPage> listCompanyMembers({
+    required int page,
+    required int pageSize,
+    String? role,
+    String? status,
+    String? search,
+  }) async {
+    final response = await _send(
+      () => _dio.get<Map<String, Object?>>(
+        ApiEndpoints.companyMembers,
+        queryParameters: {
+          'page': page,
+          'pageSize': pageSize,
+          'role': ?role,
+          'status': ?status,
+          'search': ?search,
+        },
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return CompanyMemberPage.fromJson(_body(response));
+  }
+
+  Future<CompanyMemberDetails> getCompanyMember(String memberId) async {
+    final response = await _send(
+      () => _dio.get<Map<String, Object?>>(
+        ApiEndpoints.companyMember(memberId),
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return CompanyMemberDetails.fromJson(_body(response));
   }
 
   Future<bool> health() async {

@@ -207,7 +207,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeFoundationBody =>
-      'Your secure Ahdah session is ready. Business and financial modules are not part of this phase.';
+      'Your secure Ahdah session and approved company tools are ready. Financial modules remain deferred.';
 
   @override
   String get company => 'Company';
@@ -359,7 +359,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get financialModulesDeferred =>
-      'Financial, project, supplier, settlement, and reporting modules are not implemented in this phase.';
+      'Advances, expenses, suppliers, settlements, debts, and reporting are not implemented in this phase.';
 
   @override
   String get accountTitle => 'Account and session';
@@ -555,4 +555,219 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get joinRequestRejected => 'The join request was rejected.';
+
+  @override
+  String get navProjects => 'Projects';
+
+  @override
+  String get navCompanyMembers => 'Company members';
+
+  @override
+  String get projectsTitle => 'Projects and sites';
+
+  @override
+  String get companyMembersTitle => 'Company member directory';
+
+  @override
+  String get searchProjects => 'Search project name or site address';
+
+  @override
+  String get searchMembers => 'Search name or phone';
+
+  @override
+  String get searchMinimum => 'Enter at least 2 characters to search.';
+
+  @override
+  String get roleFilter => 'Role filter';
+
+  @override
+  String get allRoles => 'All roles';
+
+  @override
+  String get projectStatusActive => 'Active';
+
+  @override
+  String get projectStatusPaused => 'Paused';
+
+  @override
+  String get projectStatusCompleted => 'Completed';
+
+  @override
+  String get projectStatusFinanciallyClosed => 'Financially closed';
+
+  @override
+  String get projectStatusCancelled => 'Cancelled';
+
+  @override
+  String get projectName => 'Project name';
+
+  @override
+  String get siteAddress => 'Site address';
+
+  @override
+  String get ownerClient => 'Project owner / client';
+
+  @override
+  String get ownerName => 'Owner name';
+
+  @override
+  String get contractValue => 'Contract value';
+
+  @override
+  String get contractValueLyd => 'Contract value (LYD)';
+
+  @override
+  String get contractDate => 'Contract date';
+
+  @override
+  String get startDate => 'Start date';
+
+  @override
+  String get expectedEndDate => 'Expected end date';
+
+  @override
+  String get actualEndDate => 'Actual end date';
+
+  @override
+  String get descriptionOptional => 'Description (optional)';
+
+  @override
+  String get notesOptional => 'Notes (optional)';
+
+  @override
+  String get contactPhoneOptional => 'Project contact phone (optional)';
+
+  @override
+  String get addressOptional => 'Address (optional)';
+
+  @override
+  String get assignedSupervisor => 'Assigned supervisor';
+
+  @override
+  String get assignedSupervisors => 'Assigned supervisors';
+
+  @override
+  String get createProject => 'Create project';
+
+  @override
+  String get editProject => 'Edit project';
+
+  @override
+  String get assignSupervisor => 'Assign supervisor';
+
+  @override
+  String get replaceSupervisor => 'Replace supervisor';
+
+  @override
+  String get projectDetails => 'Project details';
+
+  @override
+  String get projectMembersTitle => 'Project supervisors';
+
+  @override
+  String get activeSupervisionAssignmentsBody =>
+      'This view contains active supervision assignments only. It is not a complete project staff directory.';
+
+  @override
+  String get noProjectsTitle => 'No projects found';
+
+  @override
+  String get noProjectsBody =>
+      'Change the filters or create the first project.';
+
+  @override
+  String get noAssignedProjectsBody =>
+      'Only projects currently assigned to you appear here.';
+
+  @override
+  String get noMembersTitle => 'No company members found';
+
+  @override
+  String get noMembersBody => 'Change the role, status, or search filter.';
+
+  @override
+  String get memberDetails => 'Member details';
+
+  @override
+  String get directoryReadOnly => 'This company directory is read-only.';
+
+  @override
+  String get projectCreated => 'The project was created.';
+
+  @override
+  String get projectUpdated => 'The project was updated.';
+
+  @override
+  String get supervisorAssigned => 'The supervisor assignment was updated.';
+
+  @override
+  String get projectChangedConflict =>
+      'This project changed on the server. Reload it before trying again.';
+
+  @override
+  String get reloadProject => 'Reload project';
+
+  @override
+  String get newOwnerTitle => 'New client / owner';
+
+  @override
+  String get existingOwnerUnavailable =>
+      'A safe owner directory is not available yet. This form creates the owner and project atomically.';
+
+  @override
+  String get chooseSupervisor => 'Choose supervisor';
+
+  @override
+  String get optionalSupervisor => 'Initial supervisor (optional)';
+
+  @override
+  String get noSupervisor => 'No active supervisor';
+
+  @override
+  String get replaceSupervisorTitle => 'Replace the active supervisor?';
+
+  @override
+  String get replaceSupervisorBody =>
+      'The previous assignment will be ended, not deleted. The server preserves assignment history.';
+
+  @override
+  String get supervisorHistoryNotice =>
+      'Replacing a supervisor preserves earlier assignment history on the server.';
+
+  @override
+  String get saveAction => 'Save';
+
+  @override
+  String get selectDate => 'Select date';
+
+  @override
+  String get clearAction => 'Clear';
+
+  @override
+  String get viewDetails => 'View details';
+
+  @override
+  String get invalidRequiredText =>
+      'Enter a non-blank value within the allowed length.';
+
+  @override
+  String get invalidContractValue =>
+      'Enter a positive value with at most 2 decimal places and no more than 16 whole-number digits.';
+
+  @override
+  String get invalidDateOrder =>
+      'The expected end date cannot be before the start date.';
+
+  @override
+  String get supervisorPickerEmpty =>
+      'No active supervisors match this search.';
+
+  @override
+  String get updatedAt => 'Updated';
+
+  @override
+  String get assignedAt => 'Assigned';
+
+  @override
+  String get readOnly => 'Read-only';
 }

@@ -9,6 +9,11 @@ import 'package:ahdah_app/features/authentication/domain/identity_models.dart';
 import 'package:ahdah_app/features/authentication/domain/identity_requests.dart';
 import 'package:ahdah_app/features/access/domain/access_models.dart';
 import 'package:ahdah_app/features/access/domain/access_repository.dart';
+import 'package:ahdah_app/features/company_members/domain/company_member_models.dart';
+import 'package:ahdah_app/features/company_members/domain/company_member_repository.dart';
+import 'package:ahdah_app/features/projects/domain/project_models.dart';
+import 'package:ahdah_app/features/projects/domain/project_repository.dart';
+import 'package:ahdah_app/features/projects/domain/project_requests.dart';
 import 'package:dio/dio.dart';
 
 const testUser = AuthenticatedUser(
@@ -283,3 +288,181 @@ final class FakeAccessRepository implements AccessRepository {
     );
   }
 }
+
+final class FakeProjectRepository implements ProjectRepository {
+  ProjectPage projectPage = const ProjectPage(
+    items: [],
+    page: 1,
+    pageSize: 20,
+    totalCount: 0,
+    totalPages: 0,
+  );
+  ProjectMemberPage memberPage = const ProjectMemberPage(
+    items: [],
+    page: 1,
+    pageSize: 20,
+    totalCount: 0,
+    totalPages: 0,
+  );
+  ProjectDetails? project;
+  AppException? listError;
+  AppException? detailError;
+  AppException? writeError;
+  Completer<ProjectPage>? listCompleter;
+  Completer<ProjectDetails>? createCompleter;
+  int listCalls = 0;
+  int detailCalls = 0;
+  int createCalls = 0;
+  int updateCalls = 0;
+  int assignCalls = 0;
+  int memberCalls = 0;
+  int? lastPage;
+  int? lastPageSize;
+  String? lastStatus;
+  String? lastSearch;
+  ProjectCreateInput? lastCreateInput;
+  ProjectUpdateInput? lastUpdateInput;
+  SupervisorAssignmentInput? lastAssignmentInput;
+
+  @override
+  Future<ProjectPage> listProjects({
+    required int page,
+    required int pageSize,
+    String? status,
+    String? search,
+  }) async {
+    listCalls++;
+    lastPage = page;
+    lastPageSize = pageSize;
+    lastStatus = status;
+    lastSearch = search;
+    if (listError != null) throw listError!;
+    return listCompleter?.future ?? projectPage;
+  }
+
+  @override
+  Future<ProjectDetails> getProject(String projectId) async {
+    detailCalls++;
+    if (detailError != null) throw detailError!;
+    return project ?? testProject;
+  }
+
+  @override
+  Future<ProjectDetails> createProject(ProjectCreateInput input) async {
+    createCalls++;
+    lastCreateInput = input;
+    if (writeError != null) throw writeError!;
+    return createCompleter?.future ?? project ?? testProject;
+  }
+
+  @override
+  Future<ProjectDetails> updateProject(
+    String projectId,
+    ProjectUpdateInput input,
+  ) async {
+    updateCalls++;
+    lastUpdateInput = input;
+    if (writeError != null) throw writeError!;
+    return project ?? testProject;
+  }
+
+  @override
+  Future<ProjectDetails> assignSupervisor(
+    String projectId,
+    SupervisorAssignmentInput input,
+  ) async {
+    assignCalls++;
+    lastAssignmentInput = input;
+    if (writeError != null) throw writeError!;
+    return project ?? testProject;
+  }
+
+  @override
+  Future<ProjectMemberPage> listProjectMembers(
+    String projectId, {
+    required int page,
+    required int pageSize,
+  }) async {
+    memberCalls++;
+    lastPage = page;
+    lastPageSize = pageSize;
+    if (listError != null) throw listError!;
+    return memberPage;
+  }
+}
+
+final class FakeCompanyMemberRepository implements CompanyMemberRepository {
+  CompanyMemberPage memberPage = const CompanyMemberPage(
+    items: [],
+    page: 1,
+    pageSize: 20,
+    totalCount: 0,
+    totalPages: 0,
+  );
+  CompanyMemberDetails? member;
+  AppException? listError;
+  AppException? detailError;
+  Completer<CompanyMemberPage>? listCompleter;
+  int listCalls = 0;
+  int detailCalls = 0;
+  int? lastPage;
+  int? lastPageSize;
+  String? lastRole;
+  String? lastStatus;
+  String? lastSearch;
+
+  @override
+  Future<CompanyMemberPage> listMembers({
+    required int page,
+    required int pageSize,
+    String? role,
+    String? status,
+    String? search,
+  }) async {
+    listCalls++;
+    lastPage = page;
+    lastPageSize = pageSize;
+    lastRole = role;
+    lastStatus = status;
+    lastSearch = search;
+    if (listError != null) throw listError!;
+    return listCompleter?.future ?? memberPage;
+  }
+
+  @override
+  Future<CompanyMemberDetails> getMember(String memberId) async {
+    detailCalls++;
+    if (detailError != null) throw detailError!;
+    return member ?? testMemberDetails;
+  }
+}
+
+final testProject = ProjectDetails(
+  id: 'project-1',
+  projectName: 'Project One',
+  owner: const ProjectOwnerSummary(
+    id: 'owner-1',
+    ownerName: 'Owner One',
+    phoneNumber: '+218912345678',
+  ),
+  siteAddress: 'Tripoli',
+  contractValue: '1250.25',
+  contractDate: DateTime(2026, 8, 1),
+  startDate: DateTime(2026, 8, 2),
+  status: 'Active',
+  assignedSupervisors: const [],
+  versionNumber: 3,
+  createdAtUtc: DateTime.utc(2026, 8, 1),
+  updatedAtUtc: DateTime.utc(2026, 8, 1),
+);
+
+final testMemberDetails = CompanyMemberDetails(
+  id: 'member-1',
+  fullName: 'Supervisor One',
+  role: 'Supervisor',
+  status: 'Active',
+  identityVerificationStatus: 'NotRequired',
+  phoneNumber: '+218912345679',
+  createdAtUtc: DateTime.utc(2026, 8, 1),
+  updatedAtUtc: DateTime.utc(2026, 8, 1),
+);

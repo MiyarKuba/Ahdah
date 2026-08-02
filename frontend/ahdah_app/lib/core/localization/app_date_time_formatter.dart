@@ -10,4 +10,9 @@ abstract final class AppDateTimeFormatter {
     return '${material.formatMediumDate(local)} · '
         '${material.formatTimeOfDay(TimeOfDay.fromDateTime(local))}';
   }
+
+  static String formatDate(BuildContext context, DateTime? date) {
+    if (date == null) return AppLocalizations.of(context).unknownValue;
+    return MaterialLocalizations.of(context).formatMediumDate(date);
+  }
 }

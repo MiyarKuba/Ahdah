@@ -15,6 +15,10 @@ String localizedError(AppLocalizations l10n, AppException error) {
     'join_requests.concurrency_conflict' => l10n.accessConflictError,
     'invitations.not_found' => l10n.invitationNotFound,
     'join_requests.not_found' => l10n.joinRequestNotFound,
+    'projects.concurrency_conflict' => l10n.projectChangedConflict,
+    'projects.not_found' || 'company_members.not_found' => l10n.notFoundError,
+    'projects.forbidden' ||
+    'projects.members.forbidden' => l10n.permissionDenied,
     _ => switch (error.kind) {
       AppExceptionKind.validation => l10n.validationError,
       AppExceptionKind.unauthorized => l10n.unauthorizedError,

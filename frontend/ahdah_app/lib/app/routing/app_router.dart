@@ -17,6 +17,14 @@ import '../../features/onboarding/domain/pending_result.dart';
 import '../../features/onboarding/presentation/pending_page.dart';
 import '../../features/session/presentation/session_controller.dart';
 import '../../features/session/presentation/session_unavailable_page.dart';
+import '../../features/projects/presentation/create/project_create_page.dart';
+import '../../features/projects/presentation/detail/project_details_page.dart';
+import '../../features/projects/presentation/edit/project_edit_page.dart';
+import '../../features/projects/presentation/list/projects_page.dart';
+import '../../features/projects/presentation/members/project_members_page.dart';
+import '../../features/projects/presentation/supervisor/project_supervisor_page.dart';
+import '../../features/company_members/presentation/detail/company_member_details_page.dart';
+import '../../features/company_members/presentation/list/company_members_page.dart';
 import 'app_routes.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -26,16 +34,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final location = state.matchedLocation;
       final isSplash = location == AppRoutes.splashPath;
-      final authenticatedPaths = {
-        AppRoutes.homePath,
-        AppRoutes.invitationsPath,
-        AppRoutes.joinRequestsPath,
-        AppRoutes.accountPath,
-      };
-      final isAuthenticatedPath = authenticatedPaths.contains(location);
-      final isManagerPath =
+      final isProjectPath =
+          location == AppRoutes.projectsPath ||
+          location.startsWith('${AppRoutes.projectsPath}/');
+      final isCompanyDirectoryPath =
+          location == AppRoutes.companyMembersPath ||
+          location.startsWith('${AppRoutes.companyMembersPath}/');
+      final isAccessManagerPath =
           location == AppRoutes.invitationsPath ||
           location == AppRoutes.joinRequestsPath;
+      final isProjectManagementPath =
+          location == AppRoutes.projectCreatePath ||
+          location.endsWith('/edit') ||
+          location.endsWith('/supervisor');
+      final isProjectMembersPath = location.endsWith('/members');
+      final isAuthenticatedPath =
+          location == AppRoutes.homePath ||
+          location == AppRoutes.accountPath ||
+          isAccessManagerPath ||
+          isProjectPath ||
+          isCompanyDirectoryPath;
       final isUnavailable = location == AppRoutes.unavailablePath;
       final isOnboarding = {
         AppRoutes.welcomePath,
@@ -50,15 +68,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         SessionStatus.bootstrapping => isSplash ? null : AppRoutes.splashPath,
         SessionStatus.temporarilyUnavailable =>
           isUnavailable ? null : AppRoutes.unavailablePath,
-        SessionStatus.authenticated =>
-          isManagerPath &&
-                  !RoleCapabilities.forRole(
-                    session.current?.role,
-                  ).canManageAccess
+        SessionStatus.authenticated => () {
+          final capabilities = RoleCapabilities.forRole(session.current?.role);
+          if (isAccessManagerPath && !capabilities.canManageAccess ||
+              isProjectPath && !capabilities.canViewProjects ||
+              isProjectManagementPath && !capabilities.canManageProjects ||
+              isProjectMembersPath && !capabilities.canViewProjectMembers ||
+              isCompanyDirectoryPath && !capabilities.canViewCompanyDirectory) {
+            return AppRoutes.homePath;
+          }
+          return isOnboarding || isSplash || isUnavailable
               ? AppRoutes.homePath
-              : (isOnboarding || isSplash || isUnavailable)
-              ? AppRoutes.homePath
-              : null,
+              : null;
+        }(),
         SessionStatus.sessionExpired =>
           isAuthenticatedPath || isSplash || isUnavailable
               ? AppRoutes.loginPath
@@ -117,6 +139,55 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.homePath,
             name: AppRoutes.home,
             builder: (context, state) => const HomePage(),
+          ),
+          GoRoute(
+            path: AppRoutes.projectsPath,
+            name: AppRoutes.projects,
+            builder: (context, state) => const ProjectsPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.projectCreatePath,
+            name: AppRoutes.projectCreate,
+            builder: (context, state) => const ProjectCreatePage(),
+          ),
+          GoRoute(
+            path: '/projects/:projectId',
+            name: AppRoutes.projectDetails,
+            builder: (context, state) => ProjectDetailsPage(
+              projectId: state.pathParameters['projectId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/projects/:projectId/edit',
+            name: AppRoutes.projectEdit,
+            builder: (context, state) =>
+                ProjectEditPage(projectId: state.pathParameters['projectId']!),
+          ),
+          GoRoute(
+            path: '/projects/:projectId/supervisor',
+            name: AppRoutes.projectSupervisor,
+            builder: (context, state) => ProjectSupervisorPage(
+              projectId: state.pathParameters['projectId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/projects/:projectId/members',
+            name: AppRoutes.projectMembers,
+            builder: (context, state) => ProjectMembersPage(
+              projectId: state.pathParameters['projectId']!,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.companyMembersPath,
+            name: AppRoutes.companyMembers,
+            builder: (context, state) => const CompanyMembersPage(),
+          ),
+          GoRoute(
+            path: '/company/members/:memberId',
+            name: AppRoutes.companyMemberDetails,
+            builder: (context, state) => CompanyMemberDetailsPage(
+              memberId: state.pathParameters['memberId']!,
+            ),
           ),
           GoRoute(
             path: AppRoutes.invitationsPath,

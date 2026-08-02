@@ -9,6 +9,14 @@ abstract final class AppRoutes {
   static const home = 'home';
   static const invitations = 'invitations';
   static const joinRequestsAdmin = 'joinRequestsAdmin';
+  static const projects = 'projects';
+  static const projectCreate = 'projectCreate';
+  static const projectDetails = 'projectDetails';
+  static const projectEdit = 'projectEdit';
+  static const projectSupervisor = 'projectSupervisor';
+  static const projectMembers = 'projectMembers';
+  static const companyMembers = 'companyMembers';
+  static const companyMemberDetails = 'companyMemberDetails';
   static const account = 'account';
   static const unavailable = 'unavailable';
 
@@ -22,6 +30,9 @@ abstract final class AppRoutes {
   static const homePath = '/home';
   static const invitationsPath = '/access/invitations';
   static const joinRequestsPath = '/access/join-requests';
+  static const projectsPath = '/projects';
+  static const projectCreatePath = '/projects/new';
+  static const companyMembersPath = '/company/members';
   static const accountPath = '/account';
   static const unavailablePath = '/unavailable';
 }

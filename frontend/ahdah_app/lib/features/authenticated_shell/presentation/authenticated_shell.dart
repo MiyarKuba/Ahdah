@@ -29,6 +29,20 @@ final class AuthenticatedShell extends ConsumerWidget {
         icon: Icons.home_outlined,
         selectedIcon: Icons.home,
       ),
+      if (capabilities.canViewProjects)
+        _ShellDestination(
+          path: AppRoutes.projectsPath,
+          label: l10n.navProjects,
+          icon: Icons.business_outlined,
+          selectedIcon: Icons.business,
+        ),
+      if (capabilities.canViewCompanyDirectory)
+        _ShellDestination(
+          path: AppRoutes.companyMembersPath,
+          label: l10n.navCompanyMembers,
+          icon: Icons.groups_outlined,
+          selectedIcon: Icons.groups,
+        ),
       if (capabilities.canManageAccess) ...[
         _ShellDestination(
           path: AppRoutes.invitationsPath,

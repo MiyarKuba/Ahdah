@@ -62,4 +62,14 @@ abstract final class ValueLabels {
         'Cancelled' => l10n.joinStatusCancelled,
         _ => l10n.unknownValue,
       };
+
+  static String projectStatus(AppLocalizations l10n, String value) =>
+      switch (value) {
+        'Active' => l10n.projectStatusActive,
+        'Paused' => l10n.projectStatusPaused,
+        'Completed' => l10n.projectStatusCompleted,
+        'FinanciallyClosed' => l10n.projectStatusFinanciallyClosed,
+        'Cancelled' => l10n.projectStatusCancelled,
+        _ => l10n.unknownValue,
+      };
 }

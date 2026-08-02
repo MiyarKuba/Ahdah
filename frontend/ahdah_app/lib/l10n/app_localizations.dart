@@ -479,7 +479,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeFoundationBody.
   ///
   /// In en, this message translates to:
-  /// **'Your secure Ahdah session is ready. Business and financial modules are not part of this phase.'**
+  /// **'Your secure Ahdah session and approved company tools are ready. Financial modules remain deferred.'**
   String get homeFoundationBody;
 
   /// No description provided for @company.
@@ -749,7 +749,7 @@ abstract class AppLocalizations {
   /// No description provided for @financialModulesDeferred.
   ///
   /// In en, this message translates to:
-  /// **'Financial, project, supplier, settlement, and reporting modules are not implemented in this phase.'**
+  /// **'Advances, expenses, suppliers, settlements, debts, and reporting are not implemented in this phase.'**
   String get financialModulesDeferred;
 
   /// No description provided for @accountTitle.
@@ -1111,6 +1111,414 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The join request was rejected.'**
   String get joinRequestRejected;
+
+  /// No description provided for @navProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects'**
+  String get navProjects;
+
+  /// No description provided for @navCompanyMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Company members'**
+  String get navCompanyMembers;
+
+  /// No description provided for @projectsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects and sites'**
+  String get projectsTitle;
+
+  /// No description provided for @companyMembersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Company member directory'**
+  String get companyMembersTitle;
+
+  /// No description provided for @searchProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Search project name or site address'**
+  String get searchProjects;
+
+  /// No description provided for @searchMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Search name or phone'**
+  String get searchMembers;
+
+  /// No description provided for @searchMinimum.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter at least 2 characters to search.'**
+  String get searchMinimum;
+
+  /// No description provided for @roleFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Role filter'**
+  String get roleFilter;
+
+  /// No description provided for @allRoles.
+  ///
+  /// In en, this message translates to:
+  /// **'All roles'**
+  String get allRoles;
+
+  /// No description provided for @projectStatusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get projectStatusActive;
+
+  /// No description provided for @projectStatusPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get projectStatusPaused;
+
+  /// No description provided for @projectStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get projectStatusCompleted;
+
+  /// No description provided for @projectStatusFinanciallyClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Financially closed'**
+  String get projectStatusFinanciallyClosed;
+
+  /// No description provided for @projectStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get projectStatusCancelled;
+
+  /// No description provided for @projectName.
+  ///
+  /// In en, this message translates to:
+  /// **'Project name'**
+  String get projectName;
+
+  /// No description provided for @siteAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Site address'**
+  String get siteAddress;
+
+  /// No description provided for @ownerClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Project owner / client'**
+  String get ownerClient;
+
+  /// No description provided for @ownerName.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner name'**
+  String get ownerName;
+
+  /// No description provided for @contractValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Contract value'**
+  String get contractValue;
+
+  /// No description provided for @contractValueLyd.
+  ///
+  /// In en, this message translates to:
+  /// **'Contract value (LYD)'**
+  String get contractValueLyd;
+
+  /// No description provided for @contractDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Contract date'**
+  String get contractDate;
+
+  /// No description provided for @startDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Start date'**
+  String get startDate;
+
+  /// No description provided for @expectedEndDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected end date'**
+  String get expectedEndDate;
+
+  /// No description provided for @actualEndDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Actual end date'**
+  String get actualEndDate;
+
+  /// No description provided for @descriptionOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get descriptionOptional;
+
+  /// No description provided for @notesOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (optional)'**
+  String get notesOptional;
+
+  /// No description provided for @contactPhoneOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Project contact phone (optional)'**
+  String get contactPhoneOptional;
+
+  /// No description provided for @addressOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Address (optional)'**
+  String get addressOptional;
+
+  /// No description provided for @assignedSupervisor.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned supervisor'**
+  String get assignedSupervisor;
+
+  /// No description provided for @assignedSupervisors.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned supervisors'**
+  String get assignedSupervisors;
+
+  /// No description provided for @createProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Create project'**
+  String get createProject;
+
+  /// No description provided for @editProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit project'**
+  String get editProject;
+
+  /// No description provided for @assignSupervisor.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign supervisor'**
+  String get assignSupervisor;
+
+  /// No description provided for @replaceSupervisor.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace supervisor'**
+  String get replaceSupervisor;
+
+  /// No description provided for @projectDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Project details'**
+  String get projectDetails;
+
+  /// No description provided for @projectMembersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Project supervisors'**
+  String get projectMembersTitle;
+
+  /// No description provided for @activeSupervisionAssignmentsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This view contains active supervision assignments only. It is not a complete project staff directory.'**
+  String get activeSupervisionAssignmentsBody;
+
+  /// No description provided for @noProjectsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No projects found'**
+  String get noProjectsTitle;
+
+  /// No description provided for @noProjectsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Change the filters or create the first project.'**
+  String get noProjectsBody;
+
+  /// No description provided for @noAssignedProjectsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Only projects currently assigned to you appear here.'**
+  String get noAssignedProjectsBody;
+
+  /// No description provided for @noMembersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No company members found'**
+  String get noMembersTitle;
+
+  /// No description provided for @noMembersBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Change the role, status, or search filter.'**
+  String get noMembersBody;
+
+  /// No description provided for @memberDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Member details'**
+  String get memberDetails;
+
+  /// No description provided for @directoryReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'This company directory is read-only.'**
+  String get directoryReadOnly;
+
+  /// No description provided for @projectCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'The project was created.'**
+  String get projectCreated;
+
+  /// No description provided for @projectUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'The project was updated.'**
+  String get projectUpdated;
+
+  /// No description provided for @supervisorAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'The supervisor assignment was updated.'**
+  String get supervisorAssigned;
+
+  /// No description provided for @projectChangedConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'This project changed on the server. Reload it before trying again.'**
+  String get projectChangedConflict;
+
+  /// No description provided for @reloadProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload project'**
+  String get reloadProject;
+
+  /// No description provided for @newOwnerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New client / owner'**
+  String get newOwnerTitle;
+
+  /// No description provided for @existingOwnerUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'A safe owner directory is not available yet. This form creates the owner and project atomically.'**
+  String get existingOwnerUnavailable;
+
+  /// No description provided for @chooseSupervisor.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose supervisor'**
+  String get chooseSupervisor;
+
+  /// No description provided for @optionalSupervisor.
+  ///
+  /// In en, this message translates to:
+  /// **'Initial supervisor (optional)'**
+  String get optionalSupervisor;
+
+  /// No description provided for @noSupervisor.
+  ///
+  /// In en, this message translates to:
+  /// **'No active supervisor'**
+  String get noSupervisor;
+
+  /// No description provided for @replaceSupervisorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace the active supervisor?'**
+  String get replaceSupervisorTitle;
+
+  /// No description provided for @replaceSupervisorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The previous assignment will be ended, not deleted. The server preserves assignment history.'**
+  String get replaceSupervisorBody;
+
+  /// No description provided for @supervisorHistoryNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Replacing a supervisor preserves earlier assignment history on the server.'**
+  String get supervisorHistoryNotice;
+
+  /// No description provided for @saveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveAction;
+
+  /// No description provided for @selectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select date'**
+  String get selectDate;
+
+  /// No description provided for @clearAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearAction;
+
+  /// No description provided for @viewDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'View details'**
+  String get viewDetails;
+
+  /// No description provided for @invalidRequiredText.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a non-blank value within the allowed length.'**
+  String get invalidRequiredText;
+
+  /// No description provided for @invalidContractValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a positive value with at most 2 decimal places and no more than 16 whole-number digits.'**
+  String get invalidContractValue;
+
+  /// No description provided for @invalidDateOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'The expected end date cannot be before the start date.'**
+  String get invalidDateOrder;
+
+  /// No description provided for @supervisorPickerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No active supervisors match this search.'**
+  String get supervisorPickerEmpty;
+
+  /// No description provided for @updatedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated'**
+  String get updatedAt;
+
+  /// No description provided for @assignedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned'**
+  String get assignedAt;
+
+  /// No description provided for @readOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Read-only'**
+  String get readOnly;
 }
 
 class _AppLocalizationsDelegate

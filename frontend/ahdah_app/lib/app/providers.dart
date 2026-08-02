@@ -10,6 +10,10 @@ import '../core/security/access_token_store_factory.dart';
 import '../features/authentication/data/auth_repository.dart';
 import '../features/access/data/api_access_repository.dart';
 import '../features/access/domain/access_repository.dart';
+import '../features/company_members/data/api_company_member_repository.dart';
+import '../features/company_members/domain/company_member_repository.dart';
+import '../features/projects/data/api_project_repository.dart';
+import '../features/projects/domain/project_repository.dart';
 
 final appConfigProvider = Provider<AppConfig>(
   (ref) => throw StateError('AppConfig must be supplied during bootstrap.'),
@@ -51,4 +55,12 @@ final authRepositoryProvider = Provider<AuthRepository>(
 
 final accessRepositoryProvider = Provider<AccessRepository>(
   (ref) => ApiAccessRepository(ref.watch(apiClientProvider)),
+);
+
+final projectRepositoryProvider = Provider<ProjectRepository>(
+  (ref) => ApiProjectRepository(ref.watch(apiClientProvider)),
+);
+
+final companyMemberRepositoryProvider = Provider<CompanyMemberRepository>(
+  (ref) => ApiCompanyMemberRepository(ref.watch(apiClientProvider)),
 );

@@ -60,8 +60,20 @@ Supervisor replacement requires `supervisorUserId` and `expectedVersion`. The ta
 
 Project members are paged active supervisor assignments only. No project-member write endpoint exists.
 
+## Flutter consumption
+
+Flutter consumes the published contracts without backend or database changes. Handwritten project/member models use exact camelCase fields, parse UUIDs as opaque strings, parse timestamps defensively, and keep contract value nullable decimal text. The API client uses the existing authenticated Dio interceptor and Problem Details mapping; no request accepts or sends `company_id`.
+
+Stable authenticated routes cover project list/create/detail/edit/supervisor/active-supervision pages and member list/detail pages. `RoleCapabilities` applies the documented matrix to navigation, route guards, Manager actions, project-supervisor actions, and contract-value presentation. Worker and unknown roles have no project destination; Accountant has no project-supervisor or directory destination; Company Members is Manager/Deputy-only.
+
+Project/member lists use server-side exact filters and bounded search, page size 20, stable deduplication, refresh, pagination, stale-result suppression, and recoverable load-more failure. Supervisor empty messaging explains assigned-only visibility. Mobile uses cards and pull-to-refresh; tablet/Web use the same constrained responsive pages with persistent navigation.
+
+Manager creation uses atomic `newOwner` because no safe owner directory is published; it never exposes a raw owner UUID. The optional supervisor picker requests only active exact Supervisors and defensively excludes other results. Updates load the authoritative project, send only supported changed fields with `expectedVersion`, expose only `Active`/`Paused`, and provide a 409 reload flow. Supervisor replacement also uses `expectedVersion`, confirmation, and explicit history-preservation wording.
+
+Project member UI says “Project supervisors” and “active supervision assignments,” never workers or full staff. The company directory is read-only and list items do not invent contact fields omitted by the API. Contract value renders only for Manager capability and is neither calculated nor logged. Arabic/English status, role, identity, navigation, forms, validation, empty, error, and conflict states are localized.
+
 ## Deferred behavior
 
 Direct contract-value changes are deferred to the existing `project_contract_changes` review/history workflow. The physical schema permits multiple historical change rows but the generated Project navigation is singular, so that mapping limitation requires explicit review in the future contract-change phase. `Completed`, `FinanciallyClosed`, and `Cancelled` transitions are deferred because they require additional lifecycle fields and, for financial closure, future settlement/debt/invoice/fund/transfer rules. Member role changes, status changes, deletion, identity verification, project participant writes, all financial modules, and Flutter UI are outside this phase.
 
-No PostgreSQL schema object, generated EF file, migration, Flutter file, or financial workflow was changed.
+This Flutter phase changes no PostgreSQL schema object, generated EF file, migration, backend contract, or financial workflow. Existing-owner selection remains deferred until a safe owner-directory API exists. Member mutations, project completion/cancellation/financial closure, contract-value changes, and all financial modules remain deferred.
