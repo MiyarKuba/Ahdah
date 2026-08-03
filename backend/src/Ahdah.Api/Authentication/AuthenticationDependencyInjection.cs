@@ -95,6 +95,58 @@ public static class AuthenticationDependencyInjection
                         AccessConstants.AccountantRole,
                         AccessConstants.SupervisorRole,
                         AccessConstants.WorkerRole))
+            .AddPolicy(AhdahAuthorizationPolicies.AdvanceViewer,
+                policy => policy
+                    .RequireAuthenticatedUser()
+                    .RequireClaim(AhdahClaimTypes.CompanyId)
+                    .RequireAssertion(context => Guid.TryParse(
+                        context.User.FindFirst(AhdahClaimTypes.CompanyId)?.Value,
+                        out _))
+                    .RequireRole(
+                        IdentityConstants.ManagerRole,
+                        AccessConstants.DeputyRole,
+                        AccessConstants.AccountantRole,
+                        AccessConstants.SupervisorRole,
+                        AccessConstants.WorkerRole))
+            .AddPolicy(AhdahAuthorizationPolicies.AdvanceCreator,
+                policy => policy
+                    .RequireAuthenticatedUser()
+                    .RequireClaim(AhdahClaimTypes.CompanyId)
+                    .RequireAssertion(context => Guid.TryParse(
+                        context.User.FindFirst(AhdahClaimTypes.CompanyId)?.Value,
+                        out _))
+                    .RequireRole(IdentityConstants.ManagerRole))
+            .AddPolicy(AhdahAuthorizationPolicies.AdvanceDistributor,
+                policy => policy
+                    .RequireAuthenticatedUser()
+                    .RequireClaim(AhdahClaimTypes.CompanyId)
+                    .RequireAssertion(context => Guid.TryParse(
+                        context.User.FindFirst(AhdahClaimTypes.CompanyId)?.Value,
+                        out _))
+                    .RequireRole(IdentityConstants.ManagerRole, AccessConstants.DeputyRole))
+            .AddPolicy(AhdahAuthorizationPolicies.AdvanceParticipant,
+                policy => policy
+                    .RequireAuthenticatedUser()
+                    .RequireClaim(AhdahClaimTypes.CompanyId)
+                    .RequireAssertion(context => Guid.TryParse(
+                        context.User.FindFirst(AhdahClaimTypes.CompanyId)?.Value,
+                        out _))
+                    .RequireRole(
+                        IdentityConstants.ManagerRole,
+                        AccessConstants.DeputyRole,
+                        AccessConstants.SupervisorRole,
+                        AccessConstants.WorkerRole))
+            .AddPolicy(AhdahAuthorizationPolicies.AdvanceBalanceViewer,
+                policy => policy
+                    .RequireAuthenticatedUser()
+                    .RequireClaim(AhdahClaimTypes.CompanyId)
+                    .RequireAssertion(context => Guid.TryParse(
+                        context.User.FindFirst(AhdahClaimTypes.CompanyId)?.Value,
+                        out _))
+                    .RequireRole(
+                        IdentityConstants.ManagerRole,
+                        AccessConstants.DeputyRole,
+                        AccessConstants.AccountantRole))
             .AddPolicy(AhdahAuthorizationPolicies.ManagerOnly,
                 policy => policy
                     .RequireAuthenticatedUser()

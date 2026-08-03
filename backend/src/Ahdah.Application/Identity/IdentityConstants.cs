@@ -20,5 +20,10 @@ public static class AhdahAuthorizationPolicies
     public const string CompanyMember = "CompanyMember";
     public const string CompanyDirectoryViewer = "CompanyDirectoryViewer";
     public const string ProjectViewer = "ProjectViewer";
+    public const string AdvanceViewer = "AdvanceViewer";
+    public const string AdvanceCreator = "AdvanceCreator";
+    public const string AdvanceDistributor = "AdvanceDistributor";
+    public const string AdvanceParticipant = "AdvanceParticipant";
+    public const string AdvanceBalanceViewer = "AdvanceBalanceViewer";
     public const string ManagerOnly = "ManagerOnly";
 }

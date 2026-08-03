@@ -1,12 +1,14 @@
 using Ahdah.Application.Abstractions.Authentication;
 using Ahdah.Application.Abstractions.Security;
 using Ahdah.Application.Access.Services;
+using Ahdah.Application.Advances.Services;
 using Ahdah.Application.CompanyMembers.Services;
 using Ahdah.Application.Identity.Services;
 using Ahdah.Application.Projects.Services;
 using Ahdah.Infrastructure.Access.Invitations;
 using Ahdah.Infrastructure.Access.JoinRequests;
 using Ahdah.Infrastructure.Authentication;
+using Ahdah.Infrastructure.Advances;
 using Ahdah.Infrastructure.CompanyMembers;
 using Ahdah.Infrastructure.Identity;
 using Ahdah.Infrastructure.Projects;
@@ -49,6 +51,12 @@ public static class DependencyInjection
         services.AddScoped<ICompanyMemberService, CompanyMemberService>();
         services.AddScoped<IProjectService, ProjectService>();
 
+        return services;
+    }
+
+    public static IServiceCollection AddAhdahAdvances(this IServiceCollection services)
+    {
+        services.AddScoped<IAdvanceService, AdvanceService>();
         return services;
     }
 }

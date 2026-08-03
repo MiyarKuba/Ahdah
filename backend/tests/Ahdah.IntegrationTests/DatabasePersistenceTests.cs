@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using Ahdah.Application.Access.Models;
+using Ahdah.Application.Advances.Contracts;
+using Ahdah.Application.Advances.Models;
 using Ahdah.Application.CompanyMembers.Models;
 using Ahdah.Application.Projects.Models;
 using Ahdah.Infrastructure.Persistence.Generated.Context;
@@ -144,6 +146,79 @@ public sealed class DatabasePersistenceTests
         Assert.DoesNotContain("Ahdah.Infrastructure.Persistence.Generated", source);
         Assert.DoesNotContain("AppUser", source, StringComparison.Ordinal);
         Assert.DoesNotContain("ProjectOwner ", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Advance_contracts_use_explicit_safe_dtos_and_decimal_money()
+    {
+        var responseTypes = new[]
+        {
+            typeof(AdvanceSummary),
+            typeof(AdvanceDetails),
+            typeof(AdvanceFundingSummary),
+            typeof(AdvanceMovementSummary),
+            typeof(AdvanceTransferDetails),
+            typeof(AdvanceBalanceSummary),
+            typeof(AvailableFundingSourceSummary)
+        };
+        var requestTypes = new[]
+        {
+            typeof(CreateAdvanceRequest),
+            typeof(CreateAdvanceDistributionRequest),
+            typeof(CreateAdvanceReturnRequest),
+            typeof(AdvanceFundingAllocationRequest),
+            typeof(RejectAdvanceTransferRequest)
+        };
+
+        Assert.All(responseTypes, type => Assert.DoesNotContain(
+            type.GetProperties(),
+            property => property.Name.Contains("CompanyId", StringComparison.OrdinalIgnoreCase)
+                || property.Name.Contains("Password", StringComparison.OrdinalIgnoreCase)
+                || property.Name.Contains("Hash", StringComparison.OrdinalIgnoreCase)
+                || property.PropertyType == typeof(float)
+                || property.PropertyType == typeof(double)));
+        Assert.All(requestTypes, type => Assert.DoesNotContain(
+            type.GetProperties(),
+            property => property.Name.Contains("CompanyId", StringComparison.OrdinalIgnoreCase)
+                || property.Name.Contains("CreatedBy", StringComparison.OrdinalIgnoreCase)
+                || property.Name.Contains("CurrentBalance", StringComparison.OrdinalIgnoreCase)
+                || property.PropertyType == typeof(float)
+                || property.PropertyType == typeof(double)));
+
+        var controllerSource = File.ReadAllText(Path.Combine(
+            FindRepositoryRoot(), "backend", "src", "Ahdah.Api", "Controllers",
+            "AdvancesController.cs"));
+        Assert.DoesNotContain("Ahdah.Infrastructure.Persistence.Generated", controllerSource);
+        Assert.DoesNotContain("AdvanceSettlement", controllerSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("AdvanceClosure", controllerSource, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Advance_persistence_is_tenant_scoped_locked_and_history_preserving()
+    {
+        var servicePath = Path.Combine(
+            FindRepositoryRoot(), "backend", "src", "Ahdah.Infrastructure", "Advances",
+            "AdvanceService.cs");
+        var source = File.ReadAllText(servicePath);
+
+        Assert.Contains("advance.CompanyId == caller.CompanyId", source);
+        Assert.Contains("company_id = {caller.CompanyId} AND funding_source_id", source);
+        Assert.Contains("company_id = {companyId} AND advance_id = {advanceId} AND user_id = {userId} FOR UPDATE", source);
+        Assert.Contains("company_id = {companyId} AND money_transfer_id = {transferId} FOR UPDATE", source);
+        Assert.Contains("balance.AvailableAmount < request.Amount", source);
+        Assert.Contains("source.AvailableAmount < funding.Amount", source);
+        Assert.Contains("BeginTransactionAsync", source);
+        Assert.Contains("BalanceLedgerEntries.Add", source);
+        Assert.Contains("FundingSourceLedgerEntries.Add", source);
+        Assert.Contains("IdempotencyRecords.Add", source);
+        Assert.Contains("idempotency_key = {idempotencyKey} FOR UPDATE", source);
+        Assert.Contains("record.ResponsePayload = JsonSerializer.Serialize(value)", source);
+        Assert.DoesNotContain("BalanceLedgerEntries.Remove", source);
+        Assert.DoesNotContain("FundingSourceLedgerEntries.Remove", source);
+        Assert.DoesNotContain("ExecuteDelete", source);
+        Assert.DoesNotContain("ExpenseAdvanceAllocation", source);
+        Assert.DoesNotContain("new AdvanceSettlement", source);
+        Assert.DoesNotContain("new AdvanceClosure", source);
     }
 
     [Fact]

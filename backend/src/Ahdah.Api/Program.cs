@@ -30,6 +30,7 @@ builder.Services.AddAhdahPersistence(builder.Configuration);
 builder.Services.AddAhdahIdentity();
 builder.Services.AddAhdahAccess(builder.Configuration);
 builder.Services.AddAhdahCompanyStructure();
+builder.Services.AddAhdahAdvances();
 builder.Services.AddAhdahAuthentication(builder.Configuration);
 
 var app = builder.Build();

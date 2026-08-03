@@ -2,7 +2,7 @@
 
 Ahdah is a multi-tenant platform for financial custody and construction operations. It is intended to help companies coordinate projects, custody balances, transfers, expenses, supplier obligations, worker claims, documents, audit trails, notifications, and scheduled reporting.
 
-This repository is currently in **Flutter Company Structure — Projects and Member Directory**. The backend exposes tenant-safe company-directory and construction-project APIs, and Flutter now consumes them through role-aware responsive Projects/Sites and read-only Company Member Directory features. All financial workflows remain deferred.
+This repository is currently in **Advances Foundation — Backend Phase 1**. The backend now exposes tenant-safe, role-aware advance creation, existing-source funding allocation, pending cash distribution/return confirmation, authoritative balances, and movement history. Flutter advances UI, expenses, receipts, settlement, and closure remain deferred.
 
 ## Technology stack
 
@@ -83,6 +83,22 @@ The company-structure phase additionally exposes:
 - Manager-only `PATCH /api/v1/projects/{projectId}`
 - Manager-only `PUT /api/v1/projects/{projectId}/supervisor`
 - Schema-limited `GET /api/v1/projects/{projectId}/members`
+
+Advances Foundation — Backend Phase 1 additionally exposes:
+
+- Role-filtered `GET /api/v1/advances`
+- Role-filtered `GET /api/v1/advances/{advanceId}`
+- Role-filtered `GET /api/v1/advances/{advanceId}/movements`
+- Manager-only `GET /api/v1/advance-funding-sources`
+- Manager-only `POST /api/v1/advances`
+- Manager/Deputy `POST /api/v1/advances/{advanceId}/distributions`
+- Holder `POST /api/v1/advances/{advanceId}/returns`
+- Recipient `POST /api/v1/advance-transfers/{transferId}/confirm`
+- Recipient `POST /api/v1/advance-transfers/{transferId}/reject` for internal transfers and returns
+- Current-user `GET /api/v1/advance-balances/me`
+- Manager/Deputy/Accountant `GET /api/v1/advance-balances/users/{userId}`
+
+Every financial command requires an `Idempotency-Key` header. Creation allocates only existing same-company `Available`/`PartiallyUsed` funding sources and funds the fixed advance amount atomically. The schema has no direct advance/project relationship, so project association and filtering are omitted. Settlement and closure writes remain deferred because their existing tables depend on expense, document, debt, claim, resolution, and review workflows. See [docs/ADVANCES.md](docs/ADVANCES.md).
 
 Manager and Deputy see all company projects; Accountant sees basic project structure without contract value; Supervisor sees only actively assigned projects; Worker sees no projects because the schema has no worker/project relationship. Project-member results contain active supervisor assignments only. Manager alone receives contract value and may set it during creation. Later contract-value changes are deferred to the existing `project_contract_changes` approval/history model, and `Completed`, `FinanciallyClosed`, and `Cancelled` transitions remain deferred.
 

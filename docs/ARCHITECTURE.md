@@ -97,6 +97,20 @@ Project reads are projected into explicit DTOs. Contract value is selected only 
 
 Only `Active` and `Paused` are mutable lifecycle values in this phase. `Completed`, `FinanciallyClosed`, and `Cancelled` require additional fields and/or deferred financial/business checks. Direct contract-value changes are also deferred because `project_contract_changes` provides a distinct reason/review/history workflow. No financial module is implemented by the company-structure services.
 
+## Advances foundation
+
+Application owns explicit advance requests/responses, money validation, exact lifecycle values, role capabilities, and the `IAdvanceService` contract. Infrastructure owns tenant-filtered EF Core projections, explicit transactions, PostgreSQL row locks, source/balance updates, immutable ledger appends, and tenant-scoped idempotency. API owns focused advance policies, controllers, status mapping, and Problem Details. Generated persistence entities never cross the API boundary.
+
+`advances` represents a top-level Manager-to-Deputy custody issue. Its unique direct `AdvanceDelivery` uses `money_transfers`; later `InternalTransfer` and `BalanceReturn` records link through `transfer_advance_allocations`. A distribution does not create a child advance. `user_advance_balances` is current-state authority, while `balance_ledger_entries` and `funding_source_ledger_entries` preserve immutable history.
+
+Creation locks and allocates existing usable `funding_sources`, reserves their authoritative availability, and creates the pending advance delivery atomically. Confirmation consumes the reservation and creates the recipient balance. Distribution and return initiation lock the holder balance before reserving availability; confirmation creates paired sender/recipient ledger effects. PostgreSQL row locks and EF concurrency tokens protect every mutable financial aggregate. SQLSTATE `23505` and optimistic-concurrency failures map to safe conflict responses.
+
+Every financial command requires tenant-scoped `Idempotency-Key` handling through the existing `idempotency_records` table. Identical completed commands replay their original safe response; key reuse by another actor, operation, or payload conflicts. Writes are never automatically retried.
+
+Manager, Deputy, and Accountant receive company-wide advance reads; Accountant remains read-only. Supervisor and Worker reads are limited to personal balances and transfer participation. Manager creates top-level advances and may distribute held returns to Deputy. Deputy distributes held balances to Supervisor or Worker. Supervisor-to-Worker distribution remains deferred because no approved business rule authorizes it.
+
+There is no advance/project foreign key, so project association is not inferred through a funding source. Settlement and closure writes remain separate future modules because their existing records depend on expenses, documents, difference resolutions, supplier debt, personal claims, and final review. See [ADVANCES.md](ADVANCES.md).
+
 ## Modular Monolith
 
 A modular monolith provides one deployable backend while keeping high-cohesion business areas explicit. Modules will share process hosting and operational tooling but should communicate through defined application contracts rather than reaching into one another's internals.

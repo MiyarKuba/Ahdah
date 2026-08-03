@@ -22,5 +22,21 @@ public partial class AhdahDbContext
         modelBuilder.Entity<ProjectOwner>()
             .Property(owner => owner.VersionNumber)
             .IsConcurrencyToken();
+
+        modelBuilder.Entity<Advance>()
+            .Property(advance => advance.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<FundingSource>()
+            .Property(source => source.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<MoneyTransfer>()
+            .Property(transfer => transfer.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<UserAdvanceBalance>()
+            .Property(balance => balance.VersionNumber)
+            .IsConcurrencyToken();
     }
 }

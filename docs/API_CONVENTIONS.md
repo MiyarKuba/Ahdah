@@ -15,6 +15,8 @@ The completed Invitations and Join Requests phase publishes manager-only invitat
 
 Company structure publishes `GET /api/v1/company/members`, `GET /api/v1/company/members/{memberId}`, and the project collection/detail/create/patch, supervisor-replacement, and members routes under `/api/v1/projects`. No route accepts `company_id`, creator IDs, database timestamps, or version internals other than the explicit expected project version required for mutations.
 
+Advances Phase 1 publishes advance collection/detail/movement reads, available funding-source reads, top-level creation, held-balance distribution, unused-balance return, transfer confirmation/rejection, current-user balances, and authorized user-balance lookup under `/api/v1`. No route accepts `company_id`, actor IDs, status, timestamps, available balances, ledger IDs, or a project relationship. Settlement and closure write routes are not published.
+
 ## JSON
 
 - Requests and responses use `application/json` unless an endpoint explicitly handles files.
@@ -78,6 +80,7 @@ Company-member and project collections reuse that exact page-number response sha
 - The non-secret defaults are issuer `Ahdah.Api`, audience `Ahdah.Clients`, and a 15-minute access-token lifetime. Signing keys are secret configuration and never belong in repository files.
 - Authorization policies are `AuthenticatedUser`, `CompanyMember`, and `ManagerOnly`. `CompanyMember` requires a valid GUID `company_id` claim. `ManagerOnly` additionally requires the exact `Manager` role.
 - `CompanyDirectoryViewer` permits exact roles `Manager` and `Deputy`. `ProjectViewer` permits the five verified company roles but never replaces tenant and assignment predicates. Accountant and Deputy project reads omit `contractValue`; Supervisor reads require active assignment; Worker receives no project records with the current schema.
+- `AdvanceViewer` permits the five verified roles but never replaces tenant and participant predicates. `AdvanceCreator` is Manager-only; `AdvanceDistributor` is Manager/Deputy; `AdvanceParticipant` excludes Accountant; and `AdvanceBalanceViewer` permits Manager, Deputy, and Accountant. Supervisor and Worker records remain personal-only.
 - Access-token responses use token type `Bearer` and an explicit UTC expiry. Password hashes and generated persistence entities never appear in API schemas or responses.
 - Invitation creation returns the raw URL-safe token once and never returns its hash. Its configured lifetime is 168 hours in development.
 - Invitation acceptance returns authentication only for immediately active `Supervisor`/`Worker` users. Sensitive roles return a pending-identity outcome without an access token. Invalid, expired, cancelled, and already-used tokens share one generic public response.
@@ -95,3 +98,5 @@ The API applies the named `FlutterClient` CORS policy before authentication and 
 - A key is scoped to the authenticated tenant and operation, stored with an integrity-safe request fingerprint, and returns the original outcome for safe retries.
 - Reusing a key with a different payload is rejected.
 - Idempotency is not a substitute for database transactions, concurrency control, authorization, or audit records.
+
+Advances Phase 1 requires the `Idempotency-Key` HTTP header on every advance, distribution, return, confirmation, and rejection command. Keys are 16–200 printable characters and unique within the authenticated company. The fingerprint binds operation and payload to the active actor. Completed identical calls replay the original safe response; key reuse with a different operation, payload, or actor returns HTTP 409. Records and the financial mutation share one PostgreSQL transaction.

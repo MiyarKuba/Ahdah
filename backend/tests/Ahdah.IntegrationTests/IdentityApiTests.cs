@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using Ahdah.Application.Abstractions.Authentication;
 using Ahdah.Application.Access.Services;
+using Ahdah.Application.Advances.Services;
 using Ahdah.Application.CompanyMembers.Services;
 using Ahdah.Application.Identity;
 using Ahdah.Application.Identity.Contracts;
@@ -217,6 +218,8 @@ public sealed class IdentityApiFactory : WebApplicationFactory<Program>
             services.AddSingleton<ICompanyMemberService, FakeCompanyMemberService>();
             services.RemoveAll<IProjectService>();
             services.AddScoped<IProjectService, FakeProjectService>();
+            services.RemoveAll<IAdvanceService>();
+            services.AddScoped<IAdvanceService, FakeAdvanceService>();
         });
     }
 

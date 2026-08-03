@@ -6,128 +6,122 @@ Ahdah — عُهدة
 
 ## Current phase
 
-Flutter Company Structure — Projects and Member Directory
+Advances Foundation — Backend Phase 1
 
 ## Date
 
-2026-08-01
+2026-08-03
 
 ## Workspace and branch
 
 - Workspace confirmed before edits: `C:\dev\Ahdah`.
-- Branch confirmed before edits: `feat/flutter-company-structure`.
-- The working tree was clean at the initial safety gate.
+- Branch confirmed before edits: `feat/advances-foundation`.
+- One pre-existing untracked Flutter file, `frontend/ahdah_app/devtools_options.yaml`, was present and left untouched.
 
-## Backend contracts consumed
+## Actual schema findings
 
-- Manager/Deputy `GET /api/v1/company/members` and `GET /api/v1/company/members/{memberId}`.
-- Role-filtered `GET /api/v1/projects` and `GET /api/v1/projects/{projectId}`.
-- Manager-only `POST /api/v1/projects`, `PATCH /api/v1/projects/{projectId}`, and `PUT /api/v1/projects/{projectId}/supervisor`.
-- Capability/record-filtered `GET /api/v1/projects/{projectId}/members`.
-- Exact `items`, `page`, `pageSize`, `totalCount`, and `totalPages` pagination metadata.
-- Exact member list/detail, project/owner/supervisor/member, create/update/assignment, validation, Problem Details, and camelCase JSON contracts were inspected from controllers, Application contracts/models, validation attributes, OpenAPI setup/coverage, and existing integration tests. No generated EF entity is consumed.
+- `advances` is the top-level Manager-to-Deputy record. Exact statuses are `Draft`, `PendingConfirmation`, `Open`, `InSettlement`, `ReadyToClose`, `Closed`, `Cancelled`, and `Reversed`.
+- `advance_funding_sources` allocates existing `funding_sources`; multiple unique sources may fund one fixed advance amount.
+- Funding-source types are `ProjectOwnerPayment`, `ManagerContribution`, `CompanyCashbox`, `ReturnedAdvance`, `SupplierRefund`, and `Other`. Statuses are `PendingVerification`, `Available`, `PartiallyUsed`, `FullyUsed`, `Cancelled`, and `Reversed`.
+- Funding payment methods are `Cash`, `BankTransfer`, `Cheque`, `Card`, `MobileWallet`, and `Other`.
+- `money_transfers` represents `AdvanceDelivery`, `InternalTransfer`, and `BalanceReturn`. Transfer methods add `BalanceTransfer`; statuses are `Draft`, `PendingConfirmation`, `CorrectionRequired`, `Confirmed`, `Rejected`, `Cancelled`, and `Reversed`.
+- `transfer_advance_allocations` links distributions/returns to an advance. Distribution does not create a child advance.
+- `user_advance_balances` is authoritative. Exact statuses are `Active`, `InSettlement`, `Settled`, and `Closed`.
+- `balance_ledger_entries` and `funding_source_ledger_entries` preserve immutable history. PostgreSQL blocks ledger update/delete. No trigger or function performs balance mutations.
+- No `AdvanceDistribution`, `AdvanceReturn`, `AdvanceApproval`, or direct `AdvanceBalance` table exists.
+- Advances have no direct project, parent-advance, or current-balance field.
+- Company number-sequence tables contained no configured rows during read-only inspection.
 
-## Flutter architecture
+## Workflows implemented
 
-- Added feature-first `features/projects/{domain,data,presentation}` with handwritten immutable models, exact request inputs, an API repository, focused Riverpod controllers, and responsive list/detail/create/edit/supervisor/member pages.
-- Added parallel `features/company_members` list/detail architecture with distinct safe list/detail models and a read-only repository.
-- Extended the existing Dio client, bearer interceptor, Problem Details handling, session-expiry flow, localization mappings, shared widgets, Riverpod, and `go_router`; no package was added or changed.
-- Contract values remain nullable decimal text. Manager creation validates the text and emits it as an exact JSON number without a `double` conversion. No financial arithmetic exists.
+- Paginated tenant/role-filtered advance listing, detail, and movement history.
+- Manager-only safe available-funding-source listing.
+- Atomic Manager top-level creation for an active same-company Deputy using one or more existing usable same-currency sources whose allocations exactly total the advance.
+- Pending initial `AdvanceDelivery`; confirmation consumes funding reservation, creates the Deputy balance, appends ledgers, and opens the advance.
+- Partial held-balance distribution: Manager to Deputy, or Deputy to Supervisor/Worker.
+- Recipient confirmation with paired sender/recipient authoritative balance and immutable ledger effects.
+- Recipient rejection for pending internal distribution and balance return, with reservation release and preserved transfer history.
+- Unused-money return to exactly one upstream sender derived from confirmed lineage; no client destination is accepted.
+- Current-user balance and Manager/Deputy/Accountant same-company user-balance lookup.
+- Tenant-scoped idempotency key/fingerprint/original-response replay records for every financial command.
 
-## Routes and guards
+## Workflows omitted and reasons
 
-- `/projects`
-- `/projects/new`
-- `/projects/:projectId`
-- `/projects/:projectId/edit`
-- `/projects/:projectId/supervisor`
-- `/projects/:projectId/members`
-- `/company/members`
-- `/company/members/:memberId`
+- New funding-source creation/verification: each type has separate subtype and verification semantics not approved in this phase.
+- Separate post-creation funding: funding is complete and atomic at creation because the advance amount is fixed and confirmation requires complete allocation.
+- Project association/filter: no direct schema relationship exists, and funding-source project origin does not prove a multi-source advance belongs to one project.
+- Supervisor distribution: the database can store it, but product authority is not explicitly approved.
+- Initial advance-delivery rejection: the advance has no rejected state and its unique delivery could not be safely reissued.
+- Transfer correction/cancellation/reversal: separate reviewed lifecycles remain unimplemented.
+- Expense allocation, receipts, supplier debt, and claims: outside Phase 1.
+- Settlement and closure writes: depend on expense snapshots, documents, difference resolutions, supplier debt, claims, reconciliation, and review. Zero cash balance is not treated as financial settlement.
+- FIFO settlement: deferred with expenses/settlement.
 
-Central `RoleCapabilities` drives both navigation and router redirects. Worker and unknown roles cannot route to projects. Non-Managers cannot route to create/edit/supervisor pages. Accountant cannot route to project members. Only Manager and Deputy can route to the company directory. Unauthenticated access still follows the authoritative session redirect, and backend 403 responses remain authoritative without clearing valid tokens.
+## Endpoints
 
-## Role visibility
+- `GET /api/v1/advances`
+- `GET /api/v1/advances/{advanceId}`
+- `GET /api/v1/advances/{advanceId}/movements`
+- `GET /api/v1/advance-funding-sources`
+- `POST /api/v1/advances`
+- `POST /api/v1/advances/{advanceId}/distributions`
+- `POST /api/v1/advances/{advanceId}/returns`
+- `POST /api/v1/advance-transfers/{transferId}/confirm`
+- `POST /api/v1/advance-transfers/{transferId}/reject`
+- `GET /api/v1/advance-balances/me`
+- `GET /api/v1/advance-balances/users/{userId}`
 
-| Role | Navigation and reads | Project writes | Project supervisors | Contract value | Directory |
-|---|---|---|---|---|---|
-| Manager | All tenant projects | Create, safe update, replace supervisor | Yes | Yes | Read-only |
-| Deputy | All tenant projects | None | Yes | No | Read-only |
-| Accountant | All tenant projects | None | No | No | No |
-| Supervisor | Active assignments only | None | Assigned-project summaries | No | No |
-| Worker | No project relationship | None | No | No | No |
-| Unknown | Safe Home/Account minimum | None | No | No | No |
+All command routes require a 16–200 character `Idempotency-Key` header.
 
-## Project list and detail
+## Role visibility and capabilities
 
-- Initial loading, mobile pull-to-refresh, explicit refresh, localized empty/retry, server status filter/search, page size 20, stable deduplication, load-more recovery, and stale-response suppression are implemented.
-- One-character searches are never sent; search is capped at 100 characters and debounced without another package.
-- Supervisor empty messaging says only assigned projects appear. No page sweep or totals are calculated.
-- Detail displays only actual project, owner, date, status, contact, description/note, supervisor, and useful timestamp fields. It exposes only capability-approved actions.
-- A non-Manager never renders contract value, including when a fake response incorrectly contains it.
+| Role | Visibility | Balances | Writes |
+|---|---|---|---|
+| Manager | All company advances/movements | Own and all same-company users | Create, distribute held money to Deputy, confirm, return |
+| Deputy | All company advances/movements | Own and all same-company users | Distribute held money to Supervisor/Worker, confirm, return |
+| Accountant | All company advances/movements | Own and all same-company users | None |
+| Supervisor | Personal participation only | Own only | Confirm and return |
+| Worker | Personal participation only | Own only | Confirm and return |
+| Unknown | None | None | None |
 
-## Manager project creation and owner behavior
+Policies added: `AdvanceViewer`, `AdvanceCreator`, `AdvanceDistributor`, `AdvanceParticipant`, and `AdvanceBalanceViewer`. Every persistence query still applies `company_id` and record-level predicates.
 
-- The form uses actual accepted fields: project/site/contact, positive two-decimal contract value, contract/start/expected-end dates, description/notes, complete `newOwner`, and optional supervisor.
-- Initial status is not selectable and therefore remains backend-fixed `Active`. No terminal/final status action exists.
-- No safe owner-list endpoint exists, so normal users receive the atomic new-owner flow. No raw existing-owner UUID input or invented owner list exists. Existing-owner selection remains a documented API limitation.
-- Duplicate submit is prevented; writes are not retried automatically. Success refreshes the list and routes to authoritative detail.
+## Financial integrity
 
-## Manager metadata update
+- Money precision: PostgreSQL `NUMERIC(18,2)` and C# `decimal` only; maximum `9999999999999999.99`.
+- Balance authority: `user_advance_balances`; the API does not accept or reconstruct client balances.
+- Funding authority: `funding_sources.available_amount`/`reserved_amount`/`used_amount` under row lock.
+- Transactions: every command uses an explicit PostgreSQL transaction.
+- Locking: tenant-filtered `FOR UPDATE` locks protect funding sources, transfers, advances, and user balances before lifecycle/availability validation.
+- Ledger behavior: append only; no update, delete, repair, or recalculation code.
+- Concurrency: `advances`, `funding_sources`, `money_transfers`, and `user_advance_balances` versions are EF concurrency tokens. Concurrency and SQLSTATE `23505` map to HTTP 409.
+- IDs/timestamps: configured primary UUIDs and timestamps are PostgreSQL-generated. Opaque `ADV-<uuid>`/`TRF-<uuid>` display references are used because no sequence is configured.
+- Idempotency: operation/payload/actor fingerprint, resource identity, and original safe response share the financial transaction; key reuse with a different request conflicts.
 
-- Authoritative detail is loaded before editing and supplies `expectedVersion`.
-- Only changed supported metadata is sent. Owner is read-only, contract value is absent, nullable clearing is not invented, and only `Active`/`Paused` are selectable.
-- HTTP 409 remains explicit and provides a reload action; it is never automatically retried.
+## Packages changed
 
-## Supervisor assignment and project supervisor view
+None.
 
-- The selector requests `role=Supervisor`, `status=Active`, bounded search, and page size 20, then defensively filters the page again. No arbitrary user ID entry is shown.
-- Current active supervisors are displayed. Replacement requires confirmation and states that the server ends assignments without deleting history. Unassignment is absent.
-- The members route is titled Project supervisors and explains that it represents active supervision assignments only, not workers or complete project staff. It is paginated and read-only.
+## Verification status
 
-## Company member directory
-
-- Manager and Deputy receive server-filtered role/status/search, page size 20, refresh, stable deduplication, retry, load-more recovery, localized empty states, responsive cards, and safe detail navigation.
-- List presentation does not invent phone/email fields omitted by the list DTO. Detail uses the exact endpoint for safe contact and timestamps.
-- List and detail are explicitly read-only. There are no role, status, deletion, activation/suspension, or identity-verification actions.
-
-## Error, session, localization, and accessibility behavior
-
-- Existing AppException/Problem Details mappings cover validation, 401 expiry, 403 permission denial without token deletion, 404 unavailable records, 409 stale conflicts, server errors, timeout, and network retry.
-- Lists preserve loaded data after load-more failure. Create/update/supervisor writes prevent duplicates and do not auto-retry.
-- Arabic RTL and English LTR resources cover navigation, filters, statuses, forms, validation, empty/error/conflict states, project terminology, active-supervision wording, and read-only member presentation. Unknown values use a safe fallback.
-- Pages use SafeArea through the authenticated shell, constrained responsive layouts, keyboard-safe scrolling, text-labelled status chips, tooltips, semantic loading controls, and practical Material touch/focus behavior.
-
-## Flutter verification
-
-- Package changes: none. `flutter pub get` passed; 11 newer incompatible package versions were informational only.
-- Format: `dart format --output=none --set-exit-if-changed lib test` passed; 90 files, 0 changed.
-- Analyze: `flutter analyze` passed with no issues.
-- Tests: `flutter test` passed; 104 total, 0 failed.
-- Tests use fake repositories/token stores and controlled Dio adapters; no real project/member API or PostgreSQL workflow was called.
-- Web: release build passed with `API_BASE_URL=http://localhost:5231`; output is `frontend/ahdah_app/build/web`. The build reported a non-fatal missing Cupertino-icons font warning while Material icons were present, and the Wasm dry run succeeded.
-- Android: debug APK build passed with `API_BASE_URL=http://10.0.2.2:5231`; output is `frontend/ahdah_app/build/app/outputs/flutter-apk/app-debug.apk`. The app was not launched on an emulator or device.
-- iOS: shared Dart/source compatibility and narrow `NSAllowsLocalNetworking` ATS configuration were inspected. No iOS build was attempted on Windows. The repository currently has no checked-in `ios/Podfile`; macOS/Xcode/CocoaPods generation/resolution, signing, simulator, and device verification remain pending.
-
-## Backend, database, and generated-file status
-
-- Backend source changes: none.
-- Backend restore/build/tests: not rerun because backend files did not change. The prior verified baseline remains 114 passing backend tests, but this task makes no new backend-test claim.
-- PostgreSQL mutation: none during this task. No real API write, database command, catalog query, migration, or schema operation was executed.
+- Restore: passed for `backend\Ahdah.sln`.
+- Build: passed with 0 warnings and 0 errors.
+- Tests: passed 176 total (104 unit and 72 integration), 0 failed and 0 skipped.
+- OpenAPI: development `/openapi/v1.json` built and was verified by the passing integration suite; advance routes/DTOs are present and generated EF entities are absent.
+- PostgreSQL mutation: none. Only read-only catalog/configuration queries were executed; no real write endpoint was called.
 - Generated EF files: unchanged.
-- Migrations: none created or run. No `EnsureCreated`, `EnsureDeleted`, or `Database.Migrate` was introduced.
-- Financial modules: none added.
+- Migrations: none created or run.
+- Flutter: no Flutter source or command was touched; the pre-existing untracked devtools file remains untouched.
 
-## Warnings and limitations
+## Known limitations
 
-- Existing-owner selection needs a future safe owner-directory API; creation currently uses only the supported atomic new-owner UX.
-- Worker project visibility cannot exist until an approved real worker/project relationship exists.
-- Project members remain active supervisor assignments only because the schema has no generic project-member relationship.
-- Direct contract-value changes, completion, cancellation, and financial closure remain deferred.
-- Member role/status mutations and identity verification remain deferred.
-- The Web build's Cupertino-icons font warning is non-fatal and no Cupertino icon dependency was added in this task.
-- iOS verification requires macOS and Xcode; the missing checked-in Podfile should be reviewed/generated there before the first iOS build.
+- Existing funding sources must be created and verified by a future focused source-management workflow before an advance can be created.
+- No configured company number sequence exists; references are opaque and not chronological.
+- Return initiation rejects ambiguous multi-sender lineage rather than inventing FIFO routing.
+- Movement output projects safe allocation/transfer history, not raw ledger internals.
+- Settlement status is not collapsed into one advance-level field because settlements are balance-specific.
+- iOS, Android, and Web Flutter Advances UI is not implemented in this phase.
 
 ## Exact recommended next task
 
-Design and implement the backend Advances foundation using the existing advances, advance funding, distribution, settlement, return, balance, and approval tables without modifying the PostgreSQL schema.
+Implement the Flutter Advances and User Balance UI using the completed Advances APIs, without implementing expenses or settlement workflows yet.

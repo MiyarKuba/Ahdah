@@ -61,16 +61,31 @@ This document records only known high-level rules. Detailed financial, approval,
 - A supervisor candidate must be an active same-company user with exact role `Supervisor`. Replacement preserves history by ending old active assignment rows rather than deleting them.
 - New projects start as `Active`. Metadata updates may retain or transition between `Active` and `Paused`. `Completed`, `FinanciallyClosed`, and `Cancelled` transitions remain deferred.
 - Project completion and financial closure do not imply or calculate advance settlement, supplier debt payment, invoice delivery, manager-fund settlement, or transfer/reallocation completion in this phase.
-- Existing-member role/status mutations, identity verification, project-member writes, financial modules, and Flutter company-structure UI remain deferred.
+- Existing-member role/status mutations, identity verification, project-member writes, financial modules beyond the documented Advances Phase 1 foundation, and further Flutter company-structure changes remain deferred.
+
+## Advances foundation rules
+
+- Manager creates a top-level advance only for an active same-company exact `Deputy`. Company, creator, sender, status, timestamps, and balance values always come from authenticated/server state.
+- Top-level funding allocates one or more existing same-company `Available` or `PartiallyUsed` funding sources. Allocations must share currency and total the fixed advance amount. New funding-source subtype creation and verification remain separate future workflows.
+- Initial delivery, internal distribution, and unused-money return require recipient confirmation. Source availability moves to reserved before a pending operation and becomes used/transferred/returned only on confirmation.
+- Manager may distribute money actually held to Deputy. Deputy may distribute money actually held to Supervisor or Worker. Accountant is read-only. Supervisor-to-Worker distribution is not approved in this phase.
+- A holder may return unused money only to the single unambiguous upstream sender proven by confirmed transfer lineage. The client cannot select another destination.
+- The recipient may reject a pending internal distribution or balance return, which releases the existing reservation without deleting history. Initial advance-delivery rejection is deferred because `advances` has no rejected state and its delivery is unique.
+- `user_advance_balances` is authoritative. Every amount reservation or confirmation updates that row under lock and appends a corresponding immutable balance-ledger record in one transaction.
+- All money uses positive two-decimal `NUMERIC(18,2)`/`decimal` values. Cross-currency allocations are rejected; exchange rates and conversion are not implemented.
+- Every financial command requires tenant-scoped idempotency. A key cannot be reused by another operation, payload, or actor.
+- Advance records have no direct project relationship. A source originating from a project-owner payment does not make a multi-source advance project-owned.
+- An available balance of zero does not mean settled or closed. Expense allocation, receipts, supplier debt, claims, settlement resolution, closure, and FIFO settlement remain deferred.
 
 ## Rules pending implementation review
 
 - Company onboarding after initial bootstrap, suspension, and tenant membership lifecycle
 - Additional role delegation beyond the approved company-directory/project matrix
 - Project worker membership and assignment writes
-- Funding-source eligibility and availability
-- Custody issue, balance, transfer, and return rules
-- Transfer initiation, acceptance, rejection, reversal, and approval rules
+- Creation and verification of each funding-source subtype
+- Advance cancellation/reissue and initial-delivery rejection
+- Transfer correction, cancellation, and reversal workflows
+- Supervisor-to-Worker distribution authority
 - Expense classification, receipt requirements, review, rejection, and correction rules
 - Supplier debt creation, aging, payment allocation, and closure rules
 - Worker claim eligibility, evidence, approval, and reimbursement rules
