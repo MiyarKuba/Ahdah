@@ -17,6 +17,14 @@ abstract final class AppRoutes {
   static const projectMembers = 'projectMembers';
   static const companyMembers = 'companyMembers';
   static const companyMemberDetails = 'companyMemberDetails';
+  static const advances = 'advances';
+  static const advanceCreate = 'advanceCreate';
+  static const advanceDetails = 'advanceDetails';
+  static const advanceMovements = 'advanceMovements';
+  static const advanceDistribution = 'advanceDistribution';
+  static const advanceReturn = 'advanceReturn';
+  static const advanceBalances = 'advanceBalances';
+  static const authorizedAdvanceBalances = 'authorizedAdvanceBalances';
   static const account = 'account';
   static const unavailable = 'unavailable';
 
@@ -33,6 +41,9 @@ abstract final class AppRoutes {
   static const projectsPath = '/projects';
   static const projectCreatePath = '/projects/new';
   static const companyMembersPath = '/company/members';
+  static const advancesPath = '/advances';
+  static const advanceCreatePath = '/advances/new';
+  static const advanceBalancesPath = '/advance-balances';
   static const accountPath = '/account';
   static const unavailablePath = '/unavailable';
 }

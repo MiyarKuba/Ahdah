@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 
 import '../../features/authentication/domain/identity_models.dart';
@@ -6,6 +8,8 @@ import '../../features/access/domain/access_models.dart';
 import '../../features/company_members/domain/company_member_models.dart';
 import '../../features/projects/domain/project_models.dart';
 import '../../features/projects/domain/project_requests.dart';
+import '../../features/advances/domain/advance_models.dart';
+import '../../features/advances/domain/advance_requests.dart';
 import '../errors/app_exception.dart';
 import '../errors/problem_details.dart';
 import 'api_endpoints.dart';
@@ -282,9 +286,186 @@ final class ApiClient {
     return CompanyMemberDetails.fromJson(_body(response));
   }
 
+  Future<AdvancePage> listAdvances({
+    required int page,
+    required int pageSize,
+    String? status,
+    String? userId,
+    String? reference,
+  }) async => AdvancePage.fromJson(
+    await _financialGet(
+      ApiEndpoints.advances,
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+        'status': ?status,
+        'userId': ?userId,
+        'reference': ?reference,
+      },
+    ),
+  );
+
+  Future<AdvanceDetails> getAdvance(String advanceId) async =>
+      AdvanceDetails.fromJson(
+        await _financialGet(ApiEndpoints.advance(advanceId)),
+      );
+
+  Future<AdvanceMovementPage> listAdvanceMovements(
+    String advanceId, {
+    required int page,
+    required int pageSize,
+  }) async => AdvanceMovementPage.fromJson(
+    await _financialGet(
+      ApiEndpoints.advanceMovements(advanceId),
+      queryParameters: {'page': page, 'pageSize': pageSize},
+    ),
+  );
+
+  Future<FundingSourcePage> listAdvanceFundingSources({
+    required int page,
+    required int pageSize,
+  }) async => FundingSourcePage.fromJson(
+    await _financialGet(
+      ApiEndpoints.advanceFundingSources,
+      queryParameters: {'page': page, 'pageSize': pageSize},
+    ),
+  );
+
+  Future<AdvanceBalancePage> getMyAdvanceBalances({
+    required int page,
+    required int pageSize,
+  }) async => AdvanceBalancePage.fromJson(
+    await _financialGet(
+      ApiEndpoints.myAdvanceBalances,
+      queryParameters: {'page': page, 'pageSize': pageSize},
+    ),
+  );
+
+  Future<AdvanceBalancePage> getUserAdvanceBalances(
+    String userId, {
+    required int page,
+    required int pageSize,
+  }) async => AdvanceBalancePage.fromJson(
+    await _financialGet(
+      ApiEndpoints.userAdvanceBalances(userId),
+      queryParameters: {'page': page, 'pageSize': pageSize},
+    ),
+  );
+
+  Future<AdvanceDetails> createAdvance(
+    CreateAdvanceInput input,
+    String idempotencyKey,
+  ) async => AdvanceDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.advances,
+      data: input.toJsonBody(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<AdvanceTransferDetails> distributeAdvance(
+    String advanceId,
+    CreateAdvanceDistributionInput input,
+    String idempotencyKey,
+  ) async => AdvanceTransferDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.advanceDistributions(advanceId),
+      data: input.toJsonBody(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<AdvanceTransferDetails> returnAdvanceMoney(
+    String advanceId,
+    CreateAdvanceReturnInput input,
+    String idempotencyKey,
+  ) async => AdvanceTransferDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.advanceReturns(advanceId),
+      data: input.toJsonBody(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<AdvanceTransferDetails> confirmAdvanceTransfer(
+    String transferId,
+    String idempotencyKey,
+  ) async => AdvanceTransferDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.advanceTransferConfirm(transferId),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<AdvanceTransferDetails> rejectAdvanceTransfer(
+    String transferId,
+    RejectAdvanceTransferInput input,
+    String idempotencyKey,
+  ) async => AdvanceTransferDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.advanceTransferReject(transferId),
+      data: input.toJson(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
   Future<bool> health() async {
     await _send(() => _dio.get<Map<String, Object?>>(ApiEndpoints.health));
     return true;
+  }
+
+  Future<Map<String, Object?>> _financialGet(
+    String path, {
+    Map<String, Object?>? queryParameters,
+  }) async {
+    final response = await _sendFinancial(
+      () => _dio.get<String>(
+        path,
+        queryParameters: queryParameters,
+        options: Options(
+          responseType: ResponseType.plain,
+          extra: const {requiresAuthenticationKey: true},
+        ),
+      ),
+    );
+    return _financialBody(response);
+  }
+
+  Future<Map<String, Object?>> _financialPost(
+    String path, {
+    Object? data,
+    required String idempotencyKey,
+  }) async {
+    final response = await _sendFinancial(
+      () => _dio.post<String>(
+        path,
+        data: data,
+        options: Options(
+          contentType: Headers.jsonContentType,
+          responseType: ResponseType.plain,
+          headers: {'Idempotency-Key': idempotencyKey},
+          extra: const {requiresAuthenticationKey: true},
+        ),
+      ),
+    );
+    return _financialBody(response);
+  }
+
+  static Map<String, Object?> _financialBody(Response<String> response) {
+    final source = response.data;
+    if (source == null || source.isEmpty) {
+      throw const AppException(AppExceptionKind.server);
+    }
+    final amountPattern = RegExp(
+      r'("(?:amount|advanceAmount|availableAmount|reservedAmount|allocatedAmount|totalReceivedAmount|totalRestoredAmount|totalExpensedAmount|totalTransferredOutAmount|totalReturnedAmount|totalAvailableAmount)"\s*:\s*)(-?\d+(?:\.\d+)?)',
+    );
+    final protected = source.replaceAllMapped(
+      amountPattern,
+      (match) => '${match.group(1)}"${match.group(2)}"',
+    );
+    final decoded = jsonDecode(protected);
+    if (decoded is! Map) throw const AppException(AppExceptionKind.server);
+    return Map<String, Object?>.from(decoded);
   }
 
   static Map<String, Object?> _body(Response<Map<String, Object?>> response) {
@@ -297,6 +478,22 @@ final class ApiClient {
 
   static Future<Response<Map<String, Object?>>> _send(
     Future<Response<Map<String, Object?>>> Function() request,
+  ) async {
+    try {
+      return await request();
+    } on DioException catch (error) {
+      throw _mapDioException(error);
+    } on AppException {
+      rethrow;
+    } on FormatException {
+      throw const AppException(AppExceptionKind.server);
+    } on TypeError {
+      throw const AppException(AppExceptionKind.server);
+    }
+  }
+
+  static Future<Response<String>> _sendFinancial(
+    Future<Response<String>> Function() request,
   ) async {
     try {
       return await request();

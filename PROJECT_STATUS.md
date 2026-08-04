@@ -6,16 +6,16 @@ Ahdah — عُهدة
 
 ## Current phase
 
-Advances Foundation — Backend Phase 1
+Flutter Advances and User Balances
 
 ## Date
 
-2026-08-03
+2026-08-04
 
 ## Workspace and branch
 
 - Workspace confirmed before edits: `C:\dev\Ahdah`.
-- Branch confirmed before edits: `feat/advances-foundation`.
+- Branch confirmed before edits: `feat/flutter-advances-balances`.
 - One pre-existing untracked Flutter file, `frontend/ahdah_app/devtools_options.yaml`, was present and left untouched.
 
 ## Actual schema findings
@@ -44,6 +44,11 @@ Advances Foundation — Backend Phase 1
 - Unused-money return to exactly one upstream sender derived from confirmed lineage; no client destination is accepted.
 - Current-user balance and Manager/Deputy/Accountant same-company user-balance lookup.
 - Tenant-scoped idempotency key/fingerprint/original-response replay records for every financial command.
+- Flutter role-aware advance navigation, guarded routes, paginated list/detail/movement history, and authoritative balance pages for Android, iOS, and Web.
+- Manager top-level creation with active-Deputy selection, usable funding sources, and exact multi-source allocation validation.
+- Manager/Deputy held-balance distribution with the approved recipient chain, expected-recipient confirmation, supported internal/return rejection, and lineage-derived unused-money returns.
+- Exact decimal-string response/request handling without `double`, plus 32-byte secure ephemeral `Idempotency-Key` generation and explicit same-payload retry after ambiguous network/timeout outcomes.
+- Arabic RTL and English LTR financial labels, forms, states, confirmations, and safe unknown-value fallbacks.
 
 ## Workflows omitted and reasons
 
@@ -104,14 +109,19 @@ None.
 
 ## Verification status
 
-- Restore: passed for `backend\Ahdah.sln`.
-- Build: passed with 0 warnings and 0 errors.
-- Tests: passed 176 total (104 unit and 72 integration), 0 failed and 0 skipped.
-- OpenAPI: development `/openapi/v1.json` built and was verified by the passing integration suite; advance routes/DTOs are present and generated EF entities are absent.
-- PostgreSQL mutation: none. Only read-only catalog/configuration queries were executed; no real write endpoint was called.
+- Flutter format check: passed for `lib` and `test` after generation.
+- Flutter analyze: passed with no issues.
+- Flutter tests: passed 137 total, including the pre-existing 104 and 33 focused Advances tests; 0 failed.
+- Flutter Web release build: passed with `API_BASE_URL=http://localhost:5231`; artifact generated under `frontend/ahdah_app/build/web`. The compiler emitted a non-blocking missing Cupertino icon-font warning from outside application source; no application source references `CupertinoIcons`.
+- Android debug APK build: passed with `API_BASE_URL=http://10.0.2.2:5231`; artifact generated at `frontend/ahdah_app/build/app/outputs/flutter-apk/app-debug.apk`. The application was not launched on an emulator or device.
+- iOS: source compatibility inspected; build, signing, simulator, and device verification remain pending macOS/Xcode.
+- Backend: unchanged. Backend restore/build/tests were not rerun; the existing recorded result remains 176 passed from Backend Phase 1.
+- OpenAPI: existing `AdvanceApiTests` development-document verification was inspected; no backend/OpenAPI contract changed.
+- PostgreSQL mutation: none. No real financial endpoint or database command was invoked.
 - Generated EF files: unchanged.
 - Migrations: none created or run.
-- Flutter: no Flutter source or command was touched; the pre-existing untracked devtools file remains untouched.
+- Packages: no dependency added or changed.
+- The pre-existing untracked `frontend/ahdah_app/devtools_options.yaml` remains untouched.
 
 ## Known limitations
 
@@ -120,8 +130,11 @@ None.
 - Return initiation rejects ambiguous multi-sender lineage rather than inventing FIFO routing.
 - Movement output projects safe allocation/transfer history, not raw ledger internals.
 - Settlement status is not collapsed into one advance-level field because settlements are balance-specific.
-- iOS, Android, and Web Flutter Advances UI is not implemented in this phase.
+- The authorized user-balance API requires a user ID. Manager/Deputy use the safe company directory; Accountant has no directory discovery, so Flutter exposes personal balances but no raw-ID lookup UI for Accountant.
+- Funding-source creation/editing remains unavailable; Manager creation depends on usable sources already returned by the API.
+- iOS compilation/signing and runtime verification require macOS/Xcode.
+- No live financial workflow was exercised; automated tests use fakes and controlled Dio adapters.
 
 ## Exact recommended next task
 
-Implement the Flutter Advances and User Balance UI using the completed Advances APIs, without implementing expenses or settlement workflows yet.
+Design and implement the backend Expenses foundation using the existing expense, category, allocation, payment, attachment, approval, receipt-original-status, reimbursement, and audit tables without modifying the PostgreSQL schema.

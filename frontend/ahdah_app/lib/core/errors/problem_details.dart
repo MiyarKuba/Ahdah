@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 final class FieldValidationErrors {
   const FieldValidationErrors(this.values);
 
@@ -46,6 +48,13 @@ final class ProblemDetails {
   final FieldValidationErrors fieldErrors;
 
   factory ProblemDetails.fromJson(Object? json) {
+    if (json is String) {
+      try {
+        return ProblemDetails.fromJson(jsonDecode(json));
+      } on FormatException {
+        return const ProblemDetails();
+      }
+    }
     if (json is! Map) return const ProblemDetails();
     final map = Map<String, Object?>.from(json);
     return ProblemDetails(

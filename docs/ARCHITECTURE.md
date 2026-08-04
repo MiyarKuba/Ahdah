@@ -42,6 +42,12 @@ Project/member lists preserve server filters while refreshing, reset to page 1 w
 
 Contract value crosses Flutter as decimal text. Creation validates its exact decimal grammar and replaces a private JSON marker with that validated token so the API receives a JSON number without a `double` conversion. No financial arithmetic occurs. Presentation additionally checks Manager capability, so a malformed response containing `contractValue` is still not rendered for Deputy, Accountant, or Supervisor.
 
+The Flutter Advances feature follows the same feature-first boundary under `features/advances`. Handwritten immutable DTOs, exact request objects, a repository interface/API adapter, focused paged-read controllers, and focused financial-command controllers remain independent of EF persistence types. Financial responses are read as text and amount tokens are protected before JSON decoding so `NUMERIC(18,2)` values do not pass through binary floating point. Request amounts remain canonical decimal text until validated JSON-number emission; the only client arithmetic is checked integer minor-unit comparison for form validation and exact funding allocation equality.
+
+`RoleCapabilities` adds advance visibility, top-level creation, held-balance distribution, authorized-balance discovery, confirmation, supported rejection, and return capabilities. Routes are guarded in addition to hidden navigation. Record actions further require an `Open` advance, an authoritative current-user balance, or a pending movement whose exact recipient matches `/auth/me`. The initial delivery is never rejectable in Flutter.
+
+Financial command controllers generate 32 secure random bytes as URL-safe, unpadded `Idempotency-Key` values. Keys and payloads live only in auto-disposed controller memory. A timeout/network error preserves the exact payload/key and exposes an explicit retry; success, definitive 4xx, user cancellation, payload replacement, and disposal clear it. No write is automatically retried and no key enters preferences, secure storage, browser storage, routes, UI, or logs.
+
 The one-time invitation creation token is returned directly to dialog-local state. It never enters list models, provider state, routes, preferences, secure storage, browser storage, diagnostics, or logs. Closing the result drops the reference and refreshes the non-secret list. SMS/email delivery is outside the client.
 
 ## ASP.NET Core Web API

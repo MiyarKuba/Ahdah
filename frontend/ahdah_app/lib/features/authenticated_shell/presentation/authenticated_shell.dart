@@ -36,6 +36,13 @@ final class AuthenticatedShell extends ConsumerWidget {
           icon: Icons.business_outlined,
           selectedIcon: Icons.business,
         ),
+      if (capabilities.canViewAdvances)
+        _ShellDestination(
+          path: AppRoutes.advancesPath,
+          label: l10n.navAdvances,
+          icon: Icons.account_balance_wallet_outlined,
+          selectedIcon: Icons.account_balance_wallet,
+        ),
       if (capabilities.canViewCompanyDirectory)
         _ShellDestination(
           path: AppRoutes.companyMembersPath,
@@ -65,7 +72,10 @@ final class AuthenticatedShell extends ConsumerWidget {
       ),
     ];
     final selectedIndex = destinations.indexWhere(
-      (destination) => location.startsWith(destination.path),
+      (destination) =>
+          location.startsWith(destination.path) ||
+          destination.path == AppRoutes.advancesPath &&
+              location.startsWith(AppRoutes.advanceBalancesPath),
     );
     final safeIndex = selectedIndex < 0 ? 0 : selectedIndex;
     final wide = MediaQuery.sizeOf(context).width >= 840;

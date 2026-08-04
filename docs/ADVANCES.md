@@ -120,6 +120,22 @@ No advance route accepts `project_id`, and no project filter is published. The `
 
 Settlement and closure commands are deferred. Settlements snapshot received, restored, expensed, transferred, returned, adjustment, available, and reserved totals and may require documents, review, difference resolution, cash recovery, claim offset, or waiver. Closures aggregate balance settlement, pending operations, unresolved issues, supplier debt, personal claims, and documents. These dependencies require the deferred expense, receipt, supplier-debt, claim, review, and document workflows. Zero cash balance alone never marks an advance financially settled or closed. FIFO expense settlement is not implemented.
 
+## Flutter consumption
+
+Flutter now consumes every safely supported Phase 1 route with handwritten immutable models and the existing authenticated Dio/session stack. Stable routes cover advance list/create/detail/movements/distribution/return plus personal and selected-user balances. Navigation and router guards use centralized exact-role capabilities, while record actions also require authoritative loaded state and exact current-user relationships.
+
+The list applies server-side status, bounded reference, and safely selected user filters with page size 20, refresh, stable deduplication, and recoverable load-more errors. Detail renders exact advance, funding, and balance DTO fields; Supervisor/Worker balance rendering remains personal. Movement history preserves API chronological order and never reconstructs running balances. Pending transfer IDs provide confirmation/rejection targets; initial `AdvanceDelivery` is confirmable but not rejectable.
+
+Manager creation offers active Deputies and manager-only usable funding sources. Allocation amounts and the total are strict positive decimal strings with at most two fractional digits and 16 whole digits. Exact equality uses checked integer minor units, not `double`. Financial response amount tokens are preserved lexically before JSON decoding, and requests emit validated decimal JSON numbers. Different currencies are never added.
+
+Manager distributes to active Deputies; Deputy distributes to active Supervisors/Workers. Return accepts no recipient because the server derives one unambiguous upstream sender. Personal and authorized balance pages display authoritative server balance rows. Manager/Deputy user lookup uses the directory; Accountant user lookup is not exposed through raw ID because Accountant has no safe directory discovery endpoint.
+
+Every command creates 32 cryptographically secure random bytes and sends unpadded URL-safe Base64 in `Idempotency-Key`. The value exists only in auto-disposed controller memory. No automatic retry exists. Network/timeout results are explicitly uncertain and permit only an explicit retry of the identical payload with the same key. Success, definitive 4xx, cancellation, payload replacement, or disposal clears it. It is never shown, logged, or persisted.
+
+Arabic/English localization covers routes, values, forms, errors, confirmation summaries, and uncertain operations. The same responsive Material 3 pages support Android, iOS, tablet, and Web. Automated tests use fakes/controlled Dio only and make no live financial call.
+
+Expenses, receipts, attachments, settlement, closure, cancellation, reversal, claims, supplier debt, project association, arbitrary balance adjustment, funding-source mutation, offline write queues, and background synchronization remain absent.
+
 ## Safety statement
 
 This phase adds no table, column, index, constraint, trigger, function, enum, migration, `EnsureCreated`, `EnsureDeleted`, or `Database.Migrate` call. No generated Database-First file is edited. Automated verification uses fake API services and metadata/source tests; it does not call a real write endpoint or mutate PostgreSQL.

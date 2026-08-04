@@ -14,6 +14,9 @@ import 'package:ahdah_app/features/company_members/domain/company_member_reposit
 import 'package:ahdah_app/features/projects/domain/project_models.dart';
 import 'package:ahdah_app/features/projects/domain/project_repository.dart';
 import 'package:ahdah_app/features/projects/domain/project_requests.dart';
+import 'package:ahdah_app/features/advances/domain/advance_models.dart';
+import 'package:ahdah_app/features/advances/domain/advance_repository.dart';
+import 'package:ahdah_app/features/advances/domain/advance_requests.dart';
 import 'package:dio/dio.dart';
 
 const testUser = AuthenticatedUser(
@@ -466,3 +469,248 @@ final testMemberDetails = CompanyMemberDetails(
   createdAtUtc: DateTime.utc(2026, 8, 1),
   updatedAtUtc: DateTime.utc(2026, 8, 1),
 );
+
+final testAdvanceSummary = AdvanceSummary(
+  advanceId: 'advance-1',
+  advanceNumber: 'ADV-TEST',
+  advanceAmount: '100.00',
+  availableAmount: '80.00',
+  reservedAmount: '20.00',
+  currencyCode: 'LYD',
+  issueDate: DateTime(2026, 8, 4),
+  purpose: 'Site custody',
+  status: 'Open',
+  recipient: const AdvanceUserSummary(
+    userId: 'recipient-1',
+    fullName: 'Recipient',
+    role: 'Deputy',
+  ),
+  versionNumber: 2,
+  createdAtUtc: DateTime.utc(2026, 8, 4),
+);
+
+final testAdvanceBalance = AdvanceBalanceSummary(
+  advanceId: 'advance-1',
+  advanceNumber: 'ADV-TEST',
+  holder: testAdvanceSummary.recipient,
+  totalReceivedAmount: '100.00',
+  totalRestoredAmount: '0.00',
+  totalExpensedAmount: '0.00',
+  totalTransferredOutAmount: '0.00',
+  totalReturnedAmount: '0.00',
+  availableAmount: '80.00',
+  reservedAmount: '20.00',
+  currencyCode: 'LYD',
+  status: 'Active',
+  versionNumber: 2,
+  updatedAtUtc: DateTime.utc(2026, 8, 4),
+);
+
+final testAdvanceDetails = AdvanceDetails(
+  advance: testAdvanceSummary,
+  fundings: const [],
+  balances: [testAdvanceBalance],
+);
+
+final testAdvanceTransfer = AdvanceTransferDetails(
+  transferId: 'transfer-1',
+  transferNumber: 'TRF-TEST',
+  transferType: 'InternalTransfer',
+  advanceId: 'advance-1',
+  amount: '10.00',
+  currencyCode: 'LYD',
+  sender: const AdvanceUserSummary(
+    userId: 'sender-1',
+    fullName: 'Sender',
+    role: 'Deputy',
+  ),
+  recipient: testAdvanceSummary.recipient,
+  transferMethod: 'Cash',
+  status: 'PendingConfirmation',
+  versionNumber: 1,
+  createdAtUtc: DateTime.utc(2026, 8, 4),
+);
+
+final class FakeAdvanceRepository implements AdvanceRepository {
+  AdvancePage advancePage = const AdvancePage(
+    items: [],
+    page: 1,
+    pageSize: 20,
+    totalCount: 0,
+    totalPages: 0,
+  );
+  AdvanceMovementPage movementPage = const AdvanceMovementPage(
+    items: [],
+    page: 1,
+    pageSize: 20,
+    totalCount: 0,
+    totalPages: 0,
+  );
+  FundingSourcePage fundingPage = const FundingSourcePage(
+    items: [],
+    page: 1,
+    pageSize: 20,
+    totalCount: 0,
+    totalPages: 0,
+  );
+  AdvanceBalancePage balancePage = const AdvanceBalancePage(
+    page: AdvanceBalanceResultPage(
+      items: [],
+      page: 1,
+      pageSize: 20,
+      totalCount: 0,
+      totalPages: 0,
+    ),
+  );
+  AdvanceDetails details = testAdvanceDetails;
+  AdvanceTransferDetails transfer = testAdvanceTransfer;
+  AppException? readError;
+  AppException? writeError;
+  Completer<AdvanceDetails>? createCompleter;
+  int listCalls = 0;
+  int createCalls = 0;
+  int distributionCalls = 0;
+  int returnCalls = 0;
+  int confirmationCalls = 0;
+  int rejectionCalls = 0;
+  int? lastPage;
+  int? lastPageSize;
+  String? lastStatus;
+  String? lastUserId;
+  String? lastReference;
+  String? lastIdempotencyKey;
+  CreateAdvanceInput? lastCreateInput;
+  CreateAdvanceDistributionInput? lastDistributionInput;
+  CreateAdvanceReturnInput? lastReturnInput;
+  RejectAdvanceTransferInput? lastRejectionInput;
+
+  @override
+  Future<AdvancePage> listAdvances({
+    required int page,
+    required int pageSize,
+    String? status,
+    String? userId,
+    String? reference,
+  }) async {
+    listCalls++;
+    lastPage = page;
+    lastPageSize = pageSize;
+    lastStatus = status;
+    lastUserId = userId;
+    lastReference = reference;
+    if (readError != null) throw readError!;
+    return advancePage;
+  }
+
+  @override
+  Future<AdvanceDetails> getAdvance(String advanceId) async {
+    if (readError != null) throw readError!;
+    return details;
+  }
+
+  @override
+  Future<AdvanceMovementPage> listMovements(
+    String advanceId, {
+    required int page,
+    required int pageSize,
+  }) async {
+    lastPage = page;
+    lastPageSize = pageSize;
+    if (readError != null) throw readError!;
+    return movementPage;
+  }
+
+  @override
+  Future<FundingSourcePage> listFundingSources({
+    required int page,
+    required int pageSize,
+  }) async {
+    lastPage = page;
+    lastPageSize = pageSize;
+    if (readError != null) throw readError!;
+    return fundingPage;
+  }
+
+  @override
+  Future<AdvanceBalancePage> getMyBalances({
+    required int page,
+    required int pageSize,
+  }) async {
+    lastPage = page;
+    lastPageSize = pageSize;
+    if (readError != null) throw readError!;
+    return balancePage;
+  }
+
+  @override
+  Future<AdvanceBalancePage> getUserBalances(
+    String userId, {
+    required int page,
+    required int pageSize,
+  }) async {
+    lastUserId = userId;
+    return getMyBalances(page: page, pageSize: pageSize);
+  }
+
+  @override
+  Future<AdvanceDetails> createAdvance(
+    CreateAdvanceInput input,
+    String idempotencyKey,
+  ) async {
+    createCalls++;
+    lastCreateInput = input;
+    lastIdempotencyKey = idempotencyKey;
+    if (writeError != null) throw writeError!;
+    return createCompleter?.future ?? details;
+  }
+
+  @override
+  Future<AdvanceTransferDetails> distribute(
+    String advanceId,
+    CreateAdvanceDistributionInput input,
+    String idempotencyKey,
+  ) async {
+    distributionCalls++;
+    lastDistributionInput = input;
+    lastIdempotencyKey = idempotencyKey;
+    if (writeError != null) throw writeError!;
+    return transfer;
+  }
+
+  @override
+  Future<AdvanceTransferDetails> returnMoney(
+    String advanceId,
+    CreateAdvanceReturnInput input,
+    String idempotencyKey,
+  ) async {
+    returnCalls++;
+    lastReturnInput = input;
+    lastIdempotencyKey = idempotencyKey;
+    if (writeError != null) throw writeError!;
+    return transfer;
+  }
+
+  @override
+  Future<AdvanceTransferDetails> confirmTransfer(
+    String transferId,
+    String idempotencyKey,
+  ) async {
+    confirmationCalls++;
+    lastIdempotencyKey = idempotencyKey;
+    if (writeError != null) throw writeError!;
+    return transfer;
+  }
+
+  @override
+  Future<AdvanceTransferDetails> rejectTransfer(
+    String transferId,
+    RejectAdvanceTransferInput input,
+    String idempotencyKey,
+  ) async {
+    rejectionCalls++;
+    lastRejectionInput = input;
+    lastIdempotencyKey = idempotencyKey;
+    if (writeError != null) throw writeError!;
+    return transfer;
+  }
+}

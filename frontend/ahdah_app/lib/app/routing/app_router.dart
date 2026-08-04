@@ -25,6 +25,13 @@ import '../../features/projects/presentation/members/project_members_page.dart';
 import '../../features/projects/presentation/supervisor/project_supervisor_page.dart';
 import '../../features/company_members/presentation/detail/company_member_details_page.dart';
 import '../../features/company_members/presentation/list/company_members_page.dart';
+import '../../features/advances/presentation/list/advances_page.dart';
+import '../../features/advances/presentation/create/advance_create_page.dart';
+import '../../features/advances/presentation/detail/advance_details_page.dart';
+import '../../features/advances/presentation/movements/advance_movements_page.dart';
+import '../../features/advances/presentation/distribute/advance_distribution_page.dart';
+import '../../features/advances/presentation/return_money/advance_return_page.dart';
+import '../../features/advances/presentation/balances/advance_balances_page.dart';
 import 'app_routes.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -43,6 +50,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isAccessManagerPath =
           location == AppRoutes.invitationsPath ||
           location == AppRoutes.joinRequestsPath;
+      final isAdvancePath =
+          location == AppRoutes.advancesPath ||
+          location.startsWith('${AppRoutes.advancesPath}/') ||
+          location == AppRoutes.advanceBalancesPath ||
+          location.startsWith('${AppRoutes.advanceBalancesPath}/');
+      final isAdvanceCreatePath = location == AppRoutes.advanceCreatePath;
+      final isAdvanceDistributionPath = location.endsWith('/distribute');
+      final isAdvanceReturnPath = location.endsWith('/return');
+      final isAuthorizedBalancePath = location.startsWith(
+        '${AppRoutes.advanceBalancesPath}/users/',
+      );
       final isProjectManagementPath =
           location == AppRoutes.projectCreatePath ||
           location.endsWith('/edit') ||
@@ -53,7 +71,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           location == AppRoutes.accountPath ||
           isAccessManagerPath ||
           isProjectPath ||
-          isCompanyDirectoryPath;
+          isCompanyDirectoryPath ||
+          isAdvancePath;
       final isUnavailable = location == AppRoutes.unavailablePath;
       final isOnboarding = {
         AppRoutes.welcomePath,
@@ -74,7 +93,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               isProjectPath && !capabilities.canViewProjects ||
               isProjectManagementPath && !capabilities.canManageProjects ||
               isProjectMembersPath && !capabilities.canViewProjectMembers ||
-              isCompanyDirectoryPath && !capabilities.canViewCompanyDirectory) {
+              isCompanyDirectoryPath && !capabilities.canViewCompanyDirectory ||
+              isAdvancePath && !capabilities.canViewAdvances ||
+              isAdvanceCreatePath && !capabilities.canCreateTopLevelAdvance ||
+              isAdvanceDistributionPath &&
+                  !capabilities.canDistributeAdvances ||
+              isAdvanceReturnPath && !capabilities.canReturnHeldBalance ||
+              isAuthorizedBalancePath &&
+                  !capabilities.canSelectAuthorizedBalanceUser) {
             return AppRoutes.homePath;
           }
           return isOnboarding || isSplash || isUnavailable
@@ -181,6 +207,56 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.companyMembersPath,
             name: AppRoutes.companyMembers,
             builder: (context, state) => const CompanyMembersPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.advancesPath,
+            name: AppRoutes.advances,
+            builder: (context, state) => const AdvancesPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.advanceCreatePath,
+            name: AppRoutes.advanceCreate,
+            builder: (context, state) => const AdvanceCreatePage(),
+          ),
+          GoRoute(
+            path: '/advances/:advanceId',
+            name: AppRoutes.advanceDetails,
+            builder: (context, state) => AdvanceDetailsPage(
+              advanceId: state.pathParameters['advanceId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/advances/:advanceId/movements',
+            name: AppRoutes.advanceMovements,
+            builder: (context, state) => AdvanceMovementsPage(
+              advanceId: state.pathParameters['advanceId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/advances/:advanceId/distribute',
+            name: AppRoutes.advanceDistribution,
+            builder: (context, state) => AdvanceDistributionPage(
+              advanceId: state.pathParameters['advanceId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/advances/:advanceId/return',
+            name: AppRoutes.advanceReturn,
+            builder: (context, state) => AdvanceReturnPage(
+              advanceId: state.pathParameters['advanceId']!,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.advanceBalancesPath,
+            name: AppRoutes.advanceBalances,
+            builder: (context, state) => const PersonalAdvanceBalancesPage(),
+          ),
+          GoRoute(
+            path: '/advance-balances/users/:userId',
+            name: AppRoutes.authorizedAdvanceBalances,
+            builder: (context, state) => AuthorizedUserAdvanceBalancesPage(
+              userId: state.pathParameters['userId']!,
+            ),
           ),
           GoRoute(
             path: '/company/members/:memberId',

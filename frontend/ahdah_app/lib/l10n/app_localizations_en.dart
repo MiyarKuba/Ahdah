@@ -207,7 +207,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeFoundationBody =>
-      'Your secure Ahdah session and approved company tools are ready. Financial modules remain deferred.';
+      'Your secure Ahdah session, company tools, advances, and authoritative balance workflows are ready.';
 
   @override
   String get company => 'Company';
@@ -359,7 +359,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get financialModulesDeferred =>
-      'Advances, expenses, suppliers, settlements, debts, and reporting are not implemented in this phase.';
+      'Expenses, receipts, suppliers, settlements, closure, debts, and reporting remain deferred.';
 
   @override
   String get accountTitle => 'Account and session';
@@ -770,4 +770,348 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readOnly => 'Read-only';
+
+  @override
+  String get navAdvances => 'Advances';
+
+  @override
+  String get advancesTitle => 'Advances';
+
+  @override
+  String get advanceDetails => 'Advance details';
+
+  @override
+  String get movementHistory => 'Movement history';
+
+  @override
+  String get personalBalance => 'My advance balances';
+
+  @override
+  String get userBalances => 'User balances';
+
+  @override
+  String get fundingSources => 'Funding sources';
+
+  @override
+  String get createAdvance => 'Create advance';
+
+  @override
+  String get distributeMoney => 'Distribute money';
+
+  @override
+  String get confirmReceipt => 'Confirm receipt';
+
+  @override
+  String get rejectTransfer => 'Reject transfer';
+
+  @override
+  String get returnUnusedMoney => 'Return unused money';
+
+  @override
+  String get originalAmount => 'Original amount';
+
+  @override
+  String get availableAmount => 'Available amount';
+
+  @override
+  String get reservedAmount => 'Reserved amount';
+
+  @override
+  String get currency => 'Currency';
+
+  @override
+  String get fundingSource => 'Funding source';
+
+  @override
+  String get fundingAllocation => 'Funding allocation';
+
+  @override
+  String get recipient => 'Recipient';
+
+  @override
+  String get sender => 'Sender';
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get transferType => 'Transfer type';
+
+  @override
+  String get paymentMethod => 'Payment method';
+
+  @override
+  String get pendingConfirmation => 'Pending confirmation';
+
+  @override
+  String get confirmed => 'Confirmed';
+
+  @override
+  String get rejected => 'Rejected';
+
+  @override
+  String get retrySameOperation => 'Retry same operation';
+
+  @override
+  String get operationStatusUncertain => 'Operation status uncertain';
+
+  @override
+  String get idempotentRetryExplanation =>
+      'The request may have reached the server. Retry only the exact same operation; Ahdah will reuse its protected operation identity.';
+
+  @override
+  String get insufficientAvailableBalance =>
+      'The amount exceeds the currently displayed available balance.';
+
+  @override
+  String get staleFinancialState =>
+      'The financial state changed. Reload before trying again.';
+
+  @override
+  String get balanceChangedReload => 'Balance changed; reload';
+
+  @override
+  String get returnDestinationDerived =>
+      'The return destination is derived automatically from confirmed upstream transfer history.';
+
+  @override
+  String get expensesNotImplemented =>
+      'Expenses are not implemented in this phase.';
+
+  @override
+  String get settlementNotImplemented =>
+      'Settlement and closure are not implemented in this phase.';
+
+  @override
+  String get noAdvancesTitle => 'No advances found';
+
+  @override
+  String get noAdvancesBody =>
+      'Change the verified filters or create the first advance.';
+
+  @override
+  String get participantAdvancesBody =>
+      'Only advances involving you appear here.';
+
+  @override
+  String get searchAdvanceReference => 'Search advance reference';
+
+  @override
+  String get advanceReference => 'Advance reference';
+
+  @override
+  String get purpose => 'Purpose';
+
+  @override
+  String get issueDate => 'Issue date';
+
+  @override
+  String get settlementDueDateOptional => 'Settlement due date (optional)';
+
+  @override
+  String get transferDate => 'Transfer date';
+
+  @override
+  String get bankName => 'Bank name';
+
+  @override
+  String get referenceNumber => 'Reference number';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get amount => 'Amount';
+
+  @override
+  String get invalidMoney =>
+      'Enter a positive amount with up to 16 whole digits and 2 decimal places.';
+
+  @override
+  String get fundingTotalMismatch =>
+      'Funding allocations must exactly equal the advance amount.';
+
+  @override
+  String get selectRecipient => 'Select recipient';
+
+  @override
+  String get noEligibleRecipients =>
+      'No eligible active recipients were found.';
+
+  @override
+  String get noFundingSources =>
+      'No usable funding sources were returned by the server.';
+
+  @override
+  String get advanceCreatedPending =>
+      'The advance was created and is pending recipient confirmation.';
+
+  @override
+  String get distributionPending =>
+      'The distribution is reserved and pending recipient confirmation.';
+
+  @override
+  String get returnPending =>
+      'The return is reserved and pending receiver confirmation.';
+
+  @override
+  String get confirmFinancialOperationTitle =>
+      'Confirm this financial operation?';
+
+  @override
+  String get confirmReceiptBody =>
+      'Confirm only if you received this exact amount. The server will apply the authoritative balance effect.';
+
+  @override
+  String get rejectTransferBody =>
+      'Rejecting keeps the transfer history and releases the sender reservation according to server rules.';
+
+  @override
+  String get distributionEffectBody =>
+      'The amount will be reserved until the recipient confirms or rejects it.';
+
+  @override
+  String get cancelUncertainOperation => 'Cancel local retry';
+
+  @override
+  String get noMovementsTitle => 'No movements recorded';
+
+  @override
+  String get noMovementsBody =>
+      'The server has not returned any movements for this advance.';
+
+  @override
+  String get noBalancesTitle => 'No advance balances';
+
+  @override
+  String get noBalancesBody => 'No authoritative held balances were returned.';
+
+  @override
+  String get pendingReservationsNotice =>
+      'Reserved amounts remain unavailable while a supported transfer is pending.';
+
+  @override
+  String get authorizedBalanceLookup => 'View a user balance';
+
+  @override
+  String get accountantBalanceLookupLimitation =>
+      'The API requires a user ID, but accountants do not have a safe company-directory selector. Personal balances remain available.';
+
+  @override
+  String get balanceHolder => 'Balance holder';
+
+  @override
+  String get receivedAmount => 'Received';
+
+  @override
+  String get restoredAmount => 'Restored';
+
+  @override
+  String get transferredAmount => 'Transferred out';
+
+  @override
+  String get returnedAmount => 'Returned';
+
+  @override
+  String get fundingSourceTypeProjectOwnerPayment => 'Project owner payment';
+
+  @override
+  String get fundingSourceTypeManagerContribution => 'Manager contribution';
+
+  @override
+  String get fundingSourceTypeCompanyCashbox => 'Company cashbox';
+
+  @override
+  String get fundingSourceTypeReturnedAdvance => 'Returned advance';
+
+  @override
+  String get fundingSourceTypeSupplierRefund => 'Supplier refund';
+
+  @override
+  String get other => 'Other';
+
+  @override
+  String get paymentCash => 'Cash';
+
+  @override
+  String get paymentBankTransfer => 'Bank transfer';
+
+  @override
+  String get paymentCheque => 'Cheque';
+
+  @override
+  String get paymentCard => 'Card';
+
+  @override
+  String get paymentMobileWallet => 'Mobile wallet';
+
+  @override
+  String get paymentBalanceTransfer => 'Balance transfer';
+
+  @override
+  String get advanceStatusDraft => 'Draft';
+
+  @override
+  String get advanceStatusOpen => 'Open';
+
+  @override
+  String get advanceStatusInSettlement => 'In settlement';
+
+  @override
+  String get advanceStatusReadyToClose => 'Ready to close';
+
+  @override
+  String get advanceStatusClosed => 'Closed';
+
+  @override
+  String get advanceStatusCancelled => 'Cancelled';
+
+  @override
+  String get advanceStatusReversed => 'Reversed';
+
+  @override
+  String get transferStatusCorrectionRequired => 'Correction required';
+
+  @override
+  String get transferTypeAdvanceDelivery => 'Initial advance delivery';
+
+  @override
+  String get transferTypeInternalTransfer => 'Internal distribution';
+
+  @override
+  String get transferTypeBalanceReturn => 'Balance return';
+
+  @override
+  String get movementFundingAllocation => 'Funding allocation';
+
+  @override
+  String get fundingStatusAvailable => 'Available';
+
+  @override
+  String get fundingStatusPartiallyUsed => 'Partially used';
+
+  @override
+  String get fundingStatusFullyUsed => 'Fully used';
+
+  @override
+  String get fundingStatusPendingVerification => 'Pending verification';
+
+  @override
+  String get balanceStatusInSettlement => 'In settlement';
+
+  @override
+  String get balanceStatusSettled => 'Settled';
+
+  @override
+  String get balanceStatusClosed => 'Closed';
+
+  @override
+  String get selectUser => 'Select user';
+
+  @override
+  String get viewMovements => 'View movements';
+
+  @override
+  String get financialOperationSucceeded =>
+      'The financial operation completed successfully.';
 }

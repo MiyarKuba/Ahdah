@@ -19,6 +19,11 @@ String localizedError(AppLocalizations l10n, AppException error) {
     'projects.not_found' || 'company_members.not_found' => l10n.notFoundError,
     'projects.forbidden' ||
     'projects.members.forbidden' => l10n.permissionDenied,
+    'advances.not_found' => l10n.notFoundError,
+    'advances.forbidden' => l10n.permissionDenied,
+    'advances.conflict' => l10n.staleFinancialState,
+    'advances.invalid_operation' ||
+    'advances.invalid_idempotency_key' => l10n.validationError,
     _ => switch (error.kind) {
       AppExceptionKind.validation => l10n.validationError,
       AppExceptionKind.unauthorized => l10n.unauthorizedError,

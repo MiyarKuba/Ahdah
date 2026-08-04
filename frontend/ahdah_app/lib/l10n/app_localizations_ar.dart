@@ -204,7 +204,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get homeFoundationBody =>
-      'جلسة عُهدة الآمنة وأدوات الشركة المعتمدة جاهزة. الوحدات المالية مؤجلة.';
+      'جلسة عُهدة الآمنة وأدوات الشركة والعُهد وأرصدة الحيازة المعتمدة جاهزة.';
 
   @override
   String get company => 'الشركة';
@@ -350,7 +350,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get financialModulesDeferred =>
-      'العُهد والمصروفات والموردون والتسويات والديون والتقارير غير منفذة في هذه المرحلة.';
+      'تبقى المصروفات والإيصالات والموردون والتسويات والإغلاق والديون والتقارير مؤجلة.';
 
   @override
   String get accountTitle => 'الحساب والجلسة';
@@ -755,4 +755,338 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get readOnly => 'للعرض فقط';
+
+  @override
+  String get navAdvances => 'العُهد';
+
+  @override
+  String get advancesTitle => 'العُهد';
+
+  @override
+  String get advanceDetails => 'تفاصيل العُهدة';
+
+  @override
+  String get movementHistory => 'سجل الحركات';
+
+  @override
+  String get personalBalance => 'أرصدة عُهدي';
+
+  @override
+  String get userBalances => 'أرصدة المستخدم';
+
+  @override
+  String get fundingSources => 'مصادر التمويل';
+
+  @override
+  String get createAdvance => 'إنشاء عُهدة';
+
+  @override
+  String get distributeMoney => 'توزيع مبلغ';
+
+  @override
+  String get confirmReceipt => 'تأكيد الاستلام';
+
+  @override
+  String get rejectTransfer => 'رفض التحويل';
+
+  @override
+  String get returnUnusedMoney => 'إرجاع المبلغ غير المستخدم';
+
+  @override
+  String get originalAmount => 'المبلغ الأصلي';
+
+  @override
+  String get availableAmount => 'المبلغ المتاح';
+
+  @override
+  String get reservedAmount => 'المبلغ المحجوز';
+
+  @override
+  String get currency => 'العملة';
+
+  @override
+  String get fundingSource => 'مصدر التمويل';
+
+  @override
+  String get fundingAllocation => 'تخصيص التمويل';
+
+  @override
+  String get recipient => 'المستلم';
+
+  @override
+  String get sender => 'المرسل';
+
+  @override
+  String get status => 'الحالة';
+
+  @override
+  String get transferType => 'نوع التحويل';
+
+  @override
+  String get paymentMethod => 'طريقة الدفع';
+
+  @override
+  String get pendingConfirmation => 'بانتظار التأكيد';
+
+  @override
+  String get confirmed => 'مؤكد';
+
+  @override
+  String get rejected => 'مرفوض';
+
+  @override
+  String get retrySameOperation => 'إعادة نفس العملية';
+
+  @override
+  String get operationStatusUncertain => 'حالة العملية غير مؤكدة';
+
+  @override
+  String get idempotentRetryExplanation =>
+      'ربما وصل الطلب إلى الخادم. أعد المحاولة للعملية نفسها فقط؛ ستعيد عُهدة استخدام هوية العملية المحمية.';
+
+  @override
+  String get insufficientAvailableBalance =>
+      'المبلغ أكبر من الرصيد المتاح المعروض حاليًا.';
+
+  @override
+  String get staleFinancialState =>
+      'تغيرت الحالة المالية. أعد التحميل قبل المحاولة.';
+
+  @override
+  String get balanceChangedReload => 'تغيّر الرصيد؛ أعد التحميل';
+
+  @override
+  String get returnDestinationDerived =>
+      'تُشتق وجهة الإرجاع تلقائيًا من سجل التحويلات السابقة المؤكدة.';
+
+  @override
+  String get expensesNotImplemented => 'المصروفات غير منفذة في هذه المرحلة.';
+
+  @override
+  String get settlementNotImplemented =>
+      'التسوية والإغلاق غير منفذين في هذه المرحلة.';
+
+  @override
+  String get noAdvancesTitle => 'لا توجد عُهد';
+
+  @override
+  String get noAdvancesBody => 'غيّر عوامل التصفية المعتمدة أو أنشئ أول عُهدة.';
+
+  @override
+  String get participantAdvancesBody => 'تظهر هنا فقط العُهد التي شاركت فيها.';
+
+  @override
+  String get searchAdvanceReference => 'البحث بمرجع العُهدة';
+
+  @override
+  String get advanceReference => 'مرجع العُهدة';
+
+  @override
+  String get purpose => 'الغرض';
+
+  @override
+  String get issueDate => 'تاريخ الإصدار';
+
+  @override
+  String get settlementDueDateOptional => 'موعد التسوية (اختياري)';
+
+  @override
+  String get transferDate => 'تاريخ التحويل';
+
+  @override
+  String get bankName => 'اسم المصرف';
+
+  @override
+  String get referenceNumber => 'رقم المرجع';
+
+  @override
+  String get description => 'الوصف';
+
+  @override
+  String get amount => 'المبلغ';
+
+  @override
+  String get invalidMoney =>
+      'أدخل مبلغًا موجبًا بحد أقصى 16 رقمًا صحيحًا ومنزلتين عشريتين.';
+
+  @override
+  String get fundingTotalMismatch =>
+      'يجب أن تساوي تخصيصات التمويل مبلغ العُهدة تمامًا.';
+
+  @override
+  String get selectRecipient => 'اختيار المستلم';
+
+  @override
+  String get noEligibleRecipients => 'لم يُعثر على مستلمين نشطين مؤهلين.';
+
+  @override
+  String get noFundingSources => 'لم يُرجع الخادم مصادر تمويل قابلة للاستخدام.';
+
+  @override
+  String get advanceCreatedPending =>
+      'تم إنشاء العُهدة وهي بانتظار تأكيد المستلم.';
+
+  @override
+  String get distributionPending => 'تم حجز التوزيع وهو بانتظار تأكيد المستلم.';
+
+  @override
+  String get returnPending => 'تم حجز الإرجاع وهو بانتظار تأكيد المستلم.';
+
+  @override
+  String get confirmFinancialOperationTitle => 'هل تؤكد هذه العملية المالية؟';
+
+  @override
+  String get confirmReceiptBody =>
+      'أكد فقط إذا استلمت هذا المبلغ نفسه. سيطبق الخادم أثر الرصيد المعتمد.';
+
+  @override
+  String get rejectTransferBody =>
+      'يحافظ الرفض على سجل التحويل ويحرر حجز المرسل وفق قواعد الخادم.';
+
+  @override
+  String get distributionEffectBody =>
+      'سيُحجز المبلغ حتى يؤكده المستلم أو يرفضه.';
+
+  @override
+  String get cancelUncertainOperation => 'إلغاء إعادة المحاولة المحلية';
+
+  @override
+  String get noMovementsTitle => 'لا توجد حركات مسجلة';
+
+  @override
+  String get noMovementsBody => 'لم يُرجع الخادم حركات لهذه العُهدة.';
+
+  @override
+  String get noBalancesTitle => 'لا توجد أرصدة عُهد';
+
+  @override
+  String get noBalancesBody => 'لم يُرجع الخادم أرصدة حيازة معتمدة.';
+
+  @override
+  String get pendingReservationsNotice =>
+      'تبقى المبالغ المحجوزة غير متاحة ما دام التحويل المدعوم قيد الانتظار.';
+
+  @override
+  String get authorizedBalanceLookup => 'عرض رصيد مستخدم';
+
+  @override
+  String get accountantBalanceLookupLimitation =>
+      'تتطلب الواجهة البرمجية معرّف مستخدم، ولا يملك المحاسب دليل شركة آمنًا للاختيار. تبقى الأرصدة الشخصية متاحة.';
+
+  @override
+  String get balanceHolder => 'حائز الرصيد';
+
+  @override
+  String get receivedAmount => 'المستلم';
+
+  @override
+  String get restoredAmount => 'المستعاد';
+
+  @override
+  String get transferredAmount => 'المحوّل للخارج';
+
+  @override
+  String get returnedAmount => 'المُرجع';
+
+  @override
+  String get fundingSourceTypeProjectOwnerPayment => 'دفعة مالك المشروع';
+
+  @override
+  String get fundingSourceTypeManagerContribution => 'مساهمة المدير';
+
+  @override
+  String get fundingSourceTypeCompanyCashbox => 'صندوق الشركة';
+
+  @override
+  String get fundingSourceTypeReturnedAdvance => 'عُهدة مُرجعة';
+
+  @override
+  String get fundingSourceTypeSupplierRefund => 'استرداد من مورد';
+
+  @override
+  String get other => 'أخرى';
+
+  @override
+  String get paymentCash => 'نقدي';
+
+  @override
+  String get paymentBankTransfer => 'تحويل مصرفي';
+
+  @override
+  String get paymentCheque => 'صك';
+
+  @override
+  String get paymentCard => 'بطاقة';
+
+  @override
+  String get paymentMobileWallet => 'محفظة إلكترونية';
+
+  @override
+  String get paymentBalanceTransfer => 'تحويل رصيد';
+
+  @override
+  String get advanceStatusDraft => 'مسودة';
+
+  @override
+  String get advanceStatusOpen => 'مفتوحة';
+
+  @override
+  String get advanceStatusInSettlement => 'قيد التسوية';
+
+  @override
+  String get advanceStatusReadyToClose => 'جاهزة للإغلاق';
+
+  @override
+  String get advanceStatusClosed => 'مغلقة';
+
+  @override
+  String get advanceStatusCancelled => 'ملغاة';
+
+  @override
+  String get advanceStatusReversed => 'معكوسة';
+
+  @override
+  String get transferStatusCorrectionRequired => 'تحتاج تصحيحًا';
+
+  @override
+  String get transferTypeAdvanceDelivery => 'تسليم العُهدة الأولي';
+
+  @override
+  String get transferTypeInternalTransfer => 'توزيع داخلي';
+
+  @override
+  String get transferTypeBalanceReturn => 'إرجاع رصيد';
+
+  @override
+  String get movementFundingAllocation => 'تخصيص تمويل';
+
+  @override
+  String get fundingStatusAvailable => 'متاح';
+
+  @override
+  String get fundingStatusPartiallyUsed => 'مستخدم جزئيًا';
+
+  @override
+  String get fundingStatusFullyUsed => 'مستخدم بالكامل';
+
+  @override
+  String get fundingStatusPendingVerification => 'بانتظار التحقق';
+
+  @override
+  String get balanceStatusInSettlement => 'قيد التسوية';
+
+  @override
+  String get balanceStatusSettled => 'مسوّى';
+
+  @override
+  String get balanceStatusClosed => 'مغلق';
+
+  @override
+  String get selectUser => 'اختيار مستخدم';
+
+  @override
+  String get viewMovements => 'عرض الحركات';
+
+  @override
+  String get financialOperationSucceeded => 'اكتملت العملية المالية بنجاح.';
 }

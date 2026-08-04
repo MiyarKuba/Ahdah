@@ -2,7 +2,7 @@
 
 Ahdah is a multi-tenant platform for financial custody and construction operations. It is intended to help companies coordinate projects, custody balances, transfers, expenses, supplier obligations, worker claims, documents, audit trails, notifications, and scheduled reporting.
 
-This repository is currently in **Advances Foundation — Backend Phase 1**. The backend now exposes tenant-safe, role-aware advance creation, existing-source funding allocation, pending cash distribution/return confirmation, authoritative balances, and movement history. Flutter advances UI, expenses, receipts, settlement, and closure remain deferred.
+This repository is currently in **Flutter Advances and User Balances**. Android, iOS, and Web now consume the tenant-safe Advances Phase 1 APIs for role-aware reads, authoritative balances, Manager creation, held-balance distribution, recipient confirmation/rejection, and lineage-derived returns. Expenses, receipts, settlement, closure, and supplier debt remain deferred.
 
 ## Technology stack
 
@@ -131,6 +131,20 @@ Project and member lists use server-side status/role/search filters, page size 2
 Manager creation uses the backend's atomic `newOwner` flow because no safe owner-directory endpoint exists; Flutter never exposes a raw owner UUID. Contract value is validated and transported as decimal text emitted as an exact JSON number without binary floating-point conversion, and is rendered only when Manager capability allows it. Metadata updates send only changed supported fields with the authoritative `expectedVersion`, expose only `Active` and `Paused`, and never edit contract value. Supervisor replacement selects only server-filtered active exact Supervisors, requires confirmation when replacing, and explains that assignment history is preserved.
 
 The project-members route is labelled as active supervision assignments, not workers or complete project staff. The company directory and member detail are read-only and contain no role, status, deletion, or identity-verification mutations. Both features are localized in Arabic RTL and English LTR and share the same mobile/tablet/Web implementation.
+
+## Flutter advances and user balances
+
+The authenticated shell exposes `/advances`, `/advances/new`, `/advances/:advanceId`, `/advances/:advanceId/movements`, `/advances/:advanceId/distribute`, `/advances/:advanceId/return`, `/advance-balances`, and `/advance-balances/users/:userId`. Central `RoleCapabilities` supplies broad navigation and route guards; loaded advance status, current holder balance, expected transfer recipient, and the API remain authoritative for record actions.
+
+Advance and movement lists use server pagination, exact status/reference/user filters, stable IDs, refresh, and recoverable load-more failures. Supervisor and Worker empty states explain personal participation visibility. Personal and selected-user balance pages render authoritative server rows per advance/currency and never reconstruct balances from movements or total different currencies. Manager and Deputy select authorized users through the safe company directory. Accountant retains API read capability but has no raw-ID UI because Accountant directory discovery is not available.
+
+Manager creation offers only active Deputies and existing usable funding sources. Decimal text is validated as positive `NUMERIC(18,2)`, converted to integer minor units only for exact allocation comparisons, and emitted as JSON numeric tokens without `double`. Manager distribution offers active Deputies; Deputy distribution offers active Supervisors/Workers. Returns expose no destination selector because the server derives the confirmed upstream recipient. Pending movement records identify the expected recipient for confirmation and allow rejection only for `InternalTransfer` and `BalanceReturn`, never initial `AdvanceDelivery`.
+
+Every financial command generates 32 cryptographically secure random bytes with `Random.secure`, sends the URL-safe ephemeral value in `Idempotency-Key`, and keeps it only in an auto-disposed controller. There is no automatic write retry. Network/timeouts produce an explicit uncertain state whose “Retry same operation” reuses the exact payload/key; success, definitive rejection, cancellation, payload replacement, or controller disposal clears it. Keys are never displayed, logged, or persisted.
+
+Automated Flutter tests use fake repositories and controlled Dio adapters only. They do not invoke a real financial endpoint or connect to PostgreSQL.
+
+This phase passes `flutter analyze`, 137 Flutter tests, a Web release build, and an Android debug APK build. The Android application was not launched. iOS build/signing verification remains pending macOS and Xcode.
 
 ## Run backend tests
 

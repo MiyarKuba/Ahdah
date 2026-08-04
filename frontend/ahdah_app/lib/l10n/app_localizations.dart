@@ -479,7 +479,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeFoundationBody.
   ///
   /// In en, this message translates to:
-  /// **'Your secure Ahdah session and approved company tools are ready. Financial modules remain deferred.'**
+  /// **'Your secure Ahdah session, company tools, advances, and authoritative balance workflows are ready.'**
   String get homeFoundationBody;
 
   /// No description provided for @company.
@@ -749,7 +749,7 @@ abstract class AppLocalizations {
   /// No description provided for @financialModulesDeferred.
   ///
   /// In en, this message translates to:
-  /// **'Advances, expenses, suppliers, settlements, debts, and reporting are not implemented in this phase.'**
+  /// **'Expenses, receipts, suppliers, settlements, closure, debts, and reporting remain deferred.'**
   String get financialModulesDeferred;
 
   /// No description provided for @accountTitle.
@@ -1519,6 +1519,648 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read-only'**
   String get readOnly;
+
+  /// No description provided for @navAdvances.
+  ///
+  /// In en, this message translates to:
+  /// **'Advances'**
+  String get navAdvances;
+
+  /// No description provided for @advancesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Advances'**
+  String get advancesTitle;
+
+  /// No description provided for @advanceDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Advance details'**
+  String get advanceDetails;
+
+  /// No description provided for @movementHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Movement history'**
+  String get movementHistory;
+
+  /// No description provided for @personalBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'My advance balances'**
+  String get personalBalance;
+
+  /// No description provided for @userBalances.
+  ///
+  /// In en, this message translates to:
+  /// **'User balances'**
+  String get userBalances;
+
+  /// No description provided for @fundingSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Funding sources'**
+  String get fundingSources;
+
+  /// No description provided for @createAdvance.
+  ///
+  /// In en, this message translates to:
+  /// **'Create advance'**
+  String get createAdvance;
+
+  /// No description provided for @distributeMoney.
+  ///
+  /// In en, this message translates to:
+  /// **'Distribute money'**
+  String get distributeMoney;
+
+  /// No description provided for @confirmReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm receipt'**
+  String get confirmReceipt;
+
+  /// No description provided for @rejectTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject transfer'**
+  String get rejectTransfer;
+
+  /// No description provided for @returnUnusedMoney.
+  ///
+  /// In en, this message translates to:
+  /// **'Return unused money'**
+  String get returnUnusedMoney;
+
+  /// No description provided for @originalAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Original amount'**
+  String get originalAmount;
+
+  /// No description provided for @availableAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Available amount'**
+  String get availableAmount;
+
+  /// No description provided for @reservedAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Reserved amount'**
+  String get reservedAmount;
+
+  /// No description provided for @currency.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get currency;
+
+  /// No description provided for @fundingSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Funding source'**
+  String get fundingSource;
+
+  /// No description provided for @fundingAllocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Funding allocation'**
+  String get fundingAllocation;
+
+  /// No description provided for @recipient.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient'**
+  String get recipient;
+
+  /// No description provided for @sender.
+  ///
+  /// In en, this message translates to:
+  /// **'Sender'**
+  String get sender;
+
+  /// No description provided for @status.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get status;
+
+  /// No description provided for @transferType.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer type'**
+  String get transferType;
+
+  /// No description provided for @paymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment method'**
+  String get paymentMethod;
+
+  /// No description provided for @pendingConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending confirmation'**
+  String get pendingConfirmation;
+
+  /// No description provided for @confirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get confirmed;
+
+  /// No description provided for @rejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get rejected;
+
+  /// No description provided for @retrySameOperation.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry same operation'**
+  String get retrySameOperation;
+
+  /// No description provided for @operationStatusUncertain.
+  ///
+  /// In en, this message translates to:
+  /// **'Operation status uncertain'**
+  String get operationStatusUncertain;
+
+  /// No description provided for @idempotentRetryExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'The request may have reached the server. Retry only the exact same operation; Ahdah will reuse its protected operation identity.'**
+  String get idempotentRetryExplanation;
+
+  /// No description provided for @insufficientAvailableBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'The amount exceeds the currently displayed available balance.'**
+  String get insufficientAvailableBalance;
+
+  /// No description provided for @staleFinancialState.
+  ///
+  /// In en, this message translates to:
+  /// **'The financial state changed. Reload before trying again.'**
+  String get staleFinancialState;
+
+  /// No description provided for @balanceChangedReload.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance changed; reload'**
+  String get balanceChangedReload;
+
+  /// No description provided for @returnDestinationDerived.
+  ///
+  /// In en, this message translates to:
+  /// **'The return destination is derived automatically from confirmed upstream transfer history.'**
+  String get returnDestinationDerived;
+
+  /// No description provided for @expensesNotImplemented.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses are not implemented in this phase.'**
+  String get expensesNotImplemented;
+
+  /// No description provided for @settlementNotImplemented.
+  ///
+  /// In en, this message translates to:
+  /// **'Settlement and closure are not implemented in this phase.'**
+  String get settlementNotImplemented;
+
+  /// No description provided for @noAdvancesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No advances found'**
+  String get noAdvancesTitle;
+
+  /// No description provided for @noAdvancesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Change the verified filters or create the first advance.'**
+  String get noAdvancesBody;
+
+  /// No description provided for @participantAdvancesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Only advances involving you appear here.'**
+  String get participantAdvancesBody;
+
+  /// No description provided for @searchAdvanceReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Search advance reference'**
+  String get searchAdvanceReference;
+
+  /// No description provided for @advanceReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Advance reference'**
+  String get advanceReference;
+
+  /// No description provided for @purpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose'**
+  String get purpose;
+
+  /// No description provided for @issueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue date'**
+  String get issueDate;
+
+  /// No description provided for @settlementDueDateOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Settlement due date (optional)'**
+  String get settlementDueDateOptional;
+
+  /// No description provided for @transferDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer date'**
+  String get transferDate;
+
+  /// No description provided for @bankName.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank name'**
+  String get bankName;
+
+  /// No description provided for @referenceNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference number'**
+  String get referenceNumber;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @amount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get amount;
+
+  /// No description provided for @invalidMoney.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a positive amount with up to 16 whole digits and 2 decimal places.'**
+  String get invalidMoney;
+
+  /// No description provided for @fundingTotalMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Funding allocations must exactly equal the advance amount.'**
+  String get fundingTotalMismatch;
+
+  /// No description provided for @selectRecipient.
+  ///
+  /// In en, this message translates to:
+  /// **'Select recipient'**
+  String get selectRecipient;
+
+  /// No description provided for @noEligibleRecipients.
+  ///
+  /// In en, this message translates to:
+  /// **'No eligible active recipients were found.'**
+  String get noEligibleRecipients;
+
+  /// No description provided for @noFundingSources.
+  ///
+  /// In en, this message translates to:
+  /// **'No usable funding sources were returned by the server.'**
+  String get noFundingSources;
+
+  /// No description provided for @advanceCreatedPending.
+  ///
+  /// In en, this message translates to:
+  /// **'The advance was created and is pending recipient confirmation.'**
+  String get advanceCreatedPending;
+
+  /// No description provided for @distributionPending.
+  ///
+  /// In en, this message translates to:
+  /// **'The distribution is reserved and pending recipient confirmation.'**
+  String get distributionPending;
+
+  /// No description provided for @returnPending.
+  ///
+  /// In en, this message translates to:
+  /// **'The return is reserved and pending receiver confirmation.'**
+  String get returnPending;
+
+  /// No description provided for @confirmFinancialOperationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm this financial operation?'**
+  String get confirmFinancialOperationTitle;
+
+  /// No description provided for @confirmReceiptBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm only if you received this exact amount. The server will apply the authoritative balance effect.'**
+  String get confirmReceiptBody;
+
+  /// No description provided for @rejectTransferBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejecting keeps the transfer history and releases the sender reservation according to server rules.'**
+  String get rejectTransferBody;
+
+  /// No description provided for @distributionEffectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The amount will be reserved until the recipient confirms or rejects it.'**
+  String get distributionEffectBody;
+
+  /// No description provided for @cancelUncertainOperation.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel local retry'**
+  String get cancelUncertainOperation;
+
+  /// No description provided for @noMovementsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No movements recorded'**
+  String get noMovementsTitle;
+
+  /// No description provided for @noMovementsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The server has not returned any movements for this advance.'**
+  String get noMovementsBody;
+
+  /// No description provided for @noBalancesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No advance balances'**
+  String get noBalancesTitle;
+
+  /// No description provided for @noBalancesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No authoritative held balances were returned.'**
+  String get noBalancesBody;
+
+  /// No description provided for @pendingReservationsNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Reserved amounts remain unavailable while a supported transfer is pending.'**
+  String get pendingReservationsNotice;
+
+  /// No description provided for @authorizedBalanceLookup.
+  ///
+  /// In en, this message translates to:
+  /// **'View a user balance'**
+  String get authorizedBalanceLookup;
+
+  /// No description provided for @accountantBalanceLookupLimitation.
+  ///
+  /// In en, this message translates to:
+  /// **'The API requires a user ID, but accountants do not have a safe company-directory selector. Personal balances remain available.'**
+  String get accountantBalanceLookupLimitation;
+
+  /// No description provided for @balanceHolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance holder'**
+  String get balanceHolder;
+
+  /// No description provided for @receivedAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get receivedAmount;
+
+  /// No description provided for @restoredAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Restored'**
+  String get restoredAmount;
+
+  /// No description provided for @transferredAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Transferred out'**
+  String get transferredAmount;
+
+  /// No description provided for @returnedAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned'**
+  String get returnedAmount;
+
+  /// No description provided for @fundingSourceTypeProjectOwnerPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Project owner payment'**
+  String get fundingSourceTypeProjectOwnerPayment;
+
+  /// No description provided for @fundingSourceTypeManagerContribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Manager contribution'**
+  String get fundingSourceTypeManagerContribution;
+
+  /// No description provided for @fundingSourceTypeCompanyCashbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Company cashbox'**
+  String get fundingSourceTypeCompanyCashbox;
+
+  /// No description provided for @fundingSourceTypeReturnedAdvance.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned advance'**
+  String get fundingSourceTypeReturnedAdvance;
+
+  /// No description provided for @fundingSourceTypeSupplierRefund.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier refund'**
+  String get fundingSourceTypeSupplierRefund;
+
+  /// No description provided for @other.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get other;
+
+  /// No description provided for @paymentCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get paymentCash;
+
+  /// No description provided for @paymentBankTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank transfer'**
+  String get paymentBankTransfer;
+
+  /// No description provided for @paymentCheque.
+  ///
+  /// In en, this message translates to:
+  /// **'Cheque'**
+  String get paymentCheque;
+
+  /// No description provided for @paymentCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Card'**
+  String get paymentCard;
+
+  /// No description provided for @paymentMobileWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile wallet'**
+  String get paymentMobileWallet;
+
+  /// No description provided for @paymentBalanceTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance transfer'**
+  String get paymentBalanceTransfer;
+
+  /// No description provided for @advanceStatusDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get advanceStatusDraft;
+
+  /// No description provided for @advanceStatusOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get advanceStatusOpen;
+
+  /// No description provided for @advanceStatusInSettlement.
+  ///
+  /// In en, this message translates to:
+  /// **'In settlement'**
+  String get advanceStatusInSettlement;
+
+  /// No description provided for @advanceStatusReadyToClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to close'**
+  String get advanceStatusReadyToClose;
+
+  /// No description provided for @advanceStatusClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get advanceStatusClosed;
+
+  /// No description provided for @advanceStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get advanceStatusCancelled;
+
+  /// No description provided for @advanceStatusReversed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reversed'**
+  String get advanceStatusReversed;
+
+  /// No description provided for @transferStatusCorrectionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Correction required'**
+  String get transferStatusCorrectionRequired;
+
+  /// No description provided for @transferTypeAdvanceDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Initial advance delivery'**
+  String get transferTypeAdvanceDelivery;
+
+  /// No description provided for @transferTypeInternalTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Internal distribution'**
+  String get transferTypeInternalTransfer;
+
+  /// No description provided for @transferTypeBalanceReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance return'**
+  String get transferTypeBalanceReturn;
+
+  /// No description provided for @movementFundingAllocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Funding allocation'**
+  String get movementFundingAllocation;
+
+  /// No description provided for @fundingStatusAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get fundingStatusAvailable;
+
+  /// No description provided for @fundingStatusPartiallyUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Partially used'**
+  String get fundingStatusPartiallyUsed;
+
+  /// No description provided for @fundingStatusFullyUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully used'**
+  String get fundingStatusFullyUsed;
+
+  /// No description provided for @fundingStatusPendingVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending verification'**
+  String get fundingStatusPendingVerification;
+
+  /// No description provided for @balanceStatusInSettlement.
+  ///
+  /// In en, this message translates to:
+  /// **'In settlement'**
+  String get balanceStatusInSettlement;
+
+  /// No description provided for @balanceStatusSettled.
+  ///
+  /// In en, this message translates to:
+  /// **'Settled'**
+  String get balanceStatusSettled;
+
+  /// No description provided for @balanceStatusClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get balanceStatusClosed;
+
+  /// No description provided for @selectUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Select user'**
+  String get selectUser;
+
+  /// No description provided for @viewMovements.
+  ///
+  /// In en, this message translates to:
+  /// **'View movements'**
+  String get viewMovements;
+
+  /// No description provided for @financialOperationSucceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'The financial operation completed successfully.'**
+  String get financialOperationSucceeded;
 }
 
 class _AppLocalizationsDelegate

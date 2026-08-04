@@ -2,7 +2,7 @@
 
 ## Scope
 
-The Flutter client targets Android, iOS, and Web. It implements startup/session verification, company onboarding, a responsive authenticated shell, role-aware navigation, manager invitation administration, manager join-request review, Projects/Sites, a read-only Company Member Directory, and a shared account/session page. Member mutations, identity proofing, project closure/contract changes, financial workflows, dashboards, notifications, and offline transaction queues remain deferred.
+The Flutter client targets Android, iOS, and Web. It implements startup/session verification, company onboarding, a responsive authenticated shell, role-aware navigation, manager access administration, Projects/Sites, a read-only Company Member Directory, Advances, authoritative user balances, and a shared account/session page. Expenses, receipts, settlement, closure, supplier debt, member mutations, identity proofing, dashboards, notifications, and offline financial queues remain deferred.
 
 ## Architecture
 
@@ -75,6 +75,8 @@ Named routes are `/`, `/welcome`, `/login`, `/register-company`, `/join-request`
 
 Project routes are `/projects`, `/projects/new`, `/projects/:projectId`, `/projects/:projectId/edit`, `/projects/:projectId/supervisor`, and `/projects/:projectId/members`. Directory routes are `/company/members` and `/company/members/:memberId`.
 
+Advance routes are `/advances`, `/advances/new`, `/advances/:advanceId`, `/advances/:advanceId/movements`, `/advances/:advanceId/distribute`, `/advances/:advanceId/return`, `/advance-balances`, and `/advance-balances/users/:userId`. Manager alone reaches creation. Manager/Deputy reach distribution. All five known roles reach advance reads and personal balances. Return/confirmation/rejection broad guards exclude Accountant, while exact loaded holder/recipient/lifecycle state remains required. Manager/Deputy can reach a selected-user balance route only through the safe company directory; Accountant receives no raw-ID selector because the current API requires a user ID and Accountant lacks directory discoverability.
+
 `RoleCapabilities` maps the authoritative role from `/auth/me` to client capabilities. Manager receives Home, Projects, Company Members, Invitations, Join Requests, and Account. Deputy receives Home, Projects, Company Members, and Account. Accountant and Supervisor receive Home, Projects, and Account, although Supervisor results remain assigned-only. Worker and unknown future roles receive Home and Account. Manager mutation routes, directory routes, project routes, and member-summary routes each have capability redirects, so hiding destinations is never the only guard. Backend authorization remains authoritative.
 
 ## Project and directory behavior
@@ -97,7 +99,24 @@ Invitation and join-request APIs use page numbers beginning at 1, a UI page size
 
 The account page displays safe `/auth/me` name, company, localized role, user status, and identity-verification status. The backend safe user summary now includes `identityVerificationStatus`; this was the only API contract correction and required no database change.
 
+## Advances and balance behavior
+
+- List/detail/movement and balance reads use page 1, page size 20, exact allow-listed values, stable deduplication, refresh, and preserved data on load-more failure. No page sweep computes totals.
+- Supervisor/Worker advance visibility is described as participant-only. Unknown enum values use the localized fallback and do not crash.
+- Personal/user balance cards render the authoritative `user_advance_balances` projection per advance and currency. Flutter never rebuilds a balance from movement history and does not display the API's unscoped aggregate across potentially different currencies.
+- Manager creation uses active Deputy directory results and the Manager-only usable funding-source endpoint. One or more unique positive allocations must use one currency and match the total exactly in integer minor units.
+- Manager distribution selects active Deputies. Deputy distribution selects active Supervisors/Workers. Displayed availability is an early UX bound only; the API revalidates under lock.
+- Pending movements identify the exact recipient for confirmation. Rejection appears only for pending `InternalTransfer`/`BalanceReturn`; initial `AdvanceDelivery` has no rejection UI.
+- Return initiation accepts amount and transfer details only. There is no recipient, project, funding-source, or cashbox destination selector; confirmed upstream lineage is server-derived.
+- `NUMERIC(18,2)` values are preserved as decimal text. Financial responses protect JSON amount tokens before decoding. Requests emit validated JSON number tokens without `double`; malformed separators and more than two fractional digits are rejected.
+- Each command uses a 32-byte `Random.secure` URL-safe ephemeral `Idempotency-Key`. There is no automatic write retry. Timeout/network results are uncertain and expose explicit same-payload retry with the same key. Keys clear on success, definitive failures, cancellation, payload replacement, and controller disposal, and are never persisted, displayed, or logged.
+- Arabic remains default RTL and English remains LTR. Amount/currency pairs use explicit LTR direction inside both layouts for unambiguous reading.
+
+No Flutter automated test calls the live API. Web uses `http://localhost:5231`; Android emulator uses `http://10.0.2.2:5231`; a physical Android device may use `adb reverse tcp:5231 tcp:5231` with `http://127.0.0.1:5231`. iOS simulator uses `http://localhost:5231`, but build/signing verification requires macOS and Xcode.
+
 ## Verification
+
+The Flutter Advances and User Balances phase passed dependency resolution, strict formatting, `flutter analyze`, and 137 Flutter tests (104 existing plus 33 new). The Web release build passed with `API_BASE_URL=http://localhost:5231`, including the WebAssembly compatibility dry run. The Android debug APK build passed with `API_BASE_URL=http://10.0.2.2:5231`; it was not launched. iOS remains pending macOS/Xcode compilation, signing, simulator, and device verification. Backend files were unchanged, so backend tests were not rerun. No live financial command or PostgreSQL mutation occurred.
 
 ```powershell
 cd C:\dev\Ahdah\frontend\ahdah_app
