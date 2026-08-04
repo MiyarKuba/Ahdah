@@ -6,6 +6,8 @@ using Ahdah.Application.CompanyMembers.Models;
 using Ahdah.Application.Expenses.Contracts;
 using Ahdah.Application.Expenses.Models;
 using Ahdah.Application.Projects.Models;
+using Ahdah.Application.Suppliers.Contracts;
+using Ahdah.Application.Suppliers.Models;
 using Ahdah.Infrastructure.Persistence.Generated.Context;
 using Ahdah.Infrastructure.Persistence.Generated.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -299,7 +301,79 @@ public sealed class DatabasePersistenceTests
         Assert.DoesNotContain("ExpenseAdvanceAllocations.Remove", source);
         Assert.DoesNotContain("AuditLogs.Remove", source);
         Assert.DoesNotContain("ExecuteDelete", source);
-        Assert.DoesNotContain("new SupplierDebt", source);
+        Assert.DoesNotContain("dbContext.SupplierDebts.Add", source);
+        Assert.DoesNotContain("new AdvanceSettlement", source);
+        Assert.DoesNotContain("new AdvanceClosure", source);
+    }
+
+    [Fact]
+    public void Supplier_contracts_are_explicit_tenant_safe_and_decimal_only()
+    {
+        var responseTypes = new[]
+        {
+            typeof(SupplierSummary), typeof(SupplierDetails), typeof(SupplierPaymentAccountSummary),
+            typeof(SupplierInvoiceSummary), typeof(SupplierInvoiceDetails),
+            typeof(SupplierPaymentSummary), typeof(SupplierPaymentDetails),
+            typeof(SupplierRefundSummary), typeof(SupplierCreditNoteSummary),
+            typeof(SupplierCreditNoteDetails), typeof(SupplierStatement)
+        };
+        var requestTypes = new[]
+        {
+            typeof(CreateSupplierRequest), typeof(UpdateSupplierRequest),
+            typeof(CreateSupplierPaymentAccountRequest), typeof(CreateSupplierInvoiceRequest),
+            typeof(SupplierInvoiceItemRequest), typeof(CreateSupplierPaymentRequest),
+            typeof(SupplierPaymentDebtAllocationRequest), typeof(SupplierPaymentFundingAllocationRequest),
+            typeof(CreateSupplierCreditNoteRequest), typeof(ApplySupplierCreditNoteRequest)
+        };
+
+        Assert.All(responseTypes, type => Assert.DoesNotContain(type.GetProperties(), property =>
+            property.Name.Equals("CompanyId", StringComparison.OrdinalIgnoreCase)
+            || property.Name.Contains("Password", StringComparison.OrdinalIgnoreCase)
+            || property.Name.Contains("Credential", StringComparison.OrdinalIgnoreCase)
+            || property.PropertyType == typeof(float) || property.PropertyType == typeof(double)));
+        Assert.All(requestTypes, type => Assert.DoesNotContain(type.GetProperties(), property =>
+            property.Name.Contains("CompanyId", StringComparison.OrdinalIgnoreCase)
+            || property.Name.Contains("CreatedBy", StringComparison.OrdinalIgnoreCase)
+            || property.Name.Contains("PaidAmount", StringComparison.OrdinalIgnoreCase)
+            || property.Name.Contains("Outstanding", StringComparison.OrdinalIgnoreCase)
+            || property.Name.Contains("Available", StringComparison.OrdinalIgnoreCase)
+            || property.PropertyType == typeof(float) || property.PropertyType == typeof(double)));
+
+        var controllerRoot = Path.Combine(FindRepositoryRoot(), "backend", "src", "Ahdah.Api", "Controllers");
+        var source = string.Join(Environment.NewLine, new[]
+        {
+            "SuppliersController.cs", "SupplierInvoicesController.cs", "SupplierPaymentsController.cs",
+            "SupplierCreditsController.cs"
+        }.Select(name => File.ReadAllText(Path.Combine(controllerRoot, name))));
+        Assert.DoesNotContain("Ahdah.Infrastructure.Persistence.Generated", source);
+        Assert.DoesNotContain("Postgre", source, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Supplier_persistence_is_tenant_scoped_locked_idempotent_and_append_only()
+    {
+        var path = Path.Combine(FindRepositoryRoot(), "backend", "src", "Ahdah.Infrastructure",
+            "Suppliers", "SupplierService.cs");
+        var source = File.ReadAllText(path);
+
+        Assert.Contains("value.CompanyId == caller.CompanyId", source);
+        Assert.Contains("company_id = {companyId} AND supplier_debt_id = {debtId} FOR UPDATE", source);
+        Assert.Contains("company_id = {companyId} AND funding_source_id = {sourceId} FOR UPDATE", source);
+        Assert.Contains("company_id = {companyId} AND supplier_payment_id = {paymentId} FOR UPDATE", source);
+        Assert.Contains("company_id = {companyId} AND supplier_credit_note_id = {creditNoteId} FOR UPDATE", source);
+        Assert.Contains("PendingDebtAllocations", source);
+        Assert.Contains("debt.OutstandingAmount", source);
+        Assert.Contains("source.AvailableAmount < allocationRequest.Amount", source);
+        Assert.Contains("BeginTransactionAsync", source);
+        Assert.Contains("SupplierDebtLedgerEntries.Add", source);
+        Assert.Contains("FundingSourceLedgerEntries.Add", source);
+        Assert.Contains("AuditLogs.Add", source);
+        Assert.Contains("IdempotencyRecords.Add", source);
+        Assert.DoesNotContain("SupplierDebtLedgerEntries.Remove", source);
+        Assert.DoesNotContain("SupplierPaymentDebtAllocations.Remove", source);
+        Assert.DoesNotContain("SupplierPaymentFundingSources.Remove", source);
+        Assert.DoesNotContain("SupplierCreditNoteAllocations.Remove", source);
+        Assert.DoesNotContain("ExecuteDelete", source);
         Assert.DoesNotContain("new AdvanceSettlement", source);
         Assert.DoesNotContain("new AdvanceClosure", source);
     }

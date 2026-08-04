@@ -129,6 +129,12 @@ Application owns explicit expense/category/document/reimbursement contracts, exa
 
 `expenses` has one optional direct project and exact payment modes `AdvanceBalance`, `SupplierCredit`, and `PersonalFunds`. The implemented create paths are advance balance and personal funds. Advance-backed submission reserves the authenticated holder's authoritative balance and appends `ExpenseReserved`; approval appends `ExpenseConfirmed`, while rejection appends `ExpenseReservationReleased`. Personal-funds submission atomically creates one open expense-linked `personal_claim`; payment remains deferred.
 
+## Suppliers and supplier debt foundation
+
+Application owns explicit supplier, masked-account, invoice/debt, payment/allocation, refund-history, credit-note, balance, and statement contracts plus exact schema values and role capabilities. Infrastructure owns tenant-filtered EF queries, supplier-credit expense/debt creation, explicit transactions, row locks, funding reservation/consumption, computed debt balances, immutable ledger/audit appends, and existing idempotency. API owns focused policies, controllers, status mapping, and safe Problem Details.
+
+There is no `supplier_invoices` table: `expenses(payment_mode='SupplierCredit')` is the invoice header and has one `supplier_debts` row. `expense_items` supplies optional lines. Pending payments reserve `funding_sources`; confirmation consumes reservations and applies allocations to debts. `ManagerContribution` preserves manager-personal attribution. `user_advance_balances` cannot fund supplier payments. Refund writes remain deferred because the schema requires an approved `expense_returns` resolution and one-to-one refund funding source.
+
 Manager, Deputy, and Accountant receive company-wide reads and may review pending expenses subject to settings-based approval separation. Manager, Deputy, Supervisor, and Worker may create personal expenses; Supervisor project use requires active assignment and Worker project use is unavailable because no worker/project relationship exists. Supervisor reads personal plus assigned-project records; Worker reads personal records only.
 
 The physical `expense_documents` table supports multiple metadata rows, but its generated navigation is singular. Infrastructure therefore queries the table set directly. File URLs and hashes remain persistence-only. There is no original-paper custody representation, expense project-split table, or expense payment-component table. See [EXPENSES.md](EXPENSES.md).

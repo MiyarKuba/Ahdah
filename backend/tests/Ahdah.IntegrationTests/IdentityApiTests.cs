@@ -12,6 +12,7 @@ using Ahdah.Application.Identity.Models;
 using Ahdah.Application.Identity.Services;
 using Ahdah.Application.Expenses.Services;
 using Ahdah.Application.Projects.Services;
+using Ahdah.Application.Suppliers.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -223,6 +224,8 @@ public sealed class IdentityApiFactory : WebApplicationFactory<Program>
             services.AddScoped<IAdvanceService, FakeAdvanceService>();
             services.RemoveAll<IExpenseService>();
             services.AddScoped<IExpenseService, FakeExpenseService>();
+            services.RemoveAll<ISupplierService>();
+            services.AddScoped<ISupplierService, FakeSupplierService>();
         });
     }
 

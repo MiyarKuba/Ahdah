@@ -2,7 +2,7 @@
 
 Ahdah is a multi-tenant platform for financial custody and construction operations. It is intended to help companies coordinate projects, custody balances, transfers, expenses, supplier obligations, worker claims, documents, audit trails, notifications, and scheduled reporting.
 
-This repository is currently in **Flutter Expenses and Reimbursements**. Flutter now consumes the tenant-safe expense categories, role-filtered expenses, direct project association, authoritative advance-balance allocation, personal-funds reimbursement liabilities, metadata-only documents, approval/rejection, reimbursements, and immutable expense history APIs across Android, iOS source, tablet, and Web. Original-paper custody, binary upload, supplier credit/debt, mixed payment, project splits, claim payment, and final settlement remain deferred.
+This repository is currently in **Suppliers and Supplier Debt Foundation — Backend Phase 1**. The backend now exposes tenant-safe supplier directory, masked payment accounts, supplier-credit invoice/debt, line-item, partial/full payment, funding attribution, credit-note, refund-history, balance, and statement APIs. Supplier refund writes, account verification, payment/credit reversal, advance-balance supplier funding, binary upload, Flutter supplier UI, and final settlement remain deferred.
 
 ## Technology stack
 
@@ -115,6 +115,8 @@ Expenses Foundation — Backend Phase 1 additionally exposes:
 - Role-filtered `GET /api/v1/reimbursements/{reimbursementId}`
 
 Expense creation supports exact `AdvanceBalance` and `PersonalFunds` payment modes. It uses one optional direct project because the schema has no expense project-split table. Supplier credit, original-paper custody, binary upload, claim payment, and final settlement are intentionally not published. Financial and lifecycle commands require `Idempotency-Key`. See [docs/EXPENSES.md](docs/EXPENSES.md).
+
+Suppliers and Supplier Debt Foundation — Backend Phase 1 additionally exposes tenant/role-filtered supplier directory and statement reads, masked supplier payment accounts, supplier-credit invoices backed by `expenses` plus `supplier_debts`, optional `expense_items`, partial/full supplier payments with debt and funding allocations, payment confirmation/rejection, read-only refund history, and approved credit-note allocation. Financial commands reuse `Idempotency-Key`, explicit transactions, row locks, computed debt balances, immutable ledgers, and concurrency tokens. There is no standalone supplier-invoice table and no supplier-payment relationship to advance balances. See [docs/SUPPLIERS.md](docs/SUPPLIERS.md).
 
 Manager and Deputy see all company projects; Accountant sees basic project structure without contract value; Supervisor sees only actively assigned projects; Worker sees no projects because the schema has no worker/project relationship. Project-member results contain active supervisor assignments only. Manager alone receives contract value and may set it during creation. Later contract-value changes are deferred to the existing `project_contract_changes` approval/history model, and `Completed`, `FinanciallyClosed`, and `Cancelled` transitions remain deferred.
 

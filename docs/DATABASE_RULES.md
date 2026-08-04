@@ -89,3 +89,15 @@ Settlement and closure tables are not written. Their schemas depend on expense s
 `personal_claims` permits one expense-linked `PersonalExpense` claim. Claim statuses are `Open`, `PartiallySettled`, `Settled`, `Cancelled`, and `Reversed`; outstanding amount is computed. Phase 1 creates open claims and cancels untouched claims only when their pending expense is rejected. No claim payment table is written.
 
 No expense project-allocation, expense payment-component, receipt-status, original-paper custody, or separate expense-approval table exists. `audit_logs` is immutable and supplies safe expense history. Expense, category, document, and personal-claim versions are configured as concurrency tokens outside generated files.
+
+## Supplier schema clarification
+
+There is no `supplier_invoices`, payable, accounts-payable, supplier-balance, or supplier-statement table. Invoice headers are `expenses` rows with exact `SupplierCredit` mode; each debt is unique by `(company_id, expense_id)`. Optional lines use `expense_items` with `quantity NUMERIC(18,3)` and generated totals.
+
+`supplier_debts.outstanding_amount NUMERIC(18,2)` is generated as debt plus adjustment minus paid, credit-note, and written-off amounts. Debt statuses are `Open`, `PartiallySettled`, `Settled`, `Cancelled`, and `Reversed`. `supplier_debt_ledger_entries` is immutable by trigger.
+
+Supplier payments have unique debt/funding allocation rows. Statuses are `Draft`, `PendingApproval`, `Confirmed`, `Rejected`, `Cancelled`, and `Reversed`; methods are `Cash`, `BankTransfer`, `Cheque`, `Card`, `MobileWallet`, and `Other`. Existing funding sources—not advance balances—provide payment funding.
+
+Credit-note statuses are `Draft`, `PendingApproval`, `Approved`, `Rejected`, `Cancelled`, and `Reversed`; allocations are unique per note/debt. Refunds require `expense_returns` and a one-to-one `SupplierRefund` funding source; statuses are `PendingVerification`, `Confirmed`, `Cancelled`, and `Reversed`.
+
+Supplier, account, debt, payment, refund, and credit-note versions are concurrency tokens outside generated files. No generated file or PostgreSQL object changed.

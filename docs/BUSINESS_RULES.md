@@ -101,7 +101,7 @@ This document records only known high-level rules. Detailed financial, approval,
 - Transfer correction, cancellation, and reversal workflows
 - Supervisor-to-Worker distribution authority
 - Expense correction, cancellation, reversal, document verification, no-receipt exception, and automatic-approval actor rules
-- Supplier debt creation, aging, payment allocation, and closure rules
+- Supplier refund creation/verification, debt adjustment/write-off/reversal, payment reversal/correction, account verification, and final debt closure rules
 - Worker claim eligibility, evidence, approval, and reimbursement rules
 - Advance settlement completeness and closure criteria
 - Currency support, rounding, precision, exchange rates, and cross-currency behavior
@@ -114,3 +114,16 @@ This document records only known high-level rules. Detailed financial, approval,
 ## Change control
 
 No detailed rule is considered approved merely because it appears in an interface, a database column name, sample data, or developer assumption. Business-rule changes require explicit approval and corresponding updates to documentation, code, and tests.
+
+## Suppliers foundation rules
+
+- A supplier invoice is one `SupplierCredit` expense plus its unique supplier debt; no separate invoice entity is invented.
+- Debt outstanding is database-generated and never client-controlled. Currency balances stay separate.
+- Manager, Deputy, and Accountant have company-wide reads; Supervisor reads assigned-project supplier/debt only; Worker and unknown roles are denied.
+- Manager manages supplier metadata. Manager, Deputy, and Accountant may record supplier-credit invoices. Manager and Accountant record/review payments and manage credits.
+- Payment debt/funding allocations are unique, positive, same-currency, and each total the payment. Fees remain zero because fee-allocation policy is unapproved.
+- Pending payment allocations reduce allocatable debt and reserve funding, preventing duplicate/excess payment before approval.
+- `ManagerContribution` funding is usable only by its authenticated Manager owner. Supplier payments cannot spend advance balances because no schema relationship exists.
+- Credit notes require approval and cannot exceed available credit or debt remaining after pending payments.
+- Supplier refunds remain read-only until expense-return approval and maximum-return behavior is implemented.
+- Financial commands are transactional, idempotent, concurrency-aware, auditable, and never automatically retried.

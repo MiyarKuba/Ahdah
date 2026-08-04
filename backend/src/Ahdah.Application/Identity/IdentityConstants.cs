@@ -31,5 +31,11 @@ public static class AhdahAuthorizationPolicies
     public const string ExpenseDocumentContributor = "ExpenseDocumentContributor";
     public const string ExpenseCategoryManager = "ExpenseCategoryManager";
     public const string ReimbursementViewer = "ReimbursementViewer";
+    public const string SupplierViewer = "SupplierViewer";
+    public const string SupplierFinancialViewer = "SupplierFinancialViewer";
+    public const string SupplierManager = "SupplierManager";
+    public const string SupplierInvoiceCreator = "SupplierInvoiceCreator";
+    public const string SupplierPaymentRecorder = "SupplierPaymentRecorder";
+    public const string SupplierCreditManager = "SupplierCreditManager";
     public const string ManagerOnly = "ManagerOnly";
 }

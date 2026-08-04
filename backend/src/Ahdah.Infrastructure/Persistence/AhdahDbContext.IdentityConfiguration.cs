@@ -54,5 +54,29 @@ public partial class AhdahDbContext
         modelBuilder.Entity<PersonalClaim>()
             .Property(claim => claim.VersionNumber)
             .IsConcurrencyToken();
+
+        modelBuilder.Entity<Supplier>()
+            .Property(supplier => supplier.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<SupplierPaymentAccount>()
+            .Property(account => account.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<SupplierDebt>()
+            .Property(debt => debt.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<SupplierPayment>()
+            .Property(payment => payment.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<SupplierRefund>()
+            .Property(refund => refund.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<SupplierCreditNote>()
+            .Property(note => note.VersionNumber)
+            .IsConcurrencyToken();
     }
 }

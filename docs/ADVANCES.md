@@ -120,6 +120,8 @@ No advance route accepts `project_id`, and no project filter is published. The `
 
 Settlement and closure commands are deferred. Expenses now reserve authoritative balance availability with `ExpenseReserved`, convert it to expensed totals with `ExpenseConfirmed` on approval, and release it with `ExpenseReservationReleased` on rejection. Settlements still require reviewed snapshots, documents, difference resolution, cash recovery, claim offset or waiver, supplier debt, pending-operation checks, and final review. Zero cash balance alone never marks an advance financially settled or closed. FIFO settlement is not implemented.
 
+Supplier payments allocate existing `funding_sources`; the schema has no supplier-payment allocation to `user_advance_balances`. Phase 1 therefore does not spend advance balances for supplier payments or treat supplier debt payment as final advance settlement.
+
 ## Flutter consumption
 
 Flutter now consumes every safely supported Phase 1 route with handwritten immutable models and the existing authenticated Dio/session stack. Stable routes cover advance list/create/detail/movements/distribution/return plus personal and selected-user balances. Navigation and router guards use centralized exact-role capabilities, while record actions also require authoritative loaded state and exact current-user relationships.

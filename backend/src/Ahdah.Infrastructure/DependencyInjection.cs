@@ -6,6 +6,7 @@ using Ahdah.Application.CompanyMembers.Services;
 using Ahdah.Application.Expenses.Services;
 using Ahdah.Application.Identity.Services;
 using Ahdah.Application.Projects.Services;
+using Ahdah.Application.Suppliers.Services;
 using Ahdah.Infrastructure.Access.Invitations;
 using Ahdah.Infrastructure.Access.JoinRequests;
 using Ahdah.Infrastructure.Authentication;
@@ -15,6 +16,7 @@ using Ahdah.Infrastructure.Expenses;
 using Ahdah.Infrastructure.Identity;
 using Ahdah.Infrastructure.Projects;
 using Ahdah.Infrastructure.Security;
+using Ahdah.Infrastructure.Suppliers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -65,6 +67,12 @@ public static class DependencyInjection
     public static IServiceCollection AddAhdahExpenses(this IServiceCollection services)
     {
         services.AddScoped<IExpenseService, ExpenseService>();
+        return services;
+    }
+
+    public static IServiceCollection AddAhdahSuppliers(this IServiceCollection services)
+    {
+        services.AddScoped<ISupplierService, SupplierService>();
         return services;
     }
 }

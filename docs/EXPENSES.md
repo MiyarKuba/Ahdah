@@ -27,7 +27,7 @@ Expense payment modes are:
 - `SupplierCredit`
 - `PersonalFunds`
 
-Creation supports `AdvanceBalance` and `PersonalFunds`. `SupplierCredit` remains readable but cannot be created because supplier debt is excluded from this phase. Cash, bank transfer, card, and cheque are funding-source/transfer values, not expense payment modes.
+The general expense-create route supports `AdvanceBalance` and `PersonalFunds`. `SupplierCredit` is now created only through the Suppliers API as an atomic supplier-credit expense and unique supplier debt. Cash, bank transfer, card, and cheque are funding-source/transfer values, not expense payment modes.
 
 Category groups are `Materials`, `Labor`, `Subcontracting`, `Transportation`, `Equipment`, `Fuel`, `Services`, `Administrative`, `Utilities`, `Permits`, and `Other`. Category scopes are `ProjectOnly`, `CompanyOnly`, and `Both`.
 
@@ -108,7 +108,7 @@ Expense creation, document-metadata addition, approval, and rejection require a 
 
 - Multi-project splits: no expense project-allocation table exists.
 - Split payment and cash/card/cheque expense methods: no expense payment-component table exists.
-- Supplier-credit creation and supplier debt: explicitly outside Phase 1.
+- Supplier-credit creation is owned by the Suppliers API; the general expense-create route does not duplicate it.
 - On-behalf-of Worker creation: no supervisor/worker hierarchy exists.
 - Expense PATCH/correction, cancellation, reversal, and returns: require separate approved lifecycle rules.
 - Automatic approval modes: no approved system reviewer identity rule exists.

@@ -136,7 +136,7 @@ public sealed class ExpenseApiTests(IdentityApiFactory factory) : IClassFixture<
         Assert.Contains(nameof(ExpenseDetails), body, StringComparison.Ordinal);
         Assert.DoesNotContain("Ahdah.Infrastructure.Persistence.Generated", body, StringComparison.Ordinal);
         Assert.DoesNotContain("original-status", body, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("supplier-debts", body, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("supplier-debts", body, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("advance-settlements", body, StringComparison.OrdinalIgnoreCase);
     }
 

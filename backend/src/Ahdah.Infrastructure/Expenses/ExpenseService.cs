@@ -13,6 +13,7 @@ using Ahdah.Application.Expenses.Contracts;
 using Ahdah.Application.Expenses.Models;
 using Ahdah.Application.Expenses.Services;
 using Ahdah.Application.Identity;
+using Ahdah.Application.Suppliers;
 using Ahdah.Infrastructure.Persistence.Generated.Context;
 using Ahdah.Infrastructure.Persistence.Generated.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -1016,6 +1017,50 @@ public sealed class ExpenseService(
                     claim.CancellationReason = rejectionReason!.Trim();
                     claim.VersionNumber++;
                 }
+                else if (expense.PaymentMode == ExpenseConstants.SupplierCreditPaymentMode)
+                {
+                    var debt = await LockSupplierDebtAsync(caller.CompanyId, expenseId, cancellationToken);
+                    if (debt is null
+                        || debt.Status != SupplierConstants.OpenDebtStatus
+                        || debt.AdjustmentAmount != 0m
+                        || debt.PaidAmount != 0m
+                        || debt.CreditNoteAmount != 0m
+                        || debt.WrittenOffAmount != 0m)
+                    {
+                        await transaction.RollbackAsync(cancellationToken);
+                        return AccessResult<ExpenseDetails>.Failure(AccessResultStatus.Conflict);
+                    }
+
+                    debt.Status = SupplierConstants.CancelledStatus;
+                    debt.CancelledByUserId = caller.UserId;
+                    debt.CancelledAt = now;
+                    debt.CancellationReason = rejectionReason!.Trim();
+                    debt.VersionNumber++;
+                    dbContext.SupplierDebtLedgerEntries.Add(new SupplierDebtLedgerEntry
+                    {
+                        SupplierDebtLedgerEntryId = Guid.NewGuid(),
+                        CompanyId = caller.CompanyId,
+                        SupplierDebtId = debt.SupplierDebtId,
+                        DebtVersionNumber = debt.VersionNumber,
+                        EntryType = "DebtCancelled",
+                        DeltaDebtAmount = 0m,
+                        DeltaAdjustmentAmount = 0m,
+                        DeltaPaidAmount = 0m,
+                        DeltaCreditNoteAmount = 0m,
+                        DeltaWrittenOffAmount = 0m,
+                        DebtAfterAmount = debt.DebtAmount,
+                        AdjustmentAfterAmount = debt.AdjustmentAmount,
+                        PaidAfterAmount = debt.PaidAmount,
+                        CreditNoteAfterAmount = debt.CreditNoteAmount,
+                        WrittenOffAfterAmount = debt.WrittenOffAmount,
+                        OutstandingAfterAmount = debt.DebtAmount,
+                        DebtStatusAfter = debt.Status,
+                        CorrelationId = Guid.NewGuid(),
+                        Description = "Supplier debt cancelled after expense rejection.",
+                        PerformedByUserId = caller.UserId,
+                        OccurredAt = now
+                    });
+                }
 
                 expense.Status = ExpenseConstants.RejectedStatus;
                 expense.ReviewedByUserId = caller.UserId;
@@ -1412,6 +1457,14 @@ public sealed class ExpenseService(
         CancellationToken cancellationToken) => dbContext.PersonalClaims
             .FromSqlInterpolated(
                 $"SELECT * FROM ahdah.personal_claims WHERE company_id = {companyId} AND expense_id = {expenseId} FOR UPDATE")
+            .SingleOrDefaultAsync(cancellationToken);
+
+    private Task<SupplierDebt?> LockSupplierDebtAsync(
+        Guid companyId,
+        Guid expenseId,
+        CancellationToken cancellationToken) => dbContext.SupplierDebts
+            .FromSqlInterpolated(
+                $"SELECT * FROM ahdah.supplier_debts WHERE company_id = {companyId} AND expense_id = {expenseId} FOR UPDATE")
             .SingleOrDefaultAsync(cancellationToken);
 
     private void AddBalanceLedger(

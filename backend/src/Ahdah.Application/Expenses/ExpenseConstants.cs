@@ -87,7 +87,7 @@ public static class ExpenseRules
 {
     public const bool SupportsMultipleProjectAllocation = false;
     public const bool SupportsOriginalDocumentCustody = false;
-    public const bool SupportsSupplierDebtWrites = false;
+    public const bool SupportsSupplierDebtWrites = true;
     public const bool SupportsFinalSettlement = false;
 
     public static bool IsKnownStatus(string? status) => status is

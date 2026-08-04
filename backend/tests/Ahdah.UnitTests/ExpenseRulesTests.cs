@@ -88,7 +88,7 @@ public sealed class ExpenseRulesTests
             ExpenseConstants.SupplierCreditPaymentMode));
         Assert.False(ExpenseRules.SupportsMultipleProjectAllocation);
         Assert.False(ExpenseRules.SupportsOriginalDocumentCustody);
-        Assert.False(ExpenseRules.SupportsSupplierDebtWrites);
+        Assert.True(ExpenseRules.SupportsSupplierDebtWrites);
         Assert.False(ExpenseRules.SupportsFinalSettlement);
     }
 
