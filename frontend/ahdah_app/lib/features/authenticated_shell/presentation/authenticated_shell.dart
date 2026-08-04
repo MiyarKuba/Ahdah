@@ -43,6 +43,13 @@ final class AuthenticatedShell extends ConsumerWidget {
           icon: Icons.account_balance_wallet_outlined,
           selectedIcon: Icons.account_balance_wallet,
         ),
+      if (capabilities.canViewExpenses)
+        _ShellDestination(
+          path: AppRoutes.expensesPath,
+          label: l10n.navExpenses,
+          icon: Icons.receipt_long_outlined,
+          selectedIcon: Icons.receipt_long,
+        ),
       if (capabilities.canViewCompanyDirectory)
         _ShellDestination(
           path: AppRoutes.companyMembersPath,
@@ -75,7 +82,10 @@ final class AuthenticatedShell extends ConsumerWidget {
       (destination) =>
           location.startsWith(destination.path) ||
           destination.path == AppRoutes.advancesPath &&
-              location.startsWith(AppRoutes.advanceBalancesPath),
+              location.startsWith(AppRoutes.advanceBalancesPath) ||
+          destination.path == AppRoutes.expensesPath &&
+              (location.startsWith(AppRoutes.expenseCategoriesPath) ||
+                  location.startsWith(AppRoutes.reimbursementsPath)),
     );
     final safeIndex = selectedIndex < 0 ? 0 : selectedIndex;
     final wide = MediaQuery.sizeOf(context).width >= 840;

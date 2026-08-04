@@ -124,6 +124,7 @@ final class AdvanceFundingSummary {
 
 final class AdvanceBalanceSummary {
   const AdvanceBalanceSummary({
+    required this.userAdvanceBalanceId,
     required this.advanceId,
     required this.advanceNumber,
     required this.holder,
@@ -140,6 +141,7 @@ final class AdvanceBalanceSummary {
     required this.updatedAtUtc,
   });
 
+  final String userAdvanceBalanceId;
   final String advanceId;
   final String advanceNumber;
   final AdvanceUserSummary holder;
@@ -157,6 +159,7 @@ final class AdvanceBalanceSummary {
 
   factory AdvanceBalanceSummary.fromJson(Map<String, Object?> json) =>
       AdvanceBalanceSummary(
+        userAdvanceBalanceId: _string(json['userAdvanceBalanceId']),
         advanceId: _string(json['advanceId']),
         advanceNumber: _string(json['advanceNumber']),
         holder: AdvanceUserSummary.fromJson(_map(json['holder'])),

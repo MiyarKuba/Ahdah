@@ -1114,4 +1114,344 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get financialOperationSucceeded =>
       'The financial operation completed successfully.';
+
+  @override
+  String get navExpenses => 'Expenses';
+
+  @override
+  String get expensesTitle => 'Expenses';
+
+  @override
+  String get expenseDetails => 'Expense details';
+
+  @override
+  String get createExpense => 'Create expense';
+
+  @override
+  String get expenseCategories => 'Expense categories';
+
+  @override
+  String get createExpenseCategory => 'Create expense category';
+
+  @override
+  String get reimbursements => 'Reimbursements';
+
+  @override
+  String get reimbursementDetails => 'Reimbursement details';
+
+  @override
+  String get expenseHistory => 'Expense history';
+
+  @override
+  String get documentMetadata => 'Document metadata';
+
+  @override
+  String get binaryUploadNotImplemented =>
+      'File upload is not implemented in this phase. These are document metadata records only.';
+
+  @override
+  String get paymentMode => 'Payment mode';
+
+  @override
+  String get advanceBalance => 'Advance balance';
+
+  @override
+  String get personalFunds => 'Personal funds';
+
+  @override
+  String get personalFundsClaimNotice =>
+      'A reimbursement claim will be created as an unpaid liability.';
+
+  @override
+  String get advanceReservationNotice =>
+      'The allocation is reserved until approval. Approval confirms it; rejection releases it.';
+
+  @override
+  String get expenseReference => 'Expense reference';
+
+  @override
+  String get searchExpenseReference => 'Search expense reference';
+
+  @override
+  String get expenseDate => 'Expense date';
+
+  @override
+  String get category => 'Category';
+
+  @override
+  String get categoryName => 'Category name';
+
+  @override
+  String get categoryCodeOptional => 'Category code (optional)';
+
+  @override
+  String get categoryGroup => 'Category group';
+
+  @override
+  String get categoryScope => 'Category scope';
+
+  @override
+  String get requiresReceipt => 'Requires supporting receipt';
+
+  @override
+  String get requiresSupplier => 'Requires supplier';
+
+  @override
+  String get supportsQuantityDetails => 'Supports quantity details';
+
+  @override
+  String get displayOrder => 'Display order';
+
+  @override
+  String get receiptNumberOptional => 'Receipt number (optional)';
+
+  @override
+  String get invoiceNumberOptional => 'Invoice number (optional)';
+
+  @override
+  String get merchantNameOptional => 'Merchant name (optional)';
+
+  @override
+  String get expenseLocationOptional => 'Expense location (optional)';
+
+  @override
+  String get projectOptional => 'Project (optional)';
+
+  @override
+  String get companyExpense => 'Company expense';
+
+  @override
+  String get projectExpense => 'Project expense';
+
+  @override
+  String get incurredBy => 'Payer';
+
+  @override
+  String get submittedBy => 'Submitted by';
+
+  @override
+  String get reviewedBy => 'Reviewed by';
+
+  @override
+  String get reviewExpense => 'Review expense';
+
+  @override
+  String get approveExpense => 'Approve expense';
+
+  @override
+  String get rejectExpense => 'Reject expense';
+
+  @override
+  String get approveExpenseNotice =>
+      'Approval confirms reserved advance allocations. Personal claims remain unpaid liabilities.';
+
+  @override
+  String get rejectExpenseNotice =>
+      'Rejection releases advance reservations and may cancel an untouched claim. The expense remains in history.';
+
+  @override
+  String get claimUnpaid => 'Claim unpaid';
+
+  @override
+  String get outstandingAmount => 'Outstanding amount';
+
+  @override
+  String get claimant => 'Claimant';
+
+  @override
+  String get noExpensesTitle => 'No expenses found';
+
+  @override
+  String get noExpensesBody =>
+      'Change the verified filters or create the first expense.';
+
+  @override
+  String get supervisorExpensesBody =>
+      'Only your expenses and expenses for actively assigned projects appear here.';
+
+  @override
+  String get workerExpensesBody => 'Only your personal expenses appear here.';
+
+  @override
+  String get noReimbursements => 'No reimbursements were returned.';
+
+  @override
+  String get noCategories => 'No active expense categories were returned.';
+
+  @override
+  String get noDocuments => 'No document metadata records were returned.';
+
+  @override
+  String get noExpenseHistory => 'No expense history events were returned.';
+
+  @override
+  String get allocationTotalMismatch =>
+      'Advance allocations must exactly equal the expense amount.';
+
+  @override
+  String get selectAdvanceBalance => 'Select an advance balance';
+
+  @override
+  String get supportingDocumentRequired =>
+      'A supporting Receipt or Invoice metadata record may be required before approval.';
+
+  @override
+  String get expenseCreatedPending =>
+      'The expense was created and is pending review.';
+
+  @override
+  String get expenseStatusPendingReview => 'Pending review';
+
+  @override
+  String get expenseStatusCorrectionRequired => 'Correction required';
+
+  @override
+  String get expenseStatusApproved => 'Approved';
+
+  @override
+  String get expenseStatusRejected => 'Rejected';
+
+  @override
+  String get expenseStatusCancelled => 'Cancelled';
+
+  @override
+  String get expenseStatusReversed => 'Reversed';
+
+  @override
+  String get categoryGroupMaterials => 'Materials';
+
+  @override
+  String get categoryGroupLabor => 'Labor';
+
+  @override
+  String get categoryGroupSubcontracting => 'Subcontracting';
+
+  @override
+  String get categoryGroupTransportation => 'Transportation';
+
+  @override
+  String get categoryGroupEquipment => 'Equipment';
+
+  @override
+  String get categoryGroupFuel => 'Fuel';
+
+  @override
+  String get categoryGroupServices => 'Services';
+
+  @override
+  String get categoryGroupAdministrative => 'Administrative';
+
+  @override
+  String get categoryGroupUtilities => 'Utilities';
+
+  @override
+  String get categoryGroupPermits => 'Permits';
+
+  @override
+  String get scopeProjectOnly => 'Project only';
+
+  @override
+  String get scopeCompanyOnly => 'Company only';
+
+  @override
+  String get scopeBoth => 'Project or company';
+
+  @override
+  String get documentTypeReceipt => 'Receipt';
+
+  @override
+  String get documentTypeInvoice => 'Invoice';
+
+  @override
+  String get documentTypeQuotation => 'Quotation';
+
+  @override
+  String get documentTypeDeliveryNote => 'Delivery note';
+
+  @override
+  String get documentTypePaymentProof => 'Payment proof';
+
+  @override
+  String get documentTypeContract => 'Contract';
+
+  @override
+  String get documentTypePurchaseOrder => 'Purchase order';
+
+  @override
+  String get documentStatusPendingVerification => 'Pending verification';
+
+  @override
+  String get documentStatusVerified => 'Verified';
+
+  @override
+  String get claimStatusOpen => 'Open';
+
+  @override
+  String get claimStatusPartiallySettled => 'Partially settled';
+
+  @override
+  String get claimStatusSettled => 'Settled';
+
+  @override
+  String get claimStatusCancelled => 'Cancelled';
+
+  @override
+  String get claimStatusReversed => 'Reversed';
+
+  @override
+  String get receiptNumber => 'Receipt number';
+
+  @override
+  String get invoiceNumber => 'Invoice number';
+
+  @override
+  String get advanceAllocations => 'Advance allocations';
+
+  @override
+  String get expenseItems => 'Expense items';
+
+  @override
+  String get documents => 'Documents';
+
+  @override
+  String get history => 'History';
+
+  @override
+  String get fileName => 'File name';
+
+  @override
+  String get fileSize => 'File size';
+
+  @override
+  String get verificationStatus => 'Verification status';
+
+  @override
+  String get claimDate => 'Claim date';
+
+  @override
+  String get dueDate => 'Due date';
+
+  @override
+  String get categoryCreated => 'The expense category was created.';
+
+  @override
+  String get expenseApproved => 'The expense was approved.';
+
+  @override
+  String get expenseRejected => 'The expense was rejected.';
+
+  @override
+  String get historyExpenseCreated => 'Expense submitted for review';
+
+  @override
+  String get historyDocumentAdded => 'Supporting document metadata added';
+
+  @override
+  String get historyExpenseApproved => 'Expense approved';
+
+  @override
+  String get historyExpenseRejected => 'Expense rejected';
+
+  @override
+  String get historyOutcomeSuccess => 'Succeeded';
 }

@@ -2,7 +2,7 @@
 
 Ahdah is a multi-tenant platform for financial custody and construction operations. It is intended to help companies coordinate projects, custody balances, transfers, expenses, supplier obligations, worker claims, documents, audit trails, notifications, and scheduled reporting.
 
-This repository is currently in **Expenses Foundation — Backend Phase 1**. The backend now provides tenant-safe expense categories, expense creation, direct project association, advance-balance reservation, personal-funds reimbursement liabilities, supporting-document metadata, approval/rejection, reimbursements, and immutable expense history. Flutter expense UI, original-paper custody, supplier debt, and final settlement remain deferred.
+This repository is currently in **Flutter Expenses and Reimbursements**. Flutter now consumes the tenant-safe expense categories, role-filtered expenses, direct project association, authoritative advance-balance allocation, personal-funds reimbursement liabilities, metadata-only documents, approval/rejection, reimbursements, and immutable expense history APIs across Android, iOS source, tablet, and Web. Original-paper custody, binary upload, supplier credit/debt, mixed payment, project splits, claim payment, and final settlement remain deferred.
 
 ## Technology stack
 
@@ -160,6 +160,16 @@ Every financial command generates 32 cryptographically secure random bytes with 
 
 Automated Flutter tests use fake repositories and controlled Dio adapters only. They do not invoke a real financial endpoint or connect to PostgreSQL.
 
+## Flutter expenses and reimbursements
+
+The authenticated shell now includes Expenses for Manager, Deputy, Accountant, Supervisor, and Worker. Stable guarded routes are `/expenses`, `/expenses/new`, `/expenses/:expenseId`, `/expenses/:expenseId/history`, `/expenses/:expenseId/documents`, `/expenses/:expenseId/review`, `/expense-categories`, `/expense-categories/new`, `/reimbursements`, and `/reimbursements/:reimbursementId`. Unknown roles receive no expense access; Accountant cannot create; only Manager creates categories; only Manager/Deputy/Accountant reach review.
+
+Expense lists use server-side exact status/payment-mode/reference filters, page 1/page size 20 pagination, stable deduplication, refresh, and preserved data on load-more failure. Detail renders only the safe API projection, including one optional direct project, allocations, metadata-only documents, optional item rows, personal claim, reviewer information, and audit history. Document POST is intentionally not exposed because its current contract requires a storage-generated application-relative path and SHA-256 value while no binary storage provider exists.
+
+Creation offers only `AdvanceBalance` and `PersonalFunds`. Project selection follows API-visible projects and category scope, with no Worker project selector. Multiple caller-owned authoritative balances may be allocated; each amount is exact decimal text and the total is checked in integer minor units. The balance DTO now exposes its existing safe `userAdvanceBalanceId`, the minimum backend contract correction required to submit an allocation. `PersonalFunds` creates an unpaid claim and exposes no payment action.
+
+Expense creation, approval, and rejection reuse the existing 32-byte ephemeral financial operation key behavior. Timeout/network outcomes remain uncertain and allow only explicit same-payload retry with the same in-memory key. No automatic write retry, persistence, display, or logging of keys exists. Arabic remains default RTL and English remains LTR.
+
 This phase passes `flutter analyze`, 137 Flutter tests, a Web release build, and an Android debug APK build. The Android application was not launched. iOS build/signing verification remains pending macOS and Xcode.
 
 ## Run backend tests
@@ -195,7 +205,7 @@ flutter devices
 C:\dev\flutter\bin\flutter.bat run -d <android-device-id> --dart-define=API_BASE_URL=http://10.0.2.2:5231
 ```
 
-The emulator reaches the local HTTP API through `10.0.2.2`. A physical device uses the development computer's LAN address without committing that address. Local cleartext support exists only in Android's debug source set; release networking remains HTTPS-oriented. The repository does not launch or manage an emulator automatically.
+The emulator reaches the local HTTP API through `10.0.2.2`. A physical Android device may use `adb reverse tcp:5231 tcp:5231` with `API_BASE_URL=http://127.0.0.1:5231`, or the development computer's LAN address without committing that address. Local cleartext support exists only in Android's debug source set; release networking remains HTTPS-oriented. The repository does not launch or manage an emulator automatically.
 
 The Android debug APK build has passed with Gradle 9.1.0:
 

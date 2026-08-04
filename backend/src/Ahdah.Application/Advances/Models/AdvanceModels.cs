@@ -29,6 +29,7 @@ public sealed record AdvanceFundingSummary(
     DateTimeOffset AllocatedAtUtc);
 
 public sealed record AdvanceBalanceSummary(
+    Guid UserAdvanceBalanceId,
     Guid AdvanceId,
     string AdvanceNumber,
     AdvanceUserSummary Holder,

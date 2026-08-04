@@ -6,124 +6,103 @@ Ahdah — عُهدة
 
 ## Current phase
 
-Expenses Foundation — Backend Phase 1
+Flutter Expenses and Reimbursements
 
 ## Date, workspace, and branch
 
 - Date: `2026-08-04`.
 - Workspace confirmed before edits: `C:\dev\Ahdah`.
-- Branch confirmed before edits: `feat/expenses-foundation`.
-- The pre-existing untracked `frontend/ahdah_app/devtools_options.yaml` was left untouched.
+- Branch confirmed before edits: `feat/flutter-expenses-reimbursements`.
+- The pre-existing untracked `frontend/ahdah_app/devtools_options.yaml` was left untouched and unstaged.
 
-## Actual schema findings
+## Backend contracts consumed
 
-- Tables used directly are `expense_categories`, `expenses`, `expense_advance_allocations`, `expense_documents`, `expense_items`, `personal_claims`, `user_advance_balances`, `balance_ledger_entries`, `advances`, `projects`, `users`, `company_members`, `project_assignments`, `company_settings`, `idempotency_records`, and `audit_logs`.
-- `expenses` has one nullable direct `project_id`; there is no project-split table or expense payment-component table.
-- Expense statuses are `Draft`, `PendingReview`, `CorrectionRequired`, `Approved`, `Rejected`, `Cancelled`, and `Reversed`.
-- Payment modes are `AdvanceBalance`, `SupplierCredit`, and `PersonalFunds`.
-- `expense_advance_allocations` links an expense to one or more `user_advance_balances`; allocations must be positive and unique per balance.
-- `balance_ledger_entries` already defines `ExpenseReserved`, `ExpenseReservationReleased`, and `ExpenseConfirmed`; PostgreSQL prevents ledger update/delete.
-- `expense_documents` stores multiple attachments with document type, capture method, verification status, and a single non-rejected primary document. There is no separate original-paper custody object or lifecycle.
-- Document types are `Receipt`, `Invoice`, `Quotation`, `DeliveryNote`, `PaymentProof`, `Contract`, `PurchaseOrder`, and `Other`; verification statuses are `PendingVerification`, `Verified`, and `Rejected`. Receipt/invoice presence is derived from non-rejected document rows plus the optional receipt/invoice numbers on the expense; there is no separate receipt-state enum.
-- `personal_claims` represents reimbursement obligations for personal expenses. Statuses are `Open`, `PartiallySettled`, `Settled`, `Cancelled`, and `Reversed`.
-- `company_settings` defines expense approval/document modes and thresholds, self-approval separation, document size/type configuration, and related defaults.
-- There is no expense-specific database function, separate expense approval table, configured expense reference sequence, or schema object for document binary storage.
-- Category groups are `Materials`, `Labor`, `Subcontracting`, `Transportation`, `Equipment`, `Fuel`, `Services`, `Administrative`, `Utilities`, `Permits`, and `Other`; scopes are `ProjectOnly`, `CompanyOnly`, and `Both`. Listing defaults to active tenant categories, and creation sets active server state without exposing deletion.
+- Categories: `GET/POST /api/v1/expense-categories`.
+- Expenses: paged list, detail, creation, allocations, metadata attachments, history, approval, and rejection under `/api/v1/expenses`.
+- Reimbursements: paged list and detail under `/api/v1/reimbursements`.
+- Exact request/response fields, filters, validation lengths, lifecycle values, roles, Problem Details codes, pagination, and idempotency requirements were taken from controllers, contracts, response models, constants, service interface, rules tests, API tests, and OpenAPI verification.
+- A genuine contract blocker was corrected: `AdvanceBalanceSummary` now exposes the existing safe `userAdvanceBalanceId` required by `CreateExpenseRequest.advanceAllocations`. Its infrastructure projection and OpenAPI assertion were updated. No persistence or database change was made.
 
-## Workflows implemented
+## Flutter architecture and routes
 
-- Paginated, tenant-scoped category and expense queries with role- and record-level visibility.
-- Manager-only active expense-category creation using exact database groups/scopes and schema-backed validation.
-- Expense creation for `AdvanceBalance` and `PersonalFunds` with authenticated-user ownership only.
-- One direct project association with category scope enforcement; Supervisors may use only active assigned projects and Workers cannot create project-linked expenses.
-- Atomic advance-balance reservation across sorted, tenant-filtered row locks, with immutable `ExpenseReserved` ledger entries.
-- Personal-funds expense creation with an auditable `Open` personal claim.
-- Manager/Deputy/Accountant approval and rejection with expected-version concurrency, company separation-of-duty settings, explicit transactions, and idempotency.
-- Approval confirms reserved advance amounts and appends `ExpenseConfirmed`; rejection releases reservations and appends `ExpenseReservationReleased`.
-- Attachment metadata listing/creation with settings-backed MIME type, extension, and size validation; safe application-relative storage paths; no storage URL or hash disclosure in response DTOs.
-- Expense allocation, attachment, audit-history, and reimbursement read models.
-- Tenant-scoped financial idempotency fingerprint/original-response replay and HTTP 409 mapping for concurrency or uniqueness conflicts.
-- Immutable audit events for expense creation, document addition, approval, and rejection.
+- `features/expenses` contains handwritten immutable models, exact request objects, repository interface/API adapter, focused paged read controllers, focused create/review command controllers, and responsive presentation pages.
+- Stable guarded routes are `/expenses`, `/expenses/new`, `/expenses/:expenseId`, `/expenses/:expenseId/history`, `/expenses/:expenseId/documents`, `/expenses/:expenseId/review`, `/expense-categories`, `/expense-categories/new`, `/reimbursements`, and `/reimbursements/:reimbursementId`.
+- Expenses is present in the authenticated responsive `NavigationBar`/`NavigationRail` for all five known roles. Unknown roles retain Home and Account only.
 
-## Endpoints
+## Role capabilities
 
-- `GET /api/v1/expense-categories`
-- `POST /api/v1/expense-categories`
-- `GET /api/v1/expenses`
-- `POST /api/v1/expenses`
-- `GET /api/v1/expenses/{expenseId}`
-- `GET /api/v1/expenses/{expenseId}/allocations`
-- `GET /api/v1/expenses/{expenseId}/attachments`
-- `POST /api/v1/expenses/{expenseId}/attachments`
-- `GET /api/v1/expenses/{expenseId}/history`
-- `POST /api/v1/expenses/{expenseId}/approve`
-- `POST /api/v1/expenses/{expenseId}/reject`
-- `GET /api/v1/reimbursements`
-- `GET /api/v1/reimbursements/{reimbursementId}`
+| Role | Expense visibility | Create | Review | Category create | Project link | Reimbursements |
+|---|---|---:|---:|---:|---:|---:|
+| Manager | All company | Yes | Yes | Yes | Yes | All company |
+| Deputy | All company | Yes | Yes | No | Yes | All company |
+| Accountant | All company | No | Yes | No | No | All company |
+| Supervisor | Own and assigned-project | Yes | No | No | Assigned only | Own |
+| Worker | Own | Yes | No | No | No selector | Own |
+| Unknown | None | No | No | No | No | None |
 
-`POST /api/v1/expenses`, attachment creation, approval, and rejection require a 16–200 character `Idempotency-Key` header.
+Broad Flutter capabilities guard navigation and routes, while loaded status, actor/project relationship, separation rules, and the backend remain authoritative.
 
-## Role visibility and capabilities
+## Implemented behavior
 
-| Role | Expense visibility | Create | Review | Attachments | Categories | Reimbursements |
-|---|---|---|---|---|---|---|
-| Manager | All company expenses | Yes | Approve/reject | Yes | List/create | All company claims |
-| Deputy | All company expenses | Yes | Approve/reject | Yes | List | All company claims |
-| Accountant | All company expenses | No | Approve/reject | Yes | List | All company claims |
-| Supervisor | Own plus assigned-project expenses | Yes, assigned projects only | No | Visible records | List | Own claims |
-| Worker | Own expenses only | Yes, company-only | No | Own records | List | Own claims |
-| Unknown | None | No | No | No | None | None |
+- Category list/filter and Manager-only creation with exact group/scope/options, normalized optional code, validation, duplicate-submit prevention, and no delete/update action.
+- Expense list with server-side exact status/payment/reference filters, 2–50 character bounded reference search, page size 20, refresh, stable deduplication, and recoverable load-more failure.
+- Expense detail with reference, amount/currency, category, status, payment mode, payer/submitter, one optional direct project, dates, receipt/invoice numbers, allocations, returned items, metadata documents, optional reimbursement, review information, and safe notes.
+- Expense creation with exact positive `NUMERIC(18,2)`-compatible decimal input, one optional direct project, exact category scope behavior, and only `AdvanceBalance`/`PersonalFunds`.
+- Multiple unique authoritative personal balance allocations with one currency and exact integer-minor-unit equality. No client balance reconstruction or optimistic subtraction.
+- `PersonalFunds` clearly creates an unpaid reimbursement liability and sends no allocation or claim status.
+- Receipt/invoice state is inferred only from actual numbers and document metadata. No separate receipt-state enum was invented.
+- Document metadata list is read-only. The POST requires a storage-produced application-relative path and SHA-256 checksum unavailable without binary storage; Flutter does not fabricate these values or add a picker.
+- Manager/Deputy/Accountant review of `PendingReview` expenses with explicit approval/rejection confirmation, authoritative version, required rejection reason, and stale conflict handling through existing Problem Details behavior.
+- Read-only paged reimbursement list/detail and read-only paged audit history. No claim payment, raw audit JSON, ledger IDs, storage paths, or checksums are displayed.
 
-Policies added: `ExpenseViewer`, `ExpenseCreator`, `ExpenseReviewer`, `ExpenseDocumentContributor`, `ExpenseCategoryManager`, and `ReimbursementViewer`. Every persistence operation applies `company_id` plus record-level authorization.
+## Decimal and idempotency safety
 
-## Financial and concurrency integrity
+- Financial requests contain no Dart `double`; validated canonical decimal text is emitted as an exact JSON number token.
+- Exact allocation comparison reuses `DecimalMoney` and `BigInt` minor units. Mixed currencies are rejected locally and remain server-authoritative.
+- Expense creation, approval, and rejection reuse `FinancialOperationKeyFactory` and `FinancialOperationKeySession`: 32 secure random bytes, unpadded URL-safe Base64, controller-memory only.
+- No automatic write retry exists. Network/timeout outcomes are explicitly uncertain; only Retry Same Operation reuses the identical payload/key. Changed payload, success, definitive failure, cancellation, and disposal clear the pending operation.
+- Category creation and all read requests send no idempotency header. Document metadata creation is not exposed.
 
-- PostgreSQL `NUMERIC(18,2)` and C# `decimal` are used for all money; no `float` or `double` was introduced.
-- `user_advance_balances` remains authoritative; clients cannot submit balances or ledger values.
-- Financial commands run in explicit PostgreSQL transactions and lock tenant-filtered mutable records before validation.
-- Ledger history is append-only. No update, delete, repair, or silent recalculation path was added.
-- Expenses, categories, documents, claims, and user balances use optimistic concurrency where mutation is exposed.
-- All actor/company/status/audit values come from authenticated context and server policy, not client identity fields.
-- Opaque `EXP-<uuid>` and `CLM-<uuid>` display references are used because no company sequence is configured.
+## Localization and platforms
 
-## Deliberately deferred
+- Arabic remains default RTL and English remains LTR.
+- Expense statuses, payment modes, category groups/scopes, document types/states, reimbursement states, forms, errors, confirmations, warnings, audit events, and constrained-visibility empty states are localized.
+- The shared SafeArea-based shell and responsive pages support mobile cards, wider constrained content, browser URLs/back navigation, text scaling, keyboard-safe forms, semantic money labels, and text-based status communication.
 
-- `SupplierCredit` creation and supplier-debt effects: this requires a focused supplier-credit workflow and approved business rules.
-- Automatic approval for `Never`/threshold modes: the schema requires a concrete reviewer and reviewed timestamp, so no synthetic approver was invented.
-- Draft/edit/correction/cancellation/reversal lifecycles: no safe command contract was approved for this foundation phase.
-- Expense creation on behalf of another user: the schema does not establish an approved reporting hierarchy for that authority.
-- Document binary upload/download, malware scanning, verification/rejection, and original-paper custody: only metadata persistence exists in the current schema.
-- Claim settlement/payment writes: reimbursement reads are provided, but financial settlement rules are outside this phase.
-- Project splits, mixed payment components, and separate approval history: corresponding schema objects do not exist.
-- Receipt-line items and settlement/FIFO integration: deferred until their business workflows are explicitly approved.
-
-## Packages and schema changes
-
-- Packages changed: none.
-- PostgreSQL schema changed: no.
-- EF migrations created or run: none.
-- Generated Database-First entity/configuration files changed: no.
-- `EnsureCreated`, automatic migration, and direct Flutter database access were not introduced.
-
-## Verification status
+## Verification
 
 - `dotnet restore backend\Ahdah.sln`: passed; all projects up to date.
 - `dotnet build backend\Ahdah.sln --no-restore`: passed with 0 warnings and 0 errors.
-- `dotnet test backend\Ahdah.sln --no-restore --no-build`: passed 220 total, 0 failed, 0 skipped (128 unit and 92 integration).
-- OpenAPI: the integration suite passed the development-document test for all new expense/category/reimbursement routes and their authorization metadata.
-- Scoped formatting verification for all newly added expense files: passed.
-- Repository-wide formatting verification remains blocked by pre-existing line-ending diagnostics in unrelated files; those files were not rewritten.
-- PostgreSQL inspection was read-only; no real expense, balance, claim, document, or ledger write endpoint was invoked.
-- The pre-existing untracked Flutter file remains untouched.
+- `dotnet test backend\Ahdah.sln --no-restore --no-build`: passed 220 total, 0 failed, 0 skipped (128 unit, 92 integration).
+- OpenAPI integration assertion: passed and confirms `userAdvanceBalanceId` plus the expense/category/reimbursement contracts.
+- Flutter dependency resolution: passed; packages added or changed: none.
+- Strict Dart formatting: passed after final formatting.
+- `flutter analyze`: passed with no issues.
+- `flutter test`: passed 163 total, 0 failed (137 existing plus 26 new).
+- Web release build: passed with `API_BASE_URL=http://localhost:5231`; WebAssembly dry run passed.
+- Android debug APK build: passed with `API_BASE_URL=http://10.0.2.2:5231`; the app was not launched.
+- iOS source compatibility was inspected; build, signing, simulator, and device verification remain pending macOS/Xcode.
+- Automated tests used fakes/controlled Dio only. No real expense API write or financial command was invoked.
 
-## Known limitations and risks
+## Safety status
 
-- Attachment creation records metadata for an already stored application-relative file; this phase does not implement a storage provider or prove the file exists.
-- Category code/name uniqueness is not enforced by the database across a tenant; the service performs tenant-scoped conflict checks, with the normal concurrency caveat.
-- Database-generated document navigation is singular even though the physical table permits multiple rows; the service queries `ExpenseDocuments` directly.
-- Auto-approval and supplier-credit semantics require approved schema/business decisions before safe implementation.
-- No live financial workflow was exercised; automated tests use service fakes and persistence/source-contract checks.
+- PostgreSQL mutation: none.
+- PostgreSQL schema change: none.
+- Generated Database-First file change: none.
+- Migration created or run: none.
+- `EnsureCreated`, `EnsureDeleted`, or `Database.Migrate`: not introduced.
+- Real financial data: not used.
+- Secrets, tokens, idempotency values, hashes, paths, and credentials: not printed, persisted, or committed.
+- Staging, commit, and push: not performed.
+
+## Limitations
+
+- No binary upload/download or proof that a metadata row's file exists.
+- No document verification/rejection command or original-paper custody state.
+- No supplier credit/debt, mixed payment, project split, claim payment, final settlement, cancellation, reversal, or correction editing.
+- Reimbursement is read-only and claims are never marked paid by Flutter.
+- The Android artifact was built but not runtime-tested. iOS remains unbuilt on Windows.
 
 ## Exact recommended next task
 
-Implement the Flutter Expenses, Receipt Status, Reimbursement, and Document Custody UI using the completed Expenses APIs, without implementing final settlement or supplier debt yet.
+Design and implement the backend Suppliers, Supplier Credit, Supplier Invoices, Payments, Refunds, Credit Notes, and Supplier Debt foundation using the existing PostgreSQL schema, without implementing final settlement yet.

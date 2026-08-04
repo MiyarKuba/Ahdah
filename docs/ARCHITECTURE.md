@@ -48,6 +48,12 @@ The Flutter Advances feature follows the same feature-first boundary under `feat
 
 Financial command controllers generate 32 secure random bytes as URL-safe, unpadded `Idempotency-Key` values. Keys and payloads live only in auto-disposed controller memory. A timeout/network error preserves the exact payload/key and exposes an explicit retry; success, definitive 4xx, user cancellation, payload replacement, and disposal clear it. No write is automatically retried and no key enters preferences, secure storage, browser storage, routes, UI, or logs.
 
+The Flutter Expenses feature follows the same feature-first boundary under `features/expenses`. Handwritten immutable category, expense, allocation, document, item, reimbursement, and history models mirror only the published camelCase contracts. The API adapter preserves financial JSON number tokens as decimal text, while request values remain validated strings until exact JSON numeric emission. Focused Riverpod controllers separate list/detail/category/document/history/reimbursement reads from create/approve/reject commands.
+
+Authenticated expense routes cover list, create, detail, metadata documents, history, review, categories, Manager-only category creation, reimbursements, and reimbursement detail. Central role capabilities and router redirects provide broad guards; loaded status, actor/project relationships, and backend authorization remain authoritative. Worker receives no project selector, Supervisor sees API-assigned projects, Accountant is review-only, and unknown roles receive no expense capability.
+
+Advance-balance expense creation consumes authoritative personal balance rows. A minimal backend contract correction exposes the existing `userAdvanceBalanceId` in `AdvanceBalanceSummary`; no persistence mapping or schema changed. Flutter supports multiple unique same-currency allocations and compares their sum in integer minor units. Personal-funds creation presents the returned claim as unpaid. Document metadata is read-only because the current metadata POST requires storage-generated path/checksum input and no binary storage abstraction exists.
+
 The one-time invitation creation token is returned directly to dialog-local state. It never enters list models, provider state, routes, preferences, secure storage, browser storage, diagnostics, or logs. Closing the result drops the reference and refreshes the non-secret list. SMS/email delivery is outside the client.
 
 ## ASP.NET Core Web API

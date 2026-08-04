@@ -32,6 +32,14 @@ import '../../features/advances/presentation/movements/advance_movements_page.da
 import '../../features/advances/presentation/distribute/advance_distribution_page.dart';
 import '../../features/advances/presentation/return_money/advance_return_page.dart';
 import '../../features/advances/presentation/balances/advance_balances_page.dart';
+import '../../features/expenses/presentation/list/expenses_page.dart';
+import '../../features/expenses/presentation/create/expense_create_page.dart';
+import '../../features/expenses/presentation/detail/expense_details_page.dart';
+import '../../features/expenses/presentation/documents/expense_documents_page.dart';
+import '../../features/expenses/presentation/history/expense_history_page.dart';
+import '../../features/expenses/presentation/review/expense_review_page.dart';
+import '../../features/expenses/presentation/categories/expense_categories_page.dart';
+import '../../features/expenses/presentation/reimbursements/reimbursements_page.dart';
 import 'app_routes.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -56,6 +64,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           location == AppRoutes.advanceBalancesPath ||
           location.startsWith('${AppRoutes.advanceBalancesPath}/');
       final isAdvanceCreatePath = location == AppRoutes.advanceCreatePath;
+      final isExpensePath =
+          location == AppRoutes.expensesPath ||
+          location.startsWith('${AppRoutes.expensesPath}/');
+      final isExpenseCategoryPath =
+          location == AppRoutes.expenseCategoriesPath ||
+          location.startsWith('${AppRoutes.expenseCategoriesPath}/');
+      final isReimbursementPath =
+          location == AppRoutes.reimbursementsPath ||
+          location.startsWith('${AppRoutes.reimbursementsPath}/');
+      final isExpenseFeaturePath =
+          isExpensePath || isExpenseCategoryPath || isReimbursementPath;
+      final isExpenseCreatePath = location == AppRoutes.expenseCreatePath;
+      final isExpenseCategoryCreatePath =
+          location == AppRoutes.expenseCategoryCreatePath;
+      final isExpenseReviewPath = location.endsWith('/review');
       final isAdvanceDistributionPath = location.endsWith('/distribute');
       final isAdvanceReturnPath = location.endsWith('/return');
       final isAuthorizedBalancePath = location.startsWith(
@@ -72,7 +95,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           isAccessManagerPath ||
           isProjectPath ||
           isCompanyDirectoryPath ||
-          isAdvancePath;
+          isAdvancePath ||
+          isExpenseFeaturePath;
       final isUnavailable = location == AppRoutes.unavailablePath;
       final isOnboarding = {
         AppRoutes.welcomePath,
@@ -100,7 +124,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   !capabilities.canDistributeAdvances ||
               isAdvanceReturnPath && !capabilities.canReturnHeldBalance ||
               isAuthorizedBalancePath &&
-                  !capabilities.canSelectAuthorizedBalanceUser) {
+                  !capabilities.canSelectAuthorizedBalanceUser ||
+              isExpenseFeaturePath && !capabilities.canViewExpenses ||
+              isExpenseCreatePath && !capabilities.canCreateExpenses ||
+              isExpenseCategoryCreatePath &&
+                  !capabilities.canManageExpenseCategories ||
+              isExpenseReviewPath && !capabilities.canReviewExpenses ||
+              isReimbursementPath && !capabilities.canViewReimbursements) {
             return AppRoutes.homePath;
           }
           return isOnboarding || isSplash || isUnavailable
@@ -250,6 +280,66 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.advanceBalancesPath,
             name: AppRoutes.advanceBalances,
             builder: (context, state) => const PersonalAdvanceBalancesPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.expensesPath,
+            name: AppRoutes.expenses,
+            builder: (context, state) => const ExpensesPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.expenseCreatePath,
+            name: AppRoutes.expenseCreate,
+            builder: (context, state) => const ExpenseCreatePage(),
+          ),
+          GoRoute(
+            path: '/expenses/:expenseId',
+            name: AppRoutes.expenseDetails,
+            builder: (context, state) => ExpenseDetailsPage(
+              expenseId: state.pathParameters['expenseId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/expenses/:expenseId/history',
+            name: AppRoutes.expenseHistory,
+            builder: (context, state) => ExpenseHistoryPage(
+              expenseId: state.pathParameters['expenseId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/expenses/:expenseId/documents',
+            name: AppRoutes.expenseDocuments,
+            builder: (context, state) => ExpenseDocumentsPage(
+              expenseId: state.pathParameters['expenseId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/expenses/:expenseId/review',
+            name: AppRoutes.expenseReview,
+            builder: (context, state) => ExpenseReviewPage(
+              expenseId: state.pathParameters['expenseId']!,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.expenseCategoriesPath,
+            name: AppRoutes.expenseCategories,
+            builder: (context, state) => const ExpenseCategoriesPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.expenseCategoryCreatePath,
+            name: AppRoutes.expenseCategoryCreate,
+            builder: (context, state) => const ExpenseCategoryCreatePage(),
+          ),
+          GoRoute(
+            path: AppRoutes.reimbursementsPath,
+            name: AppRoutes.reimbursements,
+            builder: (context, state) => const ReimbursementsPage(),
+          ),
+          GoRoute(
+            path: '/reimbursements/:reimbursementId',
+            name: AppRoutes.reimbursementDetails,
+            builder: (context, state) => ReimbursementDetailsPage(
+              reimbursementId: state.pathParameters['reimbursementId']!,
+            ),
           ),
           GoRoute(
             path: '/advance-balances/users/:userId',

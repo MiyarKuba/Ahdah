@@ -490,6 +490,7 @@ final testAdvanceSummary = AdvanceSummary(
 );
 
 final testAdvanceBalance = AdvanceBalanceSummary(
+  userAdvanceBalanceId: 'balance-id',
   advanceId: 'advance-1',
   advanceNumber: 'ADV-TEST',
   holder: testAdvanceSummary.recipient,

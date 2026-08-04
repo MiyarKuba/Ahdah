@@ -10,6 +10,9 @@ abstract final class ApiEndpoints {
   static const advances = '/api/v1/advances';
   static const advanceFundingSources = '/api/v1/advance-funding-sources';
   static const myAdvanceBalances = '/api/v1/advance-balances/me';
+  static const expenseCategories = '/api/v1/expense-categories';
+  static const expenses = '/api/v1/expenses';
+  static const reimbursements = '/api/v1/reimbursements';
   static const health = '/api/system/health';
 
   static String cancelInvitation(String id) => '$invitations/$id/cancel';
@@ -30,4 +33,11 @@ abstract final class ApiEndpoints {
       '/api/v1/advance-transfers/$id/reject';
   static String userAdvanceBalances(String id) =>
       '/api/v1/advance-balances/users/$id';
+  static String expense(String id) => '$expenses/$id';
+  static String expenseAllocations(String id) => '$expenses/$id/allocations';
+  static String expenseAttachments(String id) => '$expenses/$id/attachments';
+  static String expenseHistory(String id) => '$expenses/$id/history';
+  static String approveExpense(String id) => '$expenses/$id/approve';
+  static String rejectExpense(String id) => '$expenses/$id/reject';
+  static String reimbursement(String id) => '$reimbursements/$id';
 }

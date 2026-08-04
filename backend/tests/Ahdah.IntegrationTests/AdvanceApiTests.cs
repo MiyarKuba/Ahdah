@@ -181,6 +181,7 @@ public sealed class AdvanceApiTests(IdentityApiFactory factory) : IClassFixture<
         Assert.Contains("/api/v1/advances", body, StringComparison.Ordinal);
         Assert.Contains("/api/v1/advance-transfers/{transferId}/confirm", body, StringComparison.Ordinal);
         Assert.Contains("/api/v1/advance-balances/me", body, StringComparison.Ordinal);
+        Assert.Contains("userAdvanceBalanceId", body, StringComparison.Ordinal);
         Assert.Contains(nameof(AdvanceDetails), body, StringComparison.Ordinal);
         Assert.DoesNotContain("Ahdah.Infrastructure.Persistence.Generated", body, StringComparison.Ordinal);
         Assert.DoesNotContain("advance-settlements", body, StringComparison.OrdinalIgnoreCase);

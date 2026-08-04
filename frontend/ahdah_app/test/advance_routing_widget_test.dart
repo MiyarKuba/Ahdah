@@ -239,6 +239,7 @@ Future<void> _pump(
     fundings: const [],
     balances: [
       AdvanceBalanceSummary(
+        userAdvanceBalanceId: 'balance-id',
         advanceId: 'advance-1',
         advanceNumber: 'ADV-TEST',
         holder: AdvanceUserSummary(

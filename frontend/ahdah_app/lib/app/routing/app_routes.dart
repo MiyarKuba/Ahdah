@@ -25,6 +25,16 @@ abstract final class AppRoutes {
   static const advanceReturn = 'advanceReturn';
   static const advanceBalances = 'advanceBalances';
   static const authorizedAdvanceBalances = 'authorizedAdvanceBalances';
+  static const expenses = 'expenses';
+  static const expenseCreate = 'expenseCreate';
+  static const expenseDetails = 'expenseDetails';
+  static const expenseHistory = 'expenseHistory';
+  static const expenseDocuments = 'expenseDocuments';
+  static const expenseReview = 'expenseReview';
+  static const expenseCategories = 'expenseCategories';
+  static const expenseCategoryCreate = 'expenseCategoryCreate';
+  static const reimbursements = 'reimbursements';
+  static const reimbursementDetails = 'reimbursementDetails';
   static const account = 'account';
   static const unavailable = 'unavailable';
 
@@ -44,6 +54,11 @@ abstract final class AppRoutes {
   static const advancesPath = '/advances';
   static const advanceCreatePath = '/advances/new';
   static const advanceBalancesPath = '/advance-balances';
+  static const expensesPath = '/expenses';
+  static const expenseCreatePath = '/expenses/new';
+  static const expenseCategoriesPath = '/expense-categories';
+  static const expenseCategoryCreatePath = '/expense-categories/new';
+  static const reimbursementsPath = '/reimbursements';
   static const accountPath = '/account';
   static const unavailablePath = '/unavailable';
 }

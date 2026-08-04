@@ -17,6 +17,8 @@ Company structure publishes `GET /api/v1/company/members`, `GET /api/v1/company/
 
 Advances Phase 1 publishes advance collection/detail/movement reads, available funding-source reads, top-level creation, held-balance distribution, unused-balance return, transfer confirmation/rejection, current-user balances, and authorized user-balance lookup under `/api/v1`. No route accepts `company_id`, actor IDs, status, timestamps, available balances, ledger IDs, or a project relationship. Settlement and closure write routes are not published.
 
+Advance balance responses expose `userAdvanceBalanceId` because expense allocation commands require that authoritative balance identifier. This is a safe resource identifier only; tenant, ledger, and internal balance-control fields remain omitted.
+
 Expenses Phase 1 publishes expense-category reads/Manager creation, role-filtered expense collection/detail/allocation/document/history reads, personal expense creation, metadata-only document association, review decisions, and reimbursement reads under `/api/v1`. No expense request accepts `company_id`, incurred/submitting/reviewing actor IDs, lifecycle status, balance values, ledger IDs, timestamps, reimbursement paid state, or original-document actor/state. Unsupported PATCH, original custody, supplier debt, and settlement routes are not published.
 
 ## JSON

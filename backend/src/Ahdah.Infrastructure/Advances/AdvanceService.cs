@@ -1917,6 +1917,7 @@ public sealed class AdvanceService(
         ToNullableUtc(row.ConfirmedAt));
 
     private static AdvanceBalanceSummary MapBalance(BalanceRow row) => new(
+        row.UserAdvanceBalanceId,
         row.AdvanceId,
         row.AdvanceNumber,
         new AdvanceUserSummary(row.UserId, row.HolderName, row.HolderRole),

@@ -2161,6 +2161,666 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The financial operation completed successfully.'**
   String get financialOperationSucceeded;
+
+  /// No description provided for @navExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses'**
+  String get navExpenses;
+
+  /// No description provided for @expensesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses'**
+  String get expensesTitle;
+
+  /// No description provided for @expenseDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense details'**
+  String get expenseDetails;
+
+  /// No description provided for @createExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Create expense'**
+  String get createExpense;
+
+  /// No description provided for @expenseCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense categories'**
+  String get expenseCategories;
+
+  /// No description provided for @createExpenseCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Create expense category'**
+  String get createExpenseCategory;
+
+  /// No description provided for @reimbursements.
+  ///
+  /// In en, this message translates to:
+  /// **'Reimbursements'**
+  String get reimbursements;
+
+  /// No description provided for @reimbursementDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Reimbursement details'**
+  String get reimbursementDetails;
+
+  /// No description provided for @expenseHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense history'**
+  String get expenseHistory;
+
+  /// No description provided for @documentMetadata.
+  ///
+  /// In en, this message translates to:
+  /// **'Document metadata'**
+  String get documentMetadata;
+
+  /// No description provided for @binaryUploadNotImplemented.
+  ///
+  /// In en, this message translates to:
+  /// **'File upload is not implemented in this phase. These are document metadata records only.'**
+  String get binaryUploadNotImplemented;
+
+  /// No description provided for @paymentMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment mode'**
+  String get paymentMode;
+
+  /// No description provided for @advanceBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Advance balance'**
+  String get advanceBalance;
+
+  /// No description provided for @personalFunds.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal funds'**
+  String get personalFunds;
+
+  /// No description provided for @personalFundsClaimNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'A reimbursement claim will be created as an unpaid liability.'**
+  String get personalFundsClaimNotice;
+
+  /// No description provided for @advanceReservationNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'The allocation is reserved until approval. Approval confirms it; rejection releases it.'**
+  String get advanceReservationNotice;
+
+  /// No description provided for @expenseReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense reference'**
+  String get expenseReference;
+
+  /// No description provided for @searchExpenseReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Search expense reference'**
+  String get searchExpenseReference;
+
+  /// No description provided for @expenseDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense date'**
+  String get expenseDate;
+
+  /// No description provided for @category.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// No description provided for @categoryName.
+  ///
+  /// In en, this message translates to:
+  /// **'Category name'**
+  String get categoryName;
+
+  /// No description provided for @categoryCodeOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Category code (optional)'**
+  String get categoryCodeOptional;
+
+  /// No description provided for @categoryGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Category group'**
+  String get categoryGroup;
+
+  /// No description provided for @categoryScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Category scope'**
+  String get categoryScope;
+
+  /// No description provided for @requiresReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Requires supporting receipt'**
+  String get requiresReceipt;
+
+  /// No description provided for @requiresSupplier.
+  ///
+  /// In en, this message translates to:
+  /// **'Requires supplier'**
+  String get requiresSupplier;
+
+  /// No description provided for @supportsQuantityDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Supports quantity details'**
+  String get supportsQuantityDetails;
+
+  /// No description provided for @displayOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Display order'**
+  String get displayOrder;
+
+  /// No description provided for @receiptNumberOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt number (optional)'**
+  String get receiptNumberOptional;
+
+  /// No description provided for @invoiceNumberOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice number (optional)'**
+  String get invoiceNumberOptional;
+
+  /// No description provided for @merchantNameOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Merchant name (optional)'**
+  String get merchantNameOptional;
+
+  /// No description provided for @expenseLocationOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense location (optional)'**
+  String get expenseLocationOptional;
+
+  /// No description provided for @projectOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Project (optional)'**
+  String get projectOptional;
+
+  /// No description provided for @companyExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Company expense'**
+  String get companyExpense;
+
+  /// No description provided for @projectExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Project expense'**
+  String get projectExpense;
+
+  /// No description provided for @incurredBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Payer'**
+  String get incurredBy;
+
+  /// No description provided for @submittedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted by'**
+  String get submittedBy;
+
+  /// No description provided for @reviewedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed by'**
+  String get reviewedBy;
+
+  /// No description provided for @reviewExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Review expense'**
+  String get reviewExpense;
+
+  /// No description provided for @approveExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve expense'**
+  String get approveExpense;
+
+  /// No description provided for @rejectExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject expense'**
+  String get rejectExpense;
+
+  /// No description provided for @approveExpenseNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Approval confirms reserved advance allocations. Personal claims remain unpaid liabilities.'**
+  String get approveExpenseNotice;
+
+  /// No description provided for @rejectExpenseNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection releases advance reservations and may cancel an untouched claim. The expense remains in history.'**
+  String get rejectExpenseNotice;
+
+  /// No description provided for @claimUnpaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Claim unpaid'**
+  String get claimUnpaid;
+
+  /// No description provided for @outstandingAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Outstanding amount'**
+  String get outstandingAmount;
+
+  /// No description provided for @claimant.
+  ///
+  /// In en, this message translates to:
+  /// **'Claimant'**
+  String get claimant;
+
+  /// No description provided for @noExpensesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenses found'**
+  String get noExpensesTitle;
+
+  /// No description provided for @noExpensesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Change the verified filters or create the first expense.'**
+  String get noExpensesBody;
+
+  /// No description provided for @supervisorExpensesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Only your expenses and expenses for actively assigned projects appear here.'**
+  String get supervisorExpensesBody;
+
+  /// No description provided for @workerExpensesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Only your personal expenses appear here.'**
+  String get workerExpensesBody;
+
+  /// No description provided for @noReimbursements.
+  ///
+  /// In en, this message translates to:
+  /// **'No reimbursements were returned.'**
+  String get noReimbursements;
+
+  /// No description provided for @noCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'No active expense categories were returned.'**
+  String get noCategories;
+
+  /// No description provided for @noDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'No document metadata records were returned.'**
+  String get noDocuments;
+
+  /// No description provided for @noExpenseHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No expense history events were returned.'**
+  String get noExpenseHistory;
+
+  /// No description provided for @allocationTotalMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Advance allocations must exactly equal the expense amount.'**
+  String get allocationTotalMismatch;
+
+  /// No description provided for @selectAdvanceBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Select an advance balance'**
+  String get selectAdvanceBalance;
+
+  /// No description provided for @supportingDocumentRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'A supporting Receipt or Invoice metadata record may be required before approval.'**
+  String get supportingDocumentRequired;
+
+  /// No description provided for @expenseCreatedPending.
+  ///
+  /// In en, this message translates to:
+  /// **'The expense was created and is pending review.'**
+  String get expenseCreatedPending;
+
+  /// No description provided for @expenseStatusPendingReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending review'**
+  String get expenseStatusPendingReview;
+
+  /// No description provided for @expenseStatusCorrectionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Correction required'**
+  String get expenseStatusCorrectionRequired;
+
+  /// No description provided for @expenseStatusApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get expenseStatusApproved;
+
+  /// No description provided for @expenseStatusRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get expenseStatusRejected;
+
+  /// No description provided for @expenseStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get expenseStatusCancelled;
+
+  /// No description provided for @expenseStatusReversed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reversed'**
+  String get expenseStatusReversed;
+
+  /// No description provided for @categoryGroupMaterials.
+  ///
+  /// In en, this message translates to:
+  /// **'Materials'**
+  String get categoryGroupMaterials;
+
+  /// No description provided for @categoryGroupLabor.
+  ///
+  /// In en, this message translates to:
+  /// **'Labor'**
+  String get categoryGroupLabor;
+
+  /// No description provided for @categoryGroupSubcontracting.
+  ///
+  /// In en, this message translates to:
+  /// **'Subcontracting'**
+  String get categoryGroupSubcontracting;
+
+  /// No description provided for @categoryGroupTransportation.
+  ///
+  /// In en, this message translates to:
+  /// **'Transportation'**
+  String get categoryGroupTransportation;
+
+  /// No description provided for @categoryGroupEquipment.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipment'**
+  String get categoryGroupEquipment;
+
+  /// No description provided for @categoryGroupFuel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel'**
+  String get categoryGroupFuel;
+
+  /// No description provided for @categoryGroupServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Services'**
+  String get categoryGroupServices;
+
+  /// No description provided for @categoryGroupAdministrative.
+  ///
+  /// In en, this message translates to:
+  /// **'Administrative'**
+  String get categoryGroupAdministrative;
+
+  /// No description provided for @categoryGroupUtilities.
+  ///
+  /// In en, this message translates to:
+  /// **'Utilities'**
+  String get categoryGroupUtilities;
+
+  /// No description provided for @categoryGroupPermits.
+  ///
+  /// In en, this message translates to:
+  /// **'Permits'**
+  String get categoryGroupPermits;
+
+  /// No description provided for @scopeProjectOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Project only'**
+  String get scopeProjectOnly;
+
+  /// No description provided for @scopeCompanyOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Company only'**
+  String get scopeCompanyOnly;
+
+  /// No description provided for @scopeBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Project or company'**
+  String get scopeBoth;
+
+  /// No description provided for @documentTypeReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get documentTypeReceipt;
+
+  /// No description provided for @documentTypeInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice'**
+  String get documentTypeInvoice;
+
+  /// No description provided for @documentTypeQuotation.
+  ///
+  /// In en, this message translates to:
+  /// **'Quotation'**
+  String get documentTypeQuotation;
+
+  /// No description provided for @documentTypeDeliveryNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery note'**
+  String get documentTypeDeliveryNote;
+
+  /// No description provided for @documentTypePaymentProof.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment proof'**
+  String get documentTypePaymentProof;
+
+  /// No description provided for @documentTypeContract.
+  ///
+  /// In en, this message translates to:
+  /// **'Contract'**
+  String get documentTypeContract;
+
+  /// No description provided for @documentTypePurchaseOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase order'**
+  String get documentTypePurchaseOrder;
+
+  /// No description provided for @documentStatusPendingVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending verification'**
+  String get documentStatusPendingVerification;
+
+  /// No description provided for @documentStatusVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get documentStatusVerified;
+
+  /// No description provided for @claimStatusOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get claimStatusOpen;
+
+  /// No description provided for @claimStatusPartiallySettled.
+  ///
+  /// In en, this message translates to:
+  /// **'Partially settled'**
+  String get claimStatusPartiallySettled;
+
+  /// No description provided for @claimStatusSettled.
+  ///
+  /// In en, this message translates to:
+  /// **'Settled'**
+  String get claimStatusSettled;
+
+  /// No description provided for @claimStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get claimStatusCancelled;
+
+  /// No description provided for @claimStatusReversed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reversed'**
+  String get claimStatusReversed;
+
+  /// No description provided for @receiptNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt number'**
+  String get receiptNumber;
+
+  /// No description provided for @invoiceNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice number'**
+  String get invoiceNumber;
+
+  /// No description provided for @advanceAllocations.
+  ///
+  /// In en, this message translates to:
+  /// **'Advance allocations'**
+  String get advanceAllocations;
+
+  /// No description provided for @expenseItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense items'**
+  String get expenseItems;
+
+  /// No description provided for @documents.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents'**
+  String get documents;
+
+  /// No description provided for @history.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
+  /// No description provided for @fileName.
+  ///
+  /// In en, this message translates to:
+  /// **'File name'**
+  String get fileName;
+
+  /// No description provided for @fileSize.
+  ///
+  /// In en, this message translates to:
+  /// **'File size'**
+  String get fileSize;
+
+  /// No description provided for @verificationStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification status'**
+  String get verificationStatus;
+
+  /// No description provided for @claimDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Claim date'**
+  String get claimDate;
+
+  /// No description provided for @dueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Due date'**
+  String get dueDate;
+
+  /// No description provided for @categoryCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'The expense category was created.'**
+  String get categoryCreated;
+
+  /// No description provided for @expenseApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'The expense was approved.'**
+  String get expenseApproved;
+
+  /// No description provided for @expenseRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'The expense was rejected.'**
+  String get expenseRejected;
+
+  /// No description provided for @historyExpenseCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense submitted for review'**
+  String get historyExpenseCreated;
+
+  /// No description provided for @historyDocumentAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Supporting document metadata added'**
+  String get historyDocumentAdded;
+
+  /// No description provided for @historyExpenseApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense approved'**
+  String get historyExpenseApproved;
+
+  /// No description provided for @historyExpenseRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense rejected'**
+  String get historyExpenseRejected;
+
+  /// No description provided for @historyOutcomeSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Succeeded'**
+  String get historyOutcomeSuccess;
 }
 
 class _AppLocalizationsDelegate

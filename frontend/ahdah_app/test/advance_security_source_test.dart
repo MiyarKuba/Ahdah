@@ -52,26 +52,28 @@ void main() {
     expect(source, isNot(contains('debugPrint(')));
   });
 
-  test('deferred financial workflows and project association are absent', () {
-    final endpointSource = File(
-      'lib/core/network/api_endpoints.dart',
-    ).readAsStringSync();
-    for (final endpoint in [
-      '/expenses',
-      '/receipts',
-      '/settlements',
-      '/advance-closures',
-      '/suppliers',
-      '/claims',
-    ]) {
-      expect(endpointSource, isNot(contains(endpoint)));
-    }
-    final requests = File(
-      'lib/features/advances/domain/advance_requests.dart',
-    ).readAsStringSync();
-    expect(requests, isNot(contains('projectId')));
-    expect(requests, isNot(contains('returnRecipient')));
-  });
+  test(
+    'still-deferred financial workflows and advance project link are absent',
+    () {
+      final endpointSource = File(
+        'lib/core/network/api_endpoints.dart',
+      ).readAsStringSync();
+      for (final endpoint in [
+        '/receipts',
+        '/settlements',
+        '/advance-closures',
+        '/suppliers',
+        '/claims',
+      ]) {
+        expect(endpointSource, isNot(contains(endpoint)));
+      }
+      final requests = File(
+        'lib/features/advances/domain/advance_requests.dart',
+      ).readAsStringSync();
+      expect(requests, isNot(contains('projectId')));
+      expect(requests, isNot(contains('returnRecipient')));
+    },
+  );
 
   test('financial command layer contains no automatic retry mechanism', () {
     final client = File('lib/core/network/api_client.dart').readAsStringSync();

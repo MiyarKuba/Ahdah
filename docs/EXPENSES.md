@@ -121,3 +121,17 @@ Expense creation, document-metadata addition, approval, and rejection require a 
 ## Safety statement
 
 No PostgreSQL table, column, index, trigger, function, enum, or constraint changed. No migration or initialization call was added. Generated Database-First files remain untouched. Automated API tests use a fake expense service and do not invoke a real expense write endpoint.
+
+## Flutter consumption
+
+Flutter consumes every safely usable Phase 1 route with a feature-first `features/expenses/{domain,data,presentation}` implementation. The authenticated shell and router expose `/expenses`, `/expenses/new`, `/expenses/:expenseId`, metadata documents, history, review, category list/Manager creation, reimbursement list, and reimbursement detail. Manager/Deputy/Accountant review; Accountant cannot create; Supervisor creation can use only API-visible assigned projects; Worker has no project selector; unknown roles are denied.
+
+Lists use page 1, page size 20, exact allow-listed status/payment/reference filters, refresh, stable ID deduplication, and recoverable load-more failures. Reimbursements, documents, and history remain paged and read-only. Detail displays safe DTO fields and never exposes company IDs, storage paths, hashes, raw audit JSON, or ledger internals.
+
+Creation offers only `AdvanceBalance` and `PersonalFunds`. It accepts at most one direct project and validates category scope before submission while the API remains authoritative. Advance allocations use one or more unique active caller-owned balances, one currency, positive exact decimal strings, and integer-minor-unit equality with the expense total. Personal funds create an open unpaid claim; Flutter exposes no claim-payment action.
+
+The authoritative advance-balance read originally omitted `userAdvanceBalanceId`, although expense creation requires it. The minimal backend correction adds that existing UUID to `AdvanceBalanceSummary` and its projection plus an OpenAPI assertion. No PostgreSQL or generated EF file changed.
+
+Expense creation, approval, and rejection reuse the existing ephemeral 32-byte operation-key session. No write retries automatically. A timeout/network result is shown as uncertain; explicit retry reuses the same key only for the identical payload, while changed payload, success, definitive rejection, cancellation, or disposal clears it.
+
+Attachment metadata creation is deliberately not exposed in Flutter. The backend contract requires an application-relative stored-file path and SHA-256 checksum, but this phase has no binary storage/upload provider that can safely produce them. Flutter lists metadata and states clearly that no file was uploaded. Binary upload, document verification, paper custody, supplier credit/debt, mixed payments, project splits, correction/cancellation/reversal, claim payment, and final settlement remain absent.

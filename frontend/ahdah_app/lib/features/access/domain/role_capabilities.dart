@@ -15,6 +15,15 @@ final class RoleCapabilities {
     required this.canConfirmReceivedAdvance,
     required this.canRejectReceivedTransfer,
     required this.canReturnHeldBalance,
+    required this.canViewExpenses,
+    required this.canCreateExpenses,
+    required this.canReviewExpenses,
+    required this.canManageExpenseCategories,
+    required this.canViewReimbursements,
+    required this.canCreateProjectLinkedExpense,
+    required this.canUseAdvanceBalanceForExpense,
+    required this.canCreatePersonalFundsExpense,
+    required this.canContributeExpenseDocuments,
   });
 
   final bool canManageAccess;
@@ -32,6 +41,15 @@ final class RoleCapabilities {
   final bool canConfirmReceivedAdvance;
   final bool canRejectReceivedTransfer;
   final bool canReturnHeldBalance;
+  final bool canViewExpenses;
+  final bool canCreateExpenses;
+  final bool canReviewExpenses;
+  final bool canManageExpenseCategories;
+  final bool canViewReimbursements;
+  final bool canCreateProjectLinkedExpense;
+  final bool canUseAdvanceBalanceForExpense;
+  final bool canCreatePersonalFundsExpense;
+  final bool canContributeExpenseDocuments;
 
   factory RoleCapabilities.forRole(String? role) => switch (role) {
     'Manager' => const RoleCapabilities._(
@@ -50,6 +68,15 @@ final class RoleCapabilities {
       canConfirmReceivedAdvance: true,
       canRejectReceivedTransfer: true,
       canReturnHeldBalance: true,
+      canViewExpenses: true,
+      canCreateExpenses: true,
+      canReviewExpenses: true,
+      canManageExpenseCategories: true,
+      canViewReimbursements: true,
+      canCreateProjectLinkedExpense: true,
+      canUseAdvanceBalanceForExpense: true,
+      canCreatePersonalFundsExpense: true,
+      canContributeExpenseDocuments: true,
     ),
     'Deputy' => const RoleCapabilities._(
       canManageAccess: false,
@@ -67,6 +94,15 @@ final class RoleCapabilities {
       canConfirmReceivedAdvance: true,
       canRejectReceivedTransfer: true,
       canReturnHeldBalance: true,
+      canViewExpenses: true,
+      canCreateExpenses: true,
+      canReviewExpenses: true,
+      canManageExpenseCategories: false,
+      canViewReimbursements: true,
+      canCreateProjectLinkedExpense: true,
+      canUseAdvanceBalanceForExpense: true,
+      canCreatePersonalFundsExpense: true,
+      canContributeExpenseDocuments: true,
     ),
     'Accountant' => const RoleCapabilities._(
       canManageAccess: false,
@@ -84,6 +120,15 @@ final class RoleCapabilities {
       canConfirmReceivedAdvance: false,
       canRejectReceivedTransfer: false,
       canReturnHeldBalance: false,
+      canViewExpenses: true,
+      canCreateExpenses: false,
+      canReviewExpenses: true,
+      canManageExpenseCategories: false,
+      canViewReimbursements: true,
+      canCreateProjectLinkedExpense: false,
+      canUseAdvanceBalanceForExpense: false,
+      canCreatePersonalFundsExpense: false,
+      canContributeExpenseDocuments: true,
     ),
     'Supervisor' => const RoleCapabilities._(
       canManageAccess: false,
@@ -101,6 +146,15 @@ final class RoleCapabilities {
       canConfirmReceivedAdvance: true,
       canRejectReceivedTransfer: true,
       canReturnHeldBalance: true,
+      canViewExpenses: true,
+      canCreateExpenses: true,
+      canReviewExpenses: false,
+      canManageExpenseCategories: false,
+      canViewReimbursements: true,
+      canCreateProjectLinkedExpense: true,
+      canUseAdvanceBalanceForExpense: true,
+      canCreatePersonalFundsExpense: true,
+      canContributeExpenseDocuments: true,
     ),
     'Worker' => const RoleCapabilities._(
       canManageAccess: false,
@@ -118,6 +172,15 @@ final class RoleCapabilities {
       canConfirmReceivedAdvance: true,
       canRejectReceivedTransfer: true,
       canReturnHeldBalance: true,
+      canViewExpenses: true,
+      canCreateExpenses: true,
+      canReviewExpenses: false,
+      canManageExpenseCategories: false,
+      canViewReimbursements: true,
+      canCreateProjectLinkedExpense: false,
+      canUseAdvanceBalanceForExpense: true,
+      canCreatePersonalFundsExpense: true,
+      canContributeExpenseDocuments: true,
     ),
     _ => const RoleCapabilities._(
       canManageAccess: false,
@@ -135,6 +198,15 @@ final class RoleCapabilities {
       canConfirmReceivedAdvance: false,
       canRejectReceivedTransfer: false,
       canReturnHeldBalance: false,
+      canViewExpenses: false,
+      canCreateExpenses: false,
+      canReviewExpenses: false,
+      canManageExpenseCategories: false,
+      canViewReimbursements: false,
+      canCreateProjectLinkedExpense: false,
+      canUseAdvanceBalanceForExpense: false,
+      canCreatePersonalFundsExpense: false,
+      canContributeExpenseDocuments: false,
     ),
   };
 }

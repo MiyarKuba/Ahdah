@@ -1089,4 +1089,342 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get financialOperationSucceeded => 'اكتملت العملية المالية بنجاح.';
+
+  @override
+  String get navExpenses => 'المصروفات';
+
+  @override
+  String get expensesTitle => 'المصروفات';
+
+  @override
+  String get expenseDetails => 'تفاصيل المصروف';
+
+  @override
+  String get createExpense => 'إنشاء مصروف';
+
+  @override
+  String get expenseCategories => 'فئات المصروفات';
+
+  @override
+  String get createExpenseCategory => 'إنشاء فئة مصروفات';
+
+  @override
+  String get reimbursements => 'الاستردادات الشخصية';
+
+  @override
+  String get reimbursementDetails => 'تفاصيل الاسترداد';
+
+  @override
+  String get expenseHistory => 'سجل المصروف';
+
+  @override
+  String get documentMetadata => 'بيانات المستند';
+
+  @override
+  String get binaryUploadNotImplemented =>
+      'رفع الملفات غير منفذ في هذه المرحلة. هذه سجلات بيانات وصفية للمستندات فقط.';
+
+  @override
+  String get paymentMode => 'طريقة التمويل';
+
+  @override
+  String get advanceBalance => 'رصيد عُهدة';
+
+  @override
+  String get personalFunds => 'أموال شخصية';
+
+  @override
+  String get personalFundsClaimNotice =>
+      'سيُنشأ طلب استرداد كالتزام غير مدفوع.';
+
+  @override
+  String get advanceReservationNotice =>
+      'يُحجز التخصيص حتى المراجعة؛ الاعتماد يؤكده والرفض يحرره.';
+
+  @override
+  String get expenseReference => 'مرجع المصروف';
+
+  @override
+  String get searchExpenseReference => 'البحث بمرجع المصروف';
+
+  @override
+  String get expenseDate => 'تاريخ المصروف';
+
+  @override
+  String get category => 'الفئة';
+
+  @override
+  String get categoryName => 'اسم الفئة';
+
+  @override
+  String get categoryCodeOptional => 'رمز الفئة (اختياري)';
+
+  @override
+  String get categoryGroup => 'مجموعة الفئة';
+
+  @override
+  String get categoryScope => 'نطاق الفئة';
+
+  @override
+  String get requiresReceipt => 'يتطلب إيصالًا داعمًا';
+
+  @override
+  String get requiresSupplier => 'يتطلب موردًا';
+
+  @override
+  String get supportsQuantityDetails => 'يدعم تفاصيل الكميات';
+
+  @override
+  String get displayOrder => 'ترتيب العرض';
+
+  @override
+  String get receiptNumberOptional => 'رقم الإيصال (اختياري)';
+
+  @override
+  String get invoiceNumberOptional => 'رقم الفاتورة (اختياري)';
+
+  @override
+  String get merchantNameOptional => 'اسم التاجر (اختياري)';
+
+  @override
+  String get expenseLocationOptional => 'موقع المصروف (اختياري)';
+
+  @override
+  String get projectOptional => 'المشروع (اختياري)';
+
+  @override
+  String get companyExpense => 'مصروف شركة';
+
+  @override
+  String get projectExpense => 'مصروف مشروع';
+
+  @override
+  String get incurredBy => 'الدافع';
+
+  @override
+  String get submittedBy => 'مقدم الطلب';
+
+  @override
+  String get reviewedBy => 'المراجع';
+
+  @override
+  String get reviewExpense => 'مراجعة المصروف';
+
+  @override
+  String get approveExpense => 'اعتماد المصروف';
+
+  @override
+  String get rejectExpense => 'رفض المصروف';
+
+  @override
+  String get approveExpenseNotice =>
+      'الاعتماد يؤكد حجوزات أرصدة العُهد. تظل المطالبات الشخصية التزامات غير مدفوعة.';
+
+  @override
+  String get rejectExpenseNotice =>
+      'الرفض يحرر حجوزات العُهدة وقد يلغي مطالبة لم تُمس. يبقى المصروف في السجل.';
+
+  @override
+  String get claimUnpaid => 'المطالبة غير مدفوعة';
+
+  @override
+  String get outstandingAmount => 'المبلغ المتبقي';
+
+  @override
+  String get claimant => 'صاحب المطالبة';
+
+  @override
+  String get noExpensesTitle => 'لا توجد مصروفات';
+
+  @override
+  String get noExpensesBody => 'غيّر عوامل التصفية المعتمدة أو أنشئ أول مصروف.';
+
+  @override
+  String get supervisorExpensesBody =>
+      'تظهر هنا مصروفاتك ومصروفات المشاريع المسندة إليك بنشاط فقط.';
+
+  @override
+  String get workerExpensesBody => 'تظهر هنا مصروفاتك الشخصية فقط.';
+
+  @override
+  String get noReimbursements => 'لم تُرجع الخوادم مطالبات استرداد.';
+
+  @override
+  String get noCategories => 'لم تُرجع الخوادم فئات مصروفات نشطة.';
+
+  @override
+  String get noDocuments => 'لا توجد سجلات بيانات وصفية للمستندات.';
+
+  @override
+  String get noExpenseHistory => 'لا توجد أحداث في سجل المصروف.';
+
+  @override
+  String get allocationTotalMismatch =>
+      'يجب أن تساوي تخصيصات العُهدة مبلغ المصروف تمامًا.';
+
+  @override
+  String get selectAdvanceBalance => 'اختيار رصيد عُهدة';
+
+  @override
+  String get supportingDocumentRequired =>
+      'قد يلزم سجل بيانات وصفية لإيصال أو فاتورة قبل الاعتماد.';
+
+  @override
+  String get expenseCreatedPending => 'تم إنشاء المصروف وهو بانتظار المراجعة.';
+
+  @override
+  String get expenseStatusPendingReview => 'بانتظار المراجعة';
+
+  @override
+  String get expenseStatusCorrectionRequired => 'يتطلب تصحيحًا';
+
+  @override
+  String get expenseStatusApproved => 'معتمد';
+
+  @override
+  String get expenseStatusRejected => 'مرفوض';
+
+  @override
+  String get expenseStatusCancelled => 'ملغى';
+
+  @override
+  String get expenseStatusReversed => 'معكوس';
+
+  @override
+  String get categoryGroupMaterials => 'مواد';
+
+  @override
+  String get categoryGroupLabor => 'عمالة';
+
+  @override
+  String get categoryGroupSubcontracting => 'مقاولات باطنة';
+
+  @override
+  String get categoryGroupTransportation => 'نقل';
+
+  @override
+  String get categoryGroupEquipment => 'معدات';
+
+  @override
+  String get categoryGroupFuel => 'وقود';
+
+  @override
+  String get categoryGroupServices => 'خدمات';
+
+  @override
+  String get categoryGroupAdministrative => 'إداري';
+
+  @override
+  String get categoryGroupUtilities => 'مرافق';
+
+  @override
+  String get categoryGroupPermits => 'تصاريح';
+
+  @override
+  String get scopeProjectOnly => 'مشروع فقط';
+
+  @override
+  String get scopeCompanyOnly => 'شركة فقط';
+
+  @override
+  String get scopeBoth => 'مشروع أو شركة';
+
+  @override
+  String get documentTypeReceipt => 'إيصال';
+
+  @override
+  String get documentTypeInvoice => 'فاتورة';
+
+  @override
+  String get documentTypeQuotation => 'عرض سعر';
+
+  @override
+  String get documentTypeDeliveryNote => 'إذن تسليم';
+
+  @override
+  String get documentTypePaymentProof => 'إثبات دفع';
+
+  @override
+  String get documentTypeContract => 'عقد';
+
+  @override
+  String get documentTypePurchaseOrder => 'أمر شراء';
+
+  @override
+  String get documentStatusPendingVerification => 'بانتظار التحقق';
+
+  @override
+  String get documentStatusVerified => 'متحقق منه';
+
+  @override
+  String get claimStatusOpen => 'مفتوحة';
+
+  @override
+  String get claimStatusPartiallySettled => 'مسواة جزئيًا';
+
+  @override
+  String get claimStatusSettled => 'مسواة';
+
+  @override
+  String get claimStatusCancelled => 'ملغاة';
+
+  @override
+  String get claimStatusReversed => 'معكوسة';
+
+  @override
+  String get receiptNumber => 'رقم الإيصال';
+
+  @override
+  String get invoiceNumber => 'رقم الفاتورة';
+
+  @override
+  String get advanceAllocations => 'تخصيصات العُهدة';
+
+  @override
+  String get expenseItems => 'بنود المصروف';
+
+  @override
+  String get documents => 'المستندات';
+
+  @override
+  String get history => 'السجل';
+
+  @override
+  String get fileName => 'اسم الملف';
+
+  @override
+  String get fileSize => 'حجم الملف';
+
+  @override
+  String get verificationStatus => 'حالة التحقق';
+
+  @override
+  String get claimDate => 'تاريخ المطالبة';
+
+  @override
+  String get dueDate => 'تاريخ الاستحقاق';
+
+  @override
+  String get categoryCreated => 'تم إنشاء فئة المصروفات.';
+
+  @override
+  String get expenseApproved => 'تم اعتماد المصروف.';
+
+  @override
+  String get expenseRejected => 'تم رفض المصروف.';
+
+  @override
+  String get historyExpenseCreated => 'تم تقديم المصروف للمراجعة';
+
+  @override
+  String get historyDocumentAdded => 'تمت إضافة بيانات المستند الداعم';
+
+  @override
+  String get historyExpenseApproved => 'تم اعتماد المصروف';
+
+  @override
+  String get historyExpenseRejected => 'تم رفض المصروف';
+
+  @override
+  String get historyOutcomeSuccess => 'نجحت';
 }

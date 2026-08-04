@@ -10,6 +10,9 @@ import '../../features/projects/domain/project_models.dart';
 import '../../features/projects/domain/project_requests.dart';
 import '../../features/advances/domain/advance_models.dart';
 import '../../features/advances/domain/advance_requests.dart';
+import '../../features/expenses/domain/expense_filters.dart';
+import '../../features/expenses/domain/expense_models.dart';
+import '../../features/expenses/domain/expense_requests.dart';
 import '../errors/app_exception.dart';
 import '../errors/problem_details.dart';
 import 'api_endpoints.dart';
@@ -409,6 +412,156 @@ final class ApiClient {
     ),
   );
 
+  Future<ExpenseCategoryPage> listExpenseCategories({
+    required int page,
+    required int pageSize,
+    String? categoryGroup,
+    String? expenseScope,
+  }) async {
+    final response = await _send(
+      () => _dio.get<Map<String, Object?>>(
+        ApiEndpoints.expenseCategories,
+        queryParameters: {
+          'page': page,
+          'pageSize': pageSize,
+          'categoryGroup': ?categoryGroup,
+          'expenseScope': ?expenseScope,
+        },
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return ExpenseCategoryPage.fromJson(_body(response));
+  }
+
+  Future<ExpenseCategory> createExpenseCategory(
+    CreateExpenseCategoryInput input,
+  ) async {
+    final response = await _send(
+      () => _dio.post<Map<String, Object?>>(
+        ApiEndpoints.expenseCategories,
+        data: input.toJson(),
+        options: Options(extra: const {requiresAuthenticationKey: true}),
+      ),
+    );
+    return ExpenseCategory.fromJson(_body(response));
+  }
+
+  Future<ExpensePage> listExpenses({
+    required int page,
+    required int pageSize,
+    required ExpenseFilters filters,
+  }) async => ExpensePage.fromJson(
+    await _financialGet(
+      ApiEndpoints.expenses,
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+        'status': ?filters.status,
+        'categoryId': ?filters.categoryId,
+        'projectId': ?filters.projectId,
+        'incurredByUserId': ?filters.incurredByUserId,
+        'submittedByUserId': ?filters.submittedByUserId,
+        'paymentMode': ?filters.paymentMode,
+        'reference': ?filters.reference,
+      },
+    ),
+  );
+
+  Future<ExpenseDetails> getExpense(String expenseId) async =>
+      ExpenseDetails.fromJson(
+        await _financialGet(ApiEndpoints.expense(expenseId)),
+      );
+
+  Future<ExpenseAllocationPage> listExpenseAllocations(
+    String expenseId, {
+    required int page,
+    required int pageSize,
+  }) async => ExpenseAllocationPage.fromJson(
+    await _financialGet(
+      ApiEndpoints.expenseAllocations(expenseId),
+      queryParameters: {'page': page, 'pageSize': pageSize},
+    ),
+  );
+
+  Future<ExpenseDocumentPage> listExpenseDocuments(
+    String expenseId, {
+    required int page,
+    required int pageSize,
+  }) async => ExpenseDocumentPage.fromJson(
+    await _financialGet(
+      ApiEndpoints.expenseAttachments(expenseId),
+      queryParameters: {'page': page, 'pageSize': pageSize},
+    ),
+  );
+
+  Future<ExpenseHistoryPage> listExpenseHistory(
+    String expenseId, {
+    required int page,
+    required int pageSize,
+  }) async => ExpenseHistoryPage.fromJson(
+    await _financialGet(
+      ApiEndpoints.expenseHistory(expenseId),
+      queryParameters: {'page': page, 'pageSize': pageSize},
+    ),
+  );
+
+  Future<ExpenseDetails> createExpense(
+    CreateExpenseInput input,
+    String idempotencyKey,
+  ) async => ExpenseDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.expenses,
+      data: input.toJsonBody(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<ExpenseDetails> approveExpense(
+    String expenseId,
+    ApproveExpenseInput input,
+    String idempotencyKey,
+  ) async => ExpenseDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.approveExpense(expenseId),
+      data: input.toJson(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<ExpenseDetails> rejectExpense(
+    String expenseId,
+    RejectExpenseInput input,
+    String idempotencyKey,
+  ) async => ExpenseDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.rejectExpense(expenseId),
+      data: input.toJson(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<ReimbursementPage> listReimbursements({
+    required int page,
+    required int pageSize,
+    String? status,
+    String? claimantUserId,
+  }) async => ReimbursementPage.fromJson(
+    await _financialGet(
+      ApiEndpoints.reimbursements,
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+        'status': ?status,
+        'claimantUserId': ?claimantUserId,
+      },
+    ),
+  );
+
+  Future<ReimbursementSummary> getReimbursement(String reimbursementId) async =>
+      ReimbursementSummary.fromJson(
+        await _financialGet(ApiEndpoints.reimbursement(reimbursementId)),
+      );
+
   Future<bool> health() async {
     await _send(() => _dio.get<Map<String, Object?>>(ApiEndpoints.health));
     return true;
@@ -457,7 +610,7 @@ final class ApiClient {
       throw const AppException(AppExceptionKind.server);
     }
     final amountPattern = RegExp(
-      r'("(?:amount|advanceAmount|availableAmount|reservedAmount|allocatedAmount|totalReceivedAmount|totalRestoredAmount|totalExpensedAmount|totalTransferredOutAmount|totalReturnedAmount|totalAvailableAmount)"\s*:\s*)(-?\d+(?:\.\d+)?)',
+      r'("(?:amount|advanceAmount|availableAmount|reservedAmount|allocatedAmount|totalReceivedAmount|totalRestoredAmount|totalExpensedAmount|totalTransferredOutAmount|totalReturnedAmount|totalAvailableAmount|totalAmount|subtotalAmount|discountAmount|taxAmount|claimAmount|outstandingAmount|unitPrice|quantity)"\s*:\s*)(-?\d+(?:\.\d+)?)',
     );
     final protected = source.replaceAllMapped(
       amountPattern,

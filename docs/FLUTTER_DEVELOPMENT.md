@@ -2,7 +2,7 @@
 
 ## Scope
 
-The Flutter client targets Android, iOS, and Web. It implements startup/session verification, company onboarding, a responsive authenticated shell, role-aware navigation, manager access administration, Projects/Sites, a read-only Company Member Directory, Advances, authoritative user balances, and a shared account/session page. Expenses, receipts, settlement, closure, supplier debt, member mutations, identity proofing, dashboards, notifications, and offline financial queues remain deferred.
+The Flutter client targets Android, iOS, and Web. It implements startup/session verification, company onboarding, a responsive authenticated shell, role-aware navigation, manager access administration, Projects/Sites, a read-only Company Member Directory, Advances, authoritative user balances, Expenses, receipt/invoice metadata status, personal reimbursements, and a shared account/session page. Binary upload, paper custody, settlement, closure, supplier credit/debt, member mutations, identity proofing, dashboards, notifications, and offline financial queues remain deferred.
 
 ## Architecture
 
@@ -77,6 +77,8 @@ Project routes are `/projects`, `/projects/new`, `/projects/:projectId`, `/proje
 
 Advance routes are `/advances`, `/advances/new`, `/advances/:advanceId`, `/advances/:advanceId/movements`, `/advances/:advanceId/distribute`, `/advances/:advanceId/return`, `/advance-balances`, and `/advance-balances/users/:userId`. Manager alone reaches creation. Manager/Deputy reach distribution. All five known roles reach advance reads and personal balances. Return/confirmation/rejection broad guards exclude Accountant, while exact loaded holder/recipient/lifecycle state remains required. Manager/Deputy can reach a selected-user balance route only through the safe company directory; Accountant receives no raw-ID selector because the current API requires a user ID and Accountant lacks directory discoverability.
 
+Expense routes are `/expenses`, `/expenses/new`, `/expenses/:expenseId`, `/expenses/:expenseId/history`, `/expenses/:expenseId/documents`, `/expenses/:expenseId/review`, `/expense-categories`, `/expense-categories/new`, `/reimbursements`, and `/reimbursements/:reimbursementId`. All five known roles may read according to backend record visibility. Manager/Deputy/Supervisor/Worker may create; Accountant is review-only. Manager alone creates categories. Manager/Deputy/Accountant reach review. Unknown roles are redirected to Home. Loaded status, self-approval settings, assignment, payer, and backend policy remain authoritative.
+
 `RoleCapabilities` maps the authoritative role from `/auth/me` to client capabilities. Manager receives Home, Projects, Company Members, Invitations, Join Requests, and Account. Deputy receives Home, Projects, Company Members, and Account. Accountant and Supervisor receive Home, Projects, and Account, although Supervisor results remain assigned-only. Worker and unknown future roles receive Home and Account. Manager mutation routes, directory routes, project routes, and member-summary routes each have capability redirects, so hiding destinations is never the only guard. Backend authorization remains authoritative.
 
 ## Project and directory behavior
@@ -114,9 +116,23 @@ The account page displays safe `/auth/me` name, company, localized role, user st
 
 No Flutter automated test calls the live API. Web uses `http://localhost:5231`; Android emulator uses `http://10.0.2.2:5231`; a physical Android device may use `adb reverse tcp:5231 tcp:5231` with `http://127.0.0.1:5231`. iOS simulator uses `http://localhost:5231`, but build/signing verification requires macOS and Xcode.
 
+## Expenses and reimbursements behavior
+
+- Expense/category/reimbursement models are handwritten immutable mappings of the exact API DTOs. Unknown enum strings remain safe and render the localized fallback.
+- Expense list uses page size 20, exact status/payment/reference filters, bounded 2–50 character reference search, stable deduplication, refresh, and preserved rows after load-more failure. Supervisor and Worker receive constrained-visibility empty messages.
+- Expense detail presents the one optional direct project, category, payer/submitter, receipt/invoice numbers, authoritative allocations, metadata-only documents, returned items, optional reimbursement, review information, and safe audit history.
+- Creation offers only `AdvanceBalance` and `PersonalFunds`. Worker never receives project selection. Category scope is validated locally for usability and revalidated by the API. No company, actor, status, authoritative balance, or claim status field is sent.
+- Personal advance balance reads now include the safe existing `userAdvanceBalanceId`, which is required by the expense allocation request. Multiple unique positive allocations must match one currency and the total exactly through `BigInt` minor-unit arithmetic.
+- Personal funds explain that the server creates an unpaid claim. Reimbursement list/detail are read-only and never total currencies or expose payment actions.
+- Receipt/invoice presence comes only from the optional numbers and non-rejected document metadata. The UI never labels metadata as an uploaded file.
+- Document metadata creation is not exposed: its current request requires a server/storage-produced relative path and SHA-256 value, while no binary storage provider exists. No file/camera picker or paper custody action was added.
+- Approval/rejection require `PendingReview`, confirmation, authoritative `expectedVersion`, and an ephemeral idempotency key. Rejection requires the backend's 1–1000 character non-blank reason. HTTP 409 presents the normal conflict/reload path.
+- Create/approve/reject retain exact payload/key only after ambiguous timeout/network results and expose explicit same-operation retry. There is no automatic retry or persisted/displayed/logged key.
+- Arabic and English localize expense statuses, payment modes, category groups/scopes, document types/states, claim states, forms, warnings, confirmations, and audit events. Amount/currency remains LTR inside either app direction.
+
 ## Verification
 
-The Flutter Advances and User Balances phase passed dependency resolution, strict formatting, `flutter analyze`, and 137 Flutter tests (104 existing plus 33 new). The Web release build passed with `API_BASE_URL=http://localhost:5231`, including the WebAssembly compatibility dry run. The Android debug APK build passed with `API_BASE_URL=http://10.0.2.2:5231`; it was not launched. iOS remains pending macOS/Xcode compilation, signing, simulator, and device verification. Backend files were unchanged, so backend tests were not rerun. No live financial command or PostgreSQL mutation occurred.
+The Flutter Expenses and Reimbursements phase passed dependency resolution, strict formatting, `flutter analyze`, and 163 Flutter tests (137 existing plus 26 new). The Web release build passed with `API_BASE_URL=http://localhost:5231`, including the WebAssembly compatibility dry run. The Android debug APK build passed with `API_BASE_URL=http://10.0.2.2:5231`; it was not launched. iOS remains pending macOS/Xcode compilation, signing, simulator, and device verification. The minimal balance-ID backend contract correction passed all 220 backend tests. No live financial command or PostgreSQL mutation occurred.
 
 ```powershell
 cd C:\dev\Ahdah\frontend\ahdah_app
