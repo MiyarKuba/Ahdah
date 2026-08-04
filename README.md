@@ -2,7 +2,7 @@
 
 Ahdah is a multi-tenant platform for financial custody and construction operations. It is intended to help companies coordinate projects, custody balances, transfers, expenses, supplier obligations, worker claims, documents, audit trails, notifications, and scheduled reporting.
 
-This repository is currently in **Flutter Advances and User Balances**. Android, iOS, and Web now consume the tenant-safe Advances Phase 1 APIs for role-aware reads, authoritative balances, Manager creation, held-balance distribution, recipient confirmation/rejection, and lineage-derived returns. Expenses, receipts, settlement, closure, and supplier debt remain deferred.
+This repository is currently in **Expenses Foundation — Backend Phase 1**. The backend now provides tenant-safe expense categories, expense creation, direct project association, advance-balance reservation, personal-funds reimbursement liabilities, supporting-document metadata, approval/rejection, reimbursements, and immutable expense history. Flutter expense UI, original-paper custody, supplier debt, and final settlement remain deferred.
 
 ## Technology stack
 
@@ -99,6 +99,22 @@ Advances Foundation — Backend Phase 1 additionally exposes:
 - Manager/Deputy/Accountant `GET /api/v1/advance-balances/users/{userId}`
 
 Every financial command requires an `Idempotency-Key` header. Creation allocates only existing same-company `Available`/`PartiallyUsed` funding sources and funds the fixed advance amount atomically. The schema has no direct advance/project relationship, so project association and filtering are omitted. Settlement and closure writes remain deferred because their existing tables depend on expense, document, debt, claim, resolution, and review workflows. See [docs/ADVANCES.md](docs/ADVANCES.md).
+
+Expenses Foundation — Backend Phase 1 additionally exposes:
+
+- `GET`/Manager-only `POST /api/v1/expense-categories`
+- Role-filtered `GET /api/v1/expenses`
+- Role-filtered `GET /api/v1/expenses/{expenseId}`
+- Manager/Deputy/Supervisor/Worker `POST /api/v1/expenses`
+- `GET /api/v1/expenses/{expenseId}/allocations`
+- `GET`/authorized metadata-only `POST /api/v1/expenses/{expenseId}/attachments`
+- `GET /api/v1/expenses/{expenseId}/history`
+- Manager/Deputy/Accountant `POST /api/v1/expenses/{expenseId}/approve`
+- Manager/Deputy/Accountant `POST /api/v1/expenses/{expenseId}/reject`
+- Role-filtered `GET /api/v1/reimbursements`
+- Role-filtered `GET /api/v1/reimbursements/{reimbursementId}`
+
+Expense creation supports exact `AdvanceBalance` and `PersonalFunds` payment modes. It uses one optional direct project because the schema has no expense project-split table. Supplier credit, original-paper custody, binary upload, claim payment, and final settlement are intentionally not published. Financial and lifecycle commands require `Idempotency-Key`. See [docs/EXPENSES.md](docs/EXPENSES.md).
 
 Manager and Deputy see all company projects; Accountant sees basic project structure without contract value; Supervisor sees only actively assigned projects; Worker sees no projects because the schema has no worker/project relationship. Project-member results contain active supervisor assignments only. Manager alone receives contract value and may set it during creation. Later contract-value changes are deferred to the existing `project_contract_changes` approval/history model, and `Completed`, `FinanciallyClosed`, and `Cancelled` transitions remain deferred.
 

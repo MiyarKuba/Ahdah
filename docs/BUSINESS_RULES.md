@@ -77,6 +77,20 @@ This document records only known high-level rules. Detailed financial, approval,
 - Advance records have no direct project relationship. A source originating from a project-owner payment does not make a multi-source advance project-owned.
 - An available balance of zero does not mean settled or closed. Expense allocation, receipts, supplier debt, claims, settlement resolution, closure, and FIFO settlement remain deferred.
 
+## Expenses foundation rules
+
+- Exact expense statuses are `Draft`, `PendingReview`, `CorrectionRequired`, `Approved`, `Rejected`, `Cancelled`, and `Reversed`. Phase 1 creates `PendingReview` and publishes only approve/reject transitions.
+- Exact payment modes are `AdvanceBalance`, `SupplierCredit`, and `PersonalFunds`. Phase 1 creates the first and third only; supplier debt remains deferred.
+- Expense creation is personal because incurred-by and submitter are authenticated state. No supervisor/worker hierarchy exists, so on-behalf-of creation is not inferred.
+- A category scope of `ProjectOnly` requires the one direct project, `CompanyOnly` prohibits it, and `Both` permits either. Multiple-project splits are unsupported by the schema.
+- Supervisor project association and visibility require an active assignment. Worker project association is unavailable because no worker/project relationship exists.
+- Advance-backed creation locks each authoritative active holder balance, requires one currency and exact allocation total, moves available amount to reserved, and appends `ExpenseReserved`. Approval converts reserved to expensed with `ExpenseConfirmed`; rejection releases the reservation with `ExpenseReservationReleased`.
+- Personal-funds creation atomically records one open expense-linked `personal_claim`. Rejection cancels only an untouched open claim. Payment, adjustment, write-off, and settlement remain separate workflows.
+- Manager, Deputy, and Accountant may review pending expenses subject to company approval-separation settings. Rejection never deletes the expense or history.
+- A category requiring a receipt cannot be approved without non-rejected Receipt/Invoice metadata. The schema has no no-receipt exemption state, so none is invented.
+- Attachment Phase 1 records metadata only under active company size, MIME, and extension settings. It does not upload binary content, expose paths/hashes, or infer original-paper custody.
+- Expense creation, attachment metadata, approval, and rejection require the existing tenant-scoped idempotency mechanism. Writes are transactional and never automatically retried.
+
 ## Rules pending implementation review
 
 - Company onboarding after initial bootstrap, suspension, and tenant membership lifecycle
@@ -86,7 +100,7 @@ This document records only known high-level rules. Detailed financial, approval,
 - Advance cancellation/reissue and initial-delivery rejection
 - Transfer correction, cancellation, and reversal workflows
 - Supervisor-to-Worker distribution authority
-- Expense classification, receipt requirements, review, rejection, and correction rules
+- Expense correction, cancellation, reversal, document verification, no-receipt exception, and automatic-approval actor rules
 - Supplier debt creation, aging, payment allocation, and closure rules
 - Worker claim eligibility, evidence, approval, and reimbursement rules
 - Advance settlement completeness and closure criteria

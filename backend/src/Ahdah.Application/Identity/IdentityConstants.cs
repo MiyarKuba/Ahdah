@@ -25,5 +25,11 @@ public static class AhdahAuthorizationPolicies
     public const string AdvanceDistributor = "AdvanceDistributor";
     public const string AdvanceParticipant = "AdvanceParticipant";
     public const string AdvanceBalanceViewer = "AdvanceBalanceViewer";
+    public const string ExpenseViewer = "ExpenseViewer";
+    public const string ExpenseCreator = "ExpenseCreator";
+    public const string ExpenseReviewer = "ExpenseReviewer";
+    public const string ExpenseDocumentContributor = "ExpenseDocumentContributor";
+    public const string ExpenseCategoryManager = "ExpenseCategoryManager";
+    public const string ReimbursementViewer = "ReimbursementViewer";
     public const string ManagerOnly = "ManagerOnly";
 }

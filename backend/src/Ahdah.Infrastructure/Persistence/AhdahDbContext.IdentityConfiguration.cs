@@ -38,5 +38,21 @@ public partial class AhdahDbContext
         modelBuilder.Entity<UserAdvanceBalance>()
             .Property(balance => balance.VersionNumber)
             .IsConcurrencyToken();
+
+        modelBuilder.Entity<Expense>()
+            .Property(expense => expense.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<ExpenseCategory>()
+            .Property(category => category.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<ExpenseDocument>()
+            .Property(document => document.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<PersonalClaim>()
+            .Property(claim => claim.VersionNumber)
+            .IsConcurrencyToken();
     }
 }

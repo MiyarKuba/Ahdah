@@ -75,3 +75,17 @@ Advance, funding-source, transfer, and user-balance `version_number` properties 
 `idempotency_records` stores tenant-unique keys, operation/payload fingerprint, actor, completion resource, and replay audit. It is committed in the same transaction as each financial command. The company number-sequence tables had no configured rows at read-only inspection time, so Phase 1 uses opaque UUID-based display references while PostgreSQL continues to generate configured primary-key UUIDs and timestamps.
 
 Settlement and closure tables are not written. Their schemas depend on expense snapshots, documents, difference resolution, supplier debt, personal claims, pending-operation counts, reconciliation, and approvals. No zero-balance shortcut is implemented.
+
+## Expenses schema clarification
+
+`expenses` uses UUID primary key, unique tenant number, one optional direct `project_id`, one category, incurred-by and submitted-by users, `NUMERIC(18,2)` subtotal/discount/tax/total, exact payment mode, lifecycle review fields, and `version_number`. Exact statuses are `Draft`, `PendingReview`, `CorrectionRequired`, `Approved`, `Rejected`, `Cancelled`, and `Reversed`. Exact payment modes are `AdvanceBalance`, `SupplierCredit`, and `PersonalFunds`.
+
+`expense_categories` is tenant-owned and hierarchical. Groups are `Materials`, `Labor`, `Subcontracting`, `Transportation`, `Equipment`, `Fuel`, `Services`, `Administrative`, `Utilities`, `Permits`, and `Other`; scopes are `ProjectOnly`, `CompanyOnly`, and `Both`. Name and optional code are not uniquely constrained within a tenant, so Phase 1 does not invent application uniqueness. Inactive rows require actor/time/reason, but no delete/deactivate endpoint is published.
+
+`expense_advance_allocations` uniquely links an expense and user balance with positive `NUMERIC(18,2)` amount. `user_advance_balances` remains authoritative. Exact balance ledger operations used by expenses are `ExpenseReserved`, `ExpenseReservationReleased`, and `ExpenseConfirmed`; the ledger is database-immutable and no trigger mutates balance totals.
+
+`expense_documents` stores metadata and exact types `Receipt`, `Invoice`, `Quotation`, `DeliveryNote`, `PaymentProof`, `Contract`, `PurchaseOrder`, and `Other`; capture sources `Camera`, `Gallery`, `FileUpload`, `Scanner`, and `Generated`; and verification states `PendingVerification`, `Verified`, and `Rejected`. The physical schema supports multiple rows and one non-rejected primary document, while the generated navigation is singular. Application collection queries use the `DbSet` directly.
+
+`personal_claims` permits one expense-linked `PersonalExpense` claim. Claim statuses are `Open`, `PartiallySettled`, `Settled`, `Cancelled`, and `Reversed`; outstanding amount is computed. Phase 1 creates open claims and cancels untouched claims only when their pending expense is rejected. No claim payment table is written.
+
+No expense project-allocation, expense payment-component, receipt-status, original-paper custody, or separate expense-approval table exists. `audit_logs` is immutable and supplies safe expense history. Expense, category, document, and personal-claim versions are configured as concurrency tokens outside generated files.

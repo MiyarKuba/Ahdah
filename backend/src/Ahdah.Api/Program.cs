@@ -22,7 +22,7 @@ builder.Services.AddCors(options =>
             policy
                 .WithOrigins(allowedOrigins)
                 .WithMethods("GET", "POST", "PATCH", "PUT", "OPTIONS")
-                .WithHeaders("Authorization", "Content-Type", "Accept");
+                .WithHeaders("Authorization", "Content-Type", "Accept", "Idempotency-Key");
         }
     });
 });
@@ -31,6 +31,7 @@ builder.Services.AddAhdahIdentity();
 builder.Services.AddAhdahAccess(builder.Configuration);
 builder.Services.AddAhdahCompanyStructure();
 builder.Services.AddAhdahAdvances();
+builder.Services.AddAhdahExpenses();
 builder.Services.AddAhdahAuthentication(builder.Configuration);
 
 var app = builder.Build();

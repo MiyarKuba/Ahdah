@@ -118,7 +118,7 @@ The service increments `version_number` on every changed advance, funding source
 
 No advance route accepts `project_id`, and no project filter is published. The `advances`, `money_transfers`, allocations, and balance tables have no direct project relationship. A funding source may originate from a project-owner payment, but that does not prove the whole advance belongs to one project because an advance may use multiple sources.
 
-Settlement and closure commands are deferred. Settlements snapshot received, restored, expensed, transferred, returned, adjustment, available, and reserved totals and may require documents, review, difference resolution, cash recovery, claim offset, or waiver. Closures aggregate balance settlement, pending operations, unresolved issues, supplier debt, personal claims, and documents. These dependencies require the deferred expense, receipt, supplier-debt, claim, review, and document workflows. Zero cash balance alone never marks an advance financially settled or closed. FIFO expense settlement is not implemented.
+Settlement and closure commands are deferred. Expenses now reserve authoritative balance availability with `ExpenseReserved`, convert it to expensed totals with `ExpenseConfirmed` on approval, and release it with `ExpenseReservationReleased` on rejection. Settlements still require reviewed snapshots, documents, difference resolution, cash recovery, claim offset or waiver, supplier debt, pending-operation checks, and final review. Zero cash balance alone never marks an advance financially settled or closed. FIFO settlement is not implemented.
 
 ## Flutter consumption
 
@@ -134,7 +134,7 @@ Every command creates 32 cryptographically secure random bytes and sends unpadde
 
 Arabic/English localization covers routes, values, forms, errors, confirmation summaries, and uncertain operations. The same responsive Material 3 pages support Android, iOS, tablet, and Web. Automated tests use fakes/controlled Dio only and make no live financial call.
 
-Expenses, receipts, attachments, settlement, closure, cancellation, reversal, claims, supplier debt, project association, arbitrary balance adjustment, funding-source mutation, offline write queues, and background synchronization remain absent.
+Expense-backed balance reservation/confirmation/release is now implemented by the backend. Flutter expenses, settlement, closure, cancellation, reversal, supplier debt, arbitrary balance adjustment, funding-source mutation, offline write queues, and background synchronization remain absent.
 
 ## Safety statement
 

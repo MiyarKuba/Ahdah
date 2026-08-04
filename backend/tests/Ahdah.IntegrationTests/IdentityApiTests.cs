@@ -10,6 +10,7 @@ using Ahdah.Application.Identity;
 using Ahdah.Application.Identity.Contracts;
 using Ahdah.Application.Identity.Models;
 using Ahdah.Application.Identity.Services;
+using Ahdah.Application.Expenses.Services;
 using Ahdah.Application.Projects.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -220,6 +221,8 @@ public sealed class IdentityApiFactory : WebApplicationFactory<Program>
             services.AddScoped<IProjectService, FakeProjectService>();
             services.RemoveAll<IAdvanceService>();
             services.AddScoped<IAdvanceService, FakeAdvanceService>();
+            services.RemoveAll<IExpenseService>();
+            services.AddScoped<IExpenseService, FakeExpenseService>();
         });
     }
 
