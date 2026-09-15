@@ -16,7 +16,7 @@ ASP.NET Core controller-based API
 PostgreSQL 18 / ahdah_db / ahdah
 ```
 
-The backend has Database-First persistence integration, Identity and Company Access Phase 1, and the schema-supported Invitations and Join Requests phase. Other business modules remain unimplemented.
+The backend has Database-First persistence, identity/company access, invitations/join requests, project structure, advances, expenses/reimbursements, suppliers/payables, and the read-only Settlement and Closure Foundation, Phase 1.
 
 ## Flutter client
 
@@ -138,6 +138,14 @@ There is no `supplier_invoices` table: `expenses(payment_mode='SupplierCredit')`
 Manager, Deputy, and Accountant receive company-wide reads and may review pending expenses subject to settings-based approval separation. Manager, Deputy, Supervisor, and Worker may create personal expenses; Supervisor project use requires active assignment and Worker project use is unavailable because no worker/project relationship exists. Supervisor reads personal plus assigned-project records; Worker reads personal records only.
 
 The physical `expense_documents` table supports multiple metadata rows, but its generated navigation is singular. Infrastructure therefore queries the table set directly. File URLs and hashes remain persistence-only. There is no original-paper custody representation, expense project-split table, or expense payment-component table. See [EXPENSES.md](EXPENSES.md).
+
+## Project settlement reads
+
+Application owns explicit settlement DTOs, the service contract, category summaries and the distinction between known financial blockers, incomplete evaluation, and lifecycle impediments. Infrastructure implements one centralized project-settlement service over tenant-scoped Database-First queries. The Projects controller exposes only `GET /api/v1/projects/{projectId}/settlement` and maps access results; it calculates no financial state.
+
+All reads share one PostgreSQL RepeatableRead, READ ONLY transaction including current membership and assignment. Queries project only relevant records and perform correlated project-allocation sums in SQL; no tracking or writes occur. Debt and claim computed outstanding amounts remain authoritative. Expense document thresholds reuse the same Application rule as expense approval, without changing approval behavior.
+
+Supervisor responses contain only assigned-project expense/document/debt findings; hidden categories disclose no records or derived counts. The nullable readiness contract prevents missing attribution or undefined closure policy from masquerading as readiness. No persistence schema changes or Flutter placeholder is needed. See [SETTLEMENT.md](SETTLEMENT.md).
 
 ## Modular Monolith
 

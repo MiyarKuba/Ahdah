@@ -3,6 +3,7 @@ using Ahdah.Application.Identity;
 using Ahdah.Application.Projects.Contracts;
 using Ahdah.Application.Projects.Models;
 using Ahdah.Application.Projects.Services;
+using Ahdah.Application.Settlements;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,6 +13,21 @@ namespace Ahdah.Api.Controllers;
 [Route("api/v1/projects")]
 public sealed class ProjectsController(IProjectService projectService) : ControllerBase
 {
+    [Authorize(Policy = AhdahAuthorizationPolicies.SupplierViewer)]
+    [HttpGet("{projectId:guid}/settlement")]
+    [ProducesResponseType<ProjectSettlementSummary>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ProjectSettlementSummary>> Settlement(
+        Guid projectId,
+        [FromServices] IProjectSettlementService settlementService,
+        CancellationToken cancellationToken)
+    {
+        return ProjectResult(await settlementService.GetAsync(projectId, cancellationToken),
+            "projects.settlement.invalid_request");
+    }
+
     [Authorize(Policy = AhdahAuthorizationPolicies.ProjectViewer)]
     [HttpGet]
     [ProducesResponseType<PagedResult<ProjectDetails>>(StatusCodes.Status200OK)]

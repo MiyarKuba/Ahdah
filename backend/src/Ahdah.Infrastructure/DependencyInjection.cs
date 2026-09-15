@@ -54,6 +54,8 @@ public static class DependencyInjection
     {
         services.AddScoped<ICompanyMemberService, CompanyMemberService>();
         services.AddScoped<IProjectService, ProjectService>();
+        services.AddScoped<Ahdah.Application.Settlements.IProjectSettlementService,
+            Ahdah.Infrastructure.Settlements.ProjectSettlementService>();
 
         return services;
     }

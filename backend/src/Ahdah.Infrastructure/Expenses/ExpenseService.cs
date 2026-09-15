@@ -1640,10 +1640,8 @@ public sealed class ExpenseService(
     }
 
     private static bool DocumentRequired(CompanySetting settings, decimal amount) =>
-        settings.ExpenseDocumentMode == "Always"
-        || settings.ExpenseDocumentMode == "Threshold"
-            && settings.ExpenseDocumentThresholdAmount is { } threshold
-            && amount >= threshold;
+        ExpenseDocumentRules.IsRequired(
+            settings.ExpenseDocumentMode, settings.ExpenseDocumentThresholdAmount, amount);
 
     private static bool DocumentAllowed(CompanySetting settings, AddExpenseDocumentRequest request)
     {
