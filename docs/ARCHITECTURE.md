@@ -182,3 +182,12 @@ The Flutter client uses versionable `/api` REST endpoints with JSON payloads, UT
 ## Why Flutter never connects directly to PostgreSQL
 
 A direct database connection from a mobile or browser client would expose credentials, bypass authorization and tenant enforcement, couple releases to physical schema details, and make financial auditing and transaction policy unreliable. Browser environments also cannot safely hold database secrets. All database access therefore remains behind the API, where credentials can be protected and server-side policy can be enforced consistently.
+## Flutter supplier/payables boundary
+
+The Suppliers feature follows the existing `domain` / `data` / `presentation` split. Handwritten domain models and request objects represent the public HTTP contracts only; they are not persistence entities. `ApiSupplierRepository` owns endpoint translation, focused Riverpod controllers own paging or one financial operation, and route widgets contain presentation and confirmation behavior. Central `RoleCapabilities` is the single client source for navigation, routing, and action visibility, with server policies and tenant predicates remaining authoritative.
+
+Financial values cross the Flutter boundary as validated decimal text and exact JSON numeric tokens. Money comparisons use integer minor units and invoice quantities use integer thousandths, preventing binary floating-point drift. Multi-currency balances and statements stay as separate currency groups rather than being summed.
+
+Each financial mutation controller owns one in-memory idempotency operation. It creates a secure random key, binds it to a payload fingerprint, prevents duplicate submission, and permits same-key retry only after an ambiguous transport failure. Replacing the payload or reaching a definitive outcome discards the key. HTTP writes have no automatic retry interceptor.
+
+The supplier funding-source selector is a read model, not a new ledger or persistence abstraction. Infrastructure filters existing funding sources by tenant, lifecycle, availability, payment method/currency, and Manager-contribution ownership. No Flutter contract depends on generated EF models, and no client connects directly to PostgreSQL.

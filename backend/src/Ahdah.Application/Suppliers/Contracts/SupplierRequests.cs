@@ -269,6 +269,15 @@ public sealed record SupplierPaymentQuery : PagedAccessQuery
     public DateOnly? DateTo { get; init; }
 }
 
+public sealed record SupplierFundingSourceQuery : PagedAccessQuery
+{
+    [StringLength(3, MinimumLength = 3), RegularExpression("^[A-Z]{3}$")]
+    public string? CurrencyCode { get; init; }
+
+    [StringLength(30)]
+    public string? PaymentMethod { get; init; }
+}
+
 public sealed record ReviewSupplierPaymentRequest
 {
     [Range(1, int.MaxValue)] public int ExpectedVersion { get; init; }

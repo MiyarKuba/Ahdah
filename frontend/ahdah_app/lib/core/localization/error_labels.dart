@@ -24,6 +24,11 @@ String localizedError(AppLocalizations l10n, AppException error) {
     'advances.conflict' => l10n.staleFinancialState,
     'advances.invalid_operation' ||
     'advances.invalid_idempotency_key' => l10n.validationError,
+    'suppliers.not_found' => l10n.notFoundError,
+    'suppliers.forbidden' => l10n.permissionDenied,
+    'suppliers.conflict' => l10n.staleFinancialState,
+    'suppliers.invalid_operation' ||
+    'suppliers.invalid_idempotency_key' => l10n.validationError,
     _ => switch (error.kind) {
       AppExceptionKind.validation => l10n.validationError,
       AppExceptionKind.unauthorized => l10n.unauthorizedError,

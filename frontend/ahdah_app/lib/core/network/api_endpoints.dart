@@ -13,6 +13,12 @@ abstract final class ApiEndpoints {
   static const expenseCategories = '/api/v1/expense-categories';
   static const expenses = '/api/v1/expenses';
   static const reimbursements = '/api/v1/reimbursements';
+  static const suppliers = '/api/v1/suppliers';
+  static const supplierInvoices = '/api/v1/supplier-invoices';
+  static const supplierDebts = '/api/v1/supplier-debts';
+  static const supplierPayments = '/api/v1/supplier-payments';
+  static const supplierCreditNotes = '/api/v1/supplier-credit-notes';
+  static const supplierRefunds = '/api/v1/supplier-refunds';
   static const health = '/api/system/health';
 
   static String cancelInvitation(String id) => '$invitations/$id/cancel';
@@ -40,4 +46,22 @@ abstract final class ApiEndpoints {
   static String approveExpense(String id) => '$expenses/$id/approve';
   static String rejectExpense(String id) => '$expenses/$id/reject';
   static String reimbursement(String id) => '$reimbursements/$id';
+  static String supplier(String id) => '$suppliers/$id';
+  static String supplierPaymentAccounts(String id) =>
+      '$suppliers/$id/payment-accounts';
+  static String supplierStatement(String id) => '$suppliers/$id/statement';
+  static String supplierInvoice(String id) => '$supplierInvoices/$id';
+  static String supplierDebt(String id) => '$supplierDebts/$id';
+  static String supplierPayment(String id) => '$supplierPayments/$id';
+  static String supplierPaymentConfirm(String id) =>
+      '$supplierPayments/$id/confirm';
+  static String supplierPaymentReject(String id) =>
+      '$supplierPayments/$id/reject';
+  static String get supplierFundingSources =>
+      '$supplierPayments/funding-sources';
+  static String supplierCreditNote(String id) => '$supplierCreditNotes/$id';
+  static String supplierCreditApprove(String id) =>
+      '$supplierCreditNotes/$id/approve';
+  static String supplierCreditAllocations(String id) =>
+      '$supplierCreditNotes/$id/allocations';
 }

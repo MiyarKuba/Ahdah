@@ -16,6 +16,7 @@ public interface ISupplierService
     Task<AccessResult<SupplierInvoiceDetails>> GetInvoiceAsync(Guid debtId, CancellationToken cancellationToken);
     Task<AccessResult<SupplierInvoiceDetails>> CreateInvoiceAsync(CreateSupplierInvoiceRequest request, string? idempotencyKey, CancellationToken cancellationToken);
     Task<AccessResult<PagedResult<SupplierPaymentSummary>>> ListPaymentsAsync(SupplierPaymentQuery query, CancellationToken cancellationToken);
+    Task<AccessResult<PagedResult<SupplierFundingSourceSummary>>> ListFundingSourcesAsync(SupplierFundingSourceQuery query, CancellationToken cancellationToken);
     Task<AccessResult<SupplierPaymentDetails>> GetPaymentAsync(Guid paymentId, CancellationToken cancellationToken);
     Task<AccessResult<SupplierPaymentDetails>> CreatePaymentAsync(CreateSupplierPaymentRequest request, string? idempotencyKey, CancellationToken cancellationToken);
     Task<AccessResult<SupplierPaymentDetails>> ConfirmPaymentAsync(Guid paymentId, ReviewSupplierPaymentRequest request, string? idempotencyKey, CancellationToken cancellationToken);

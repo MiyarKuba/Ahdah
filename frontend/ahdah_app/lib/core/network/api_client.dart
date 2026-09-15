@@ -13,6 +13,8 @@ import '../../features/advances/domain/advance_requests.dart';
 import '../../features/expenses/domain/expense_filters.dart';
 import '../../features/expenses/domain/expense_models.dart';
 import '../../features/expenses/domain/expense_requests.dart';
+import '../../features/suppliers/domain/supplier_models.dart';
+import '../../features/suppliers/domain/supplier_requests.dart';
 import '../errors/app_exception.dart';
 import '../errors/problem_details.dart';
 import 'api_endpoints.dart';
@@ -562,6 +564,291 @@ final class ApiClient {
         await _financialGet(ApiEndpoints.reimbursement(reimbursementId)),
       );
 
+  Future<SupplierPage<SupplierSummary>> listSuppliers({
+    required int page,
+    required int pageSize,
+    required SupplierFilters filters,
+  }) async => SupplierPage.fromJson(
+    await _financialGet(
+      ApiEndpoints.suppliers,
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+        'isActive': ?filters.isActive,
+        'supplierType': ?filters.supplierType,
+        'search': ?filters.search,
+      },
+    ),
+    SupplierSummary.fromJson,
+  );
+
+  Future<SupplierDetails> getSupplier(String supplierId) async =>
+      SupplierDetails.fromJson(
+        await _financialGet(ApiEndpoints.supplier(supplierId)),
+      );
+
+  Future<SupplierDetails> createSupplier(SupplierCreateInput input) async =>
+      SupplierDetails.fromJson(
+        await _financialPostWithoutKey(
+          ApiEndpoints.suppliers,
+          data: input.toJsonBody(),
+        ),
+      );
+
+  Future<SupplierDetails> updateSupplier(
+    String supplierId,
+    SupplierUpdateInput input,
+  ) async => SupplierDetails.fromJson(
+    await _financialPatch(
+      ApiEndpoints.supplier(supplierId),
+      data: input.toJson(),
+    ),
+  );
+
+  Future<SupplierPage<SupplierPaymentAccount>> listSupplierPaymentAccounts(
+    String supplierId, {
+    required int page,
+    required int pageSize,
+  }) async => SupplierPage.fromJson(
+    await _financialGet(
+      ApiEndpoints.supplierPaymentAccounts(supplierId),
+      queryParameters: {'page': page, 'pageSize': pageSize},
+    ),
+    SupplierPaymentAccount.fromJson,
+  );
+
+  Future<SupplierPaymentAccount> createSupplierPaymentAccount(
+    String supplierId,
+    SupplierPaymentAccountInput input,
+    String idempotencyKey,
+  ) async => SupplierPaymentAccount.fromJson(
+    await _financialPost(
+      ApiEndpoints.supplierPaymentAccounts(supplierId),
+      data: input.toJson(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<SupplierPage<SupplierInvoiceSummary>> listSupplierInvoices({
+    required int page,
+    required int pageSize,
+    required SupplierInvoiceFilters filters,
+  }) async => SupplierPage.fromJson(
+    await _financialGet(
+      ApiEndpoints.supplierInvoices,
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+        'supplierId': ?filters.supplierId,
+        'projectId': ?filters.projectId,
+        'status': ?filters.status,
+        'currencyCode': ?filters.currencyCode,
+        'dueFrom': filters.dueFrom == null ? null : _dateOnly(filters.dueFrom!),
+        'dueTo': filters.dueTo == null ? null : _dateOnly(filters.dueTo!),
+        'unpaidOnly': ?filters.unpaidOnly,
+        'overdueOnly': ?filters.overdueOnly,
+        'reference': ?filters.reference,
+      },
+    ),
+    SupplierInvoiceSummary.fromJson,
+  );
+
+  Future<SupplierInvoiceDetails> getSupplierInvoice(String debtId) async =>
+      SupplierInvoiceDetails.fromJson(
+        await _financialGet(ApiEndpoints.supplierInvoice(debtId)),
+      );
+
+  Future<SupplierInvoiceDetails> createSupplierInvoice(
+    SupplierInvoiceCreateInput input,
+    String idempotencyKey,
+  ) async => SupplierInvoiceDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.supplierInvoices,
+      data: input.toJsonBody(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<SupplierPage<SupplierPaymentSummary>> listSupplierPayments({
+    required int page,
+    required int pageSize,
+    required SupplierPaymentFilters filters,
+  }) async => SupplierPage.fromJson(
+    await _financialGet(
+      ApiEndpoints.supplierPayments,
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+        'supplierId': ?filters.supplierId,
+        'supplierDebtId': ?filters.supplierDebtId,
+        'fundingSourceId': ?filters.fundingSourceId,
+        'status': ?filters.status,
+        'paymentMethod': ?filters.paymentMethod,
+        'currencyCode': ?filters.currencyCode,
+        'dateFrom': filters.dateFrom == null
+            ? null
+            : _dateOnly(filters.dateFrom!),
+        'dateTo': filters.dateTo == null ? null : _dateOnly(filters.dateTo!),
+      },
+    ),
+    SupplierPaymentSummary.fromJson,
+  );
+
+  Future<SupplierPaymentDetails> getSupplierPayment(String paymentId) async =>
+      SupplierPaymentDetails.fromJson(
+        await _financialGet(ApiEndpoints.supplierPayment(paymentId)),
+      );
+
+  Future<SupplierPage<SupplierFundingSource>> listSupplierFundingSources({
+    required int page,
+    required int pageSize,
+    String? currencyCode,
+    String? paymentMethod,
+  }) async => SupplierPage.fromJson(
+    await _financialGet(
+      ApiEndpoints.supplierFundingSources,
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+        'currencyCode': ?currencyCode,
+        'paymentMethod': ?paymentMethod,
+      },
+    ),
+    SupplierFundingSource.fromJson,
+  );
+
+  Future<SupplierPaymentDetails> createSupplierPayment(
+    SupplierPaymentCreateInput input,
+    String idempotencyKey,
+  ) async => SupplierPaymentDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.supplierPayments,
+      data: input.toJsonBody(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<SupplierPaymentDetails> confirmSupplierPayment(
+    String paymentId,
+    SupplierPaymentReviewInput input,
+    String idempotencyKey,
+  ) async => SupplierPaymentDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.supplierPaymentConfirm(paymentId),
+      data: input.toJson(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<SupplierPaymentDetails> rejectSupplierPayment(
+    String paymentId,
+    SupplierPaymentReviewInput input,
+    String idempotencyKey,
+  ) async => SupplierPaymentDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.supplierPaymentReject(paymentId),
+      data: input.toJson(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<SupplierPage<SupplierCreditNoteSummary>> listSupplierCreditNotes({
+    required int page,
+    required int pageSize,
+    String? supplierId,
+    String? status,
+    String? currencyCode,
+  }) async => SupplierPage.fromJson(
+    await _financialGet(
+      ApiEndpoints.supplierCreditNotes,
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+        'supplierId': ?supplierId,
+        'status': ?status,
+        'currencyCode': ?currencyCode,
+      },
+    ),
+    SupplierCreditNoteSummary.fromJson,
+  );
+
+  Future<SupplierCreditNoteDetails> getSupplierCreditNote(
+    String creditNoteId,
+  ) async => SupplierCreditNoteDetails.fromJson(
+    await _financialGet(ApiEndpoints.supplierCreditNote(creditNoteId)),
+  );
+
+  Future<SupplierCreditNoteDetails> createSupplierCreditNote(
+    SupplierCreditCreateInput input,
+    String idempotencyKey,
+  ) async => SupplierCreditNoteDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.supplierCreditNotes,
+      data: input.toJsonBody(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<SupplierCreditNoteDetails> approveSupplierCreditNote(
+    String creditNoteId,
+    SupplierCreditApproveInput input,
+    String idempotencyKey,
+  ) async => SupplierCreditNoteDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.supplierCreditApprove(creditNoteId),
+      data: input.toJson(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<SupplierCreditNoteDetails> applySupplierCreditNote(
+    String creditNoteId,
+    SupplierCreditApplyInput input,
+    String idempotencyKey,
+  ) async => SupplierCreditNoteDetails.fromJson(
+    await _financialPost(
+      ApiEndpoints.supplierCreditAllocations(creditNoteId),
+      data: input.toJsonBody(),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  Future<SupplierPage<SupplierRefundSummary>> listSupplierRefunds({
+    required int page,
+    required int pageSize,
+    String? supplierId,
+    String? status,
+    String? currencyCode,
+  }) async => SupplierPage.fromJson(
+    await _financialGet(
+      ApiEndpoints.supplierRefunds,
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+        'supplierId': ?supplierId,
+        'status': ?status,
+        'currencyCode': ?currencyCode,
+      },
+    ),
+    SupplierRefundSummary.fromJson,
+  );
+
+  Future<SupplierStatement> getSupplierStatement(
+    String supplierId, {
+    required int page,
+    required int pageSize,
+    String? currencyCode,
+  }) async => SupplierStatement.fromJson(
+    await _financialGet(
+      ApiEndpoints.supplierStatement(supplierId),
+      queryParameters: {
+        'page': page,
+        'pageSize': pageSize,
+        'currencyCode': ?currencyCode,
+      },
+    ),
+  );
+
   Future<bool> health() async {
     await _send(() => _dio.get<Map<String, Object?>>(ApiEndpoints.health));
     return true;
@@ -604,13 +891,49 @@ final class ApiClient {
     return _financialBody(response);
   }
 
+  Future<Map<String, Object?>> _financialPostWithoutKey(
+    String path, {
+    Object? data,
+  }) async {
+    final response = await _sendFinancial(
+      () => _dio.post<String>(
+        path,
+        data: data,
+        options: Options(
+          contentType: Headers.jsonContentType,
+          responseType: ResponseType.plain,
+          extra: const {requiresAuthenticationKey: true},
+        ),
+      ),
+    );
+    return _financialBody(response);
+  }
+
+  Future<Map<String, Object?>> _financialPatch(
+    String path, {
+    Object? data,
+  }) async {
+    final response = await _sendFinancial(
+      () => _dio.patch<String>(
+        path,
+        data: data,
+        options: Options(
+          contentType: Headers.jsonContentType,
+          responseType: ResponseType.plain,
+          extra: const {requiresAuthenticationKey: true},
+        ),
+      ),
+    );
+    return _financialBody(response);
+  }
+
   static Map<String, Object?> _financialBody(Response<String> response) {
     final source = response.data;
     if (source == null || source.isEmpty) {
       throw const AppException(AppExceptionKind.server);
     }
     final amountPattern = RegExp(
-      r'("(?:amount|advanceAmount|availableAmount|reservedAmount|allocatedAmount|totalReceivedAmount|totalRestoredAmount|totalExpensedAmount|totalTransferredOutAmount|totalReturnedAmount|totalAvailableAmount|totalAmount|subtotalAmount|discountAmount|taxAmount|claimAmount|outstandingAmount|unitPrice|quantity)"\s*:\s*)(-?\d+(?:\.\d+)?)',
+      r'("(?:amount|advanceAmount|availableAmount|reservedAmount|allocatedAmount|totalReceivedAmount|totalRestoredAmount|totalExpensedAmount|totalTransferredOutAmount|totalReturnedAmount|totalAvailableAmount|totalAmount|subtotalAmount|discountAmount|taxAmount|claimAmount|outstandingAmount|unitPrice|quantity|creditLimit|paidAmount|creditNoteAmount|writtenOffAmount|adjustmentAmount|paymentAmount|refundAmount|feeAmount|netReceivedAmount|appliedAmount)"\s*:\s*)(-?\d+(?:\.\d+)?)',
     );
     final protected = source.replaceAllMapped(
       amountPattern,
@@ -690,3 +1013,8 @@ final class ApiClient {
     };
   }
 }
+
+String _dateOnly(DateTime value) =>
+    '${value.year.toString().padLeft(4, '0')}-'
+    '${value.month.toString().padLeft(2, '0')}-'
+    '${value.day.toString().padLeft(2, '0')}';

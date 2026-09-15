@@ -50,6 +50,13 @@ final class AuthenticatedShell extends ConsumerWidget {
           icon: Icons.receipt_long_outlined,
           selectedIcon: Icons.receipt_long,
         ),
+      if (capabilities.canViewSuppliers)
+        _ShellDestination(
+          path: AppRoutes.suppliersPath,
+          label: l10n.navSuppliers,
+          icon: Icons.local_shipping_outlined,
+          selectedIcon: Icons.local_shipping,
+        ),
       if (capabilities.canViewCompanyDirectory)
         _ShellDestination(
           path: AppRoutes.companyMembersPath,
@@ -85,7 +92,13 @@ final class AuthenticatedShell extends ConsumerWidget {
               location.startsWith(AppRoutes.advanceBalancesPath) ||
           destination.path == AppRoutes.expensesPath &&
               (location.startsWith(AppRoutes.expenseCategoriesPath) ||
-                  location.startsWith(AppRoutes.reimbursementsPath)),
+                  location.startsWith(AppRoutes.reimbursementsPath)) ||
+          destination.path == AppRoutes.suppliersPath &&
+              (location.startsWith(AppRoutes.supplierInvoicesPath) ||
+                  location.startsWith(AppRoutes.supplierDebtsPath) ||
+                  location.startsWith(AppRoutes.supplierPaymentsPath) ||
+                  location.startsWith(AppRoutes.supplierCreditNotesPath) ||
+                  location.startsWith(AppRoutes.supplierRefundsPath)),
     );
     final safeIndex = selectedIndex < 0 ? 0 : selectedIndex;
     final wide = MediaQuery.sizeOf(context).width >= 840;

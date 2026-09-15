@@ -386,6 +386,55 @@ public sealed class SupplierService(
         return value is null ? Failure<SupplierPaymentDetails>(AccessResultStatus.NotFound) : Success(value);
     }
 
+    public async Task<AccessResult<PagedResult<SupplierFundingSourceSummary>>> ListFundingSourcesAsync(
+        SupplierFundingSourceQuery query, CancellationToken cancellationToken)
+    {
+        var caller = await GetCallerAsync(cancellationToken);
+        if (caller is null)
+            return Failure<PagedResult<SupplierFundingSourceSummary>>(AccessResultStatus.Unauthorized);
+        if (!caller.Capabilities.CanRecordPayments)
+            return Failure<PagedResult<SupplierFundingSourceSummary>>(AccessResultStatus.Forbidden);
+        if (!ValidPage(query) || query.PaymentMethod is not null
+                && !SupplierConstants.PaymentMethods.Contains(query.PaymentMethod))
+            return Failure<PagedResult<SupplierFundingSourceSummary>>(AccessResultStatus.Invalid);
+
+        var values = dbContext.FundingSources.AsNoTracking().Where(source =>
+            source.CompanyId == caller.CompanyId
+            && source.AvailableAmount > 0m
+            && (source.Status == SupplierConstants.AvailableFundingStatus
+                || source.Status == SupplierConstants.PartiallyUsedFundingStatus)
+            && (source.SourceType != SupplierConstants.ManagerContributionSourceType
+                || caller.Role == IdentityConstants.ManagerRole
+                && dbContext.ManagerContributions.Any(contribution =>
+                    contribution.CompanyId == caller.CompanyId
+                    && contribution.FundingSourceId == source.FundingSourceId
+                    && contribution.ManagerUserId == caller.UserId)));
+        if (query.CurrencyCode is not null)
+            values = values.Where(source => source.CurrencyCode == query.CurrencyCode);
+        if (query.PaymentMethod is not null)
+            values = values.Where(source => source.FundingSourcePaymentMethods.Any(method =>
+                method.PaymentMethod == query.PaymentMethod));
+
+        var count = await values.CountAsync(cancellationToken);
+        var rows = await values.OrderBy(source => source.SourceDate).ThenBy(source => source.FundingSourceId)
+            .Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
+            .Select(source => new
+            {
+                source.FundingSourceId,
+                source.SourceType,
+                source.SourceDate,
+                source.CurrencyCode,
+                source.AvailableAmount,
+                source.Status,
+                PaymentMethods = source.FundingSourcePaymentMethods.OrderBy(method => method.SequenceNumber)
+                    .Select(method => method.PaymentMethod).ToArray()
+            }).ToArrayAsync(cancellationToken);
+        return Success(new PagedResult<SupplierFundingSourceSummary>(rows.Select(source =>
+            new SupplierFundingSourceSummary(source.FundingSourceId, source.SourceType, source.SourceDate,
+                source.CurrencyCode, source.AvailableAmount, source.Status, source.PaymentMethods)).ToArray(),
+            query.Page, query.PageSize, count, TotalPages(count, query.PageSize)));
+    }
+
     public async Task<AccessResult<SupplierPaymentDetails>> CreatePaymentAsync(
         CreateSupplierPaymentRequest request, string? idempotencyKey, CancellationToken cancellationToken)
     {

@@ -1811,7 +1811,7 @@ abstract class AppLocalizations {
   /// No description provided for @invalidMoney.
   ///
   /// In en, this message translates to:
-  /// **'Enter a positive amount with up to 16 whole digits and 2 decimal places.'**
+  /// **'Enter a positive amount with no more than two decimal places.'**
   String get invalidMoney;
 
   /// No description provided for @fundingTotalMismatch.
@@ -2821,6 +2821,930 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Succeeded'**
   String get historyOutcomeSuccess;
+
+  /// No description provided for @navSuppliers.
+  ///
+  /// In en, this message translates to:
+  /// **'Suppliers'**
+  String get navSuppliers;
+
+  /// No description provided for @suppliers.
+  ///
+  /// In en, this message translates to:
+  /// **'Suppliers'**
+  String get suppliers;
+
+  /// No description provided for @supplierDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier details'**
+  String get supplierDetails;
+
+  /// No description provided for @addSupplier.
+  ///
+  /// In en, this message translates to:
+  /// **'Add supplier'**
+  String get addSupplier;
+
+  /// No description provided for @editSupplier.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit supplier'**
+  String get editSupplier;
+
+  /// No description provided for @deactivateSupplier.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate supplier'**
+  String get deactivateSupplier;
+
+  /// No description provided for @deactivateSupplierTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate this supplier?'**
+  String get deactivateSupplierTitle;
+
+  /// No description provided for @deactivateSupplierBody.
+  ///
+  /// In en, this message translates to:
+  /// **'New financial activity will be blocked, while all supplier history is preserved.'**
+  String get deactivateSupplierBody;
+
+  /// No description provided for @supplierHistoryPreserved.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier history is preserved after deactivation.'**
+  String get supplierHistoryPreserved;
+
+  /// No description provided for @supplierName.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier name'**
+  String get supplierName;
+
+  /// No description provided for @supplierCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier code'**
+  String get supplierCode;
+
+  /// No description provided for @supplierType.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier type'**
+  String get supplierType;
+
+  /// No description provided for @contactPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact person'**
+  String get contactPerson;
+
+  /// No description provided for @secondaryPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Secondary phone number'**
+  String get secondaryPhoneNumber;
+
+  /// No description provided for @emailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address'**
+  String get emailAddress;
+
+  /// No description provided for @city.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get city;
+
+  /// No description provided for @defaultCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Default currency'**
+  String get defaultCurrency;
+
+  /// No description provided for @transactionMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction mode'**
+  String get transactionMode;
+
+  /// No description provided for @paymentTermsDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment terms (days)'**
+  String get paymentTermsDays;
+
+  /// No description provided for @creditLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit limit'**
+  String get creditLimit;
+
+  /// No description provided for @preferredPaymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred payment method'**
+  String get preferredPaymentMethod;
+
+  /// No description provided for @commercialRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Commercial registration number'**
+  String get commercialRegistration;
+
+  /// No description provided for @taxRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Tax registration number'**
+  String get taxRegistration;
+
+  /// No description provided for @searchSuppliers.
+  ///
+  /// In en, this message translates to:
+  /// **'Search supplier name, code, contact, or phone'**
+  String get searchSuppliers;
+
+  /// No description provided for @noSuppliers.
+  ///
+  /// In en, this message translates to:
+  /// **'No suppliers match these filters.'**
+  String get noSuppliers;
+
+  /// No description provided for @supplierCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'The supplier was created.'**
+  String get supplierCreated;
+
+  /// No description provided for @supplierUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'The supplier was updated.'**
+  String get supplierUpdated;
+
+  /// No description provided for @supplierDeactivated.
+  ///
+  /// In en, this message translates to:
+  /// **'The supplier was deactivated and its history was preserved.'**
+  String get supplierDeactivated;
+
+  /// No description provided for @paymentAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment accounts'**
+  String get paymentAccounts;
+
+  /// No description provided for @addPaymentAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Add payment account'**
+  String get addPaymentAccount;
+
+  /// No description provided for @accountType.
+  ///
+  /// In en, this message translates to:
+  /// **'Account type'**
+  String get accountType;
+
+  /// No description provided for @accountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Account label'**
+  String get accountLabel;
+
+  /// No description provided for @accountHolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Account holder'**
+  String get accountHolder;
+
+  /// No description provided for @bankBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank branch'**
+  String get bankBranch;
+
+  /// No description provided for @accountNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Account number'**
+  String get accountNumber;
+
+  /// No description provided for @iban.
+  ///
+  /// In en, this message translates to:
+  /// **'IBAN'**
+  String get iban;
+
+  /// No description provided for @walletProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet provider'**
+  String get walletProvider;
+
+  /// No description provided for @walletNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet number'**
+  String get walletNumber;
+
+  /// No description provided for @maskedAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Masked account'**
+  String get maskedAccount;
+
+  /// No description provided for @pendingVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending verification'**
+  String get pendingVerification;
+
+  /// No description provided for @noPaymentAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'No payment-account metadata is available.'**
+  String get noPaymentAccounts;
+
+  /// No description provided for @supplierInvoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier invoices'**
+  String get supplierInvoices;
+
+  /// No description provided for @supplierDebts.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier debts'**
+  String get supplierDebts;
+
+  /// No description provided for @createSupplierInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Create supplier invoice'**
+  String get createSupplierInvoice;
+
+  /// No description provided for @invoiceDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice date'**
+  String get invoiceDate;
+
+  /// No description provided for @invoiceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice description'**
+  String get invoiceDescription;
+
+  /// No description provided for @expenseCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense category'**
+  String get expenseCategory;
+
+  /// No description provided for @invoiceItemsOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice items (optional)'**
+  String get invoiceItemsOptional;
+
+  /// No description provided for @addInvoiceItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add invoice item'**
+  String get addInvoiceItem;
+
+  /// No description provided for @itemName.
+  ///
+  /// In en, this message translates to:
+  /// **'Item name'**
+  String get itemName;
+
+  /// No description provided for @itemQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get itemQuantity;
+
+  /// No description provided for @unitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get unitCode;
+
+  /// No description provided for @unitPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit price'**
+  String get unitPrice;
+
+  /// No description provided for @discountAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount'**
+  String get discountAmount;
+
+  /// No description provided for @taxAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Tax'**
+  String get taxAmount;
+
+  /// No description provided for @duplicateInvoiceWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice references are not uniquely enforced. Verify possible duplicates before submitting.'**
+  String get duplicateInvoiceWarning;
+
+  /// No description provided for @noSupplierInvoices.
+  ///
+  /// In en, this message translates to:
+  /// **'No supplier invoices or debts are available.'**
+  String get noSupplierInvoices;
+
+  /// No description provided for @amountPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount paid'**
+  String get amountPaid;
+
+  /// No description provided for @debtNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Debt number'**
+  String get debtNumber;
+
+  /// No description provided for @expenseStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense status'**
+  String get expenseStatus;
+
+  /// No description provided for @debtStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Debt status'**
+  String get debtStatus;
+
+  /// No description provided for @partialPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Partial payment'**
+  String get partialPayment;
+
+  /// No description provided for @fullPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Full payment'**
+  String get fullPayment;
+
+  /// No description provided for @supplierPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier payments'**
+  String get supplierPayments;
+
+  /// No description provided for @recordPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Record payment'**
+  String get recordPayment;
+
+  /// No description provided for @paymentDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment date'**
+  String get paymentDate;
+
+  /// No description provided for @paymentAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment amount'**
+  String get paymentAmount;
+
+  /// No description provided for @paymentReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment reference'**
+  String get paymentReference;
+
+  /// No description provided for @payerBankName.
+  ///
+  /// In en, this message translates to:
+  /// **'Payer bank name'**
+  String get payerBankName;
+
+  /// No description provided for @proofPathOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Existing proof path (optional)'**
+  String get proofPathOptional;
+
+  /// No description provided for @paymentFeesUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment fees are not supported in this phase.'**
+  String get paymentFeesUnsupported;
+
+  /// No description provided for @advanceFundingUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Advance-balance supplier funding is unavailable.'**
+  String get advanceFundingUnavailable;
+
+  /// No description provided for @finalSettlementUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Final settlement is unavailable in this phase.'**
+  String get finalSettlementUnavailable;
+
+  /// No description provided for @debtAllocations.
+  ///
+  /// In en, this message translates to:
+  /// **'Debt allocations'**
+  String get debtAllocations;
+
+  /// No description provided for @fundingAllocations.
+  ///
+  /// In en, this message translates to:
+  /// **'Funding allocations'**
+  String get fundingAllocations;
+
+  /// No description provided for @allocationAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Allocation amount'**
+  String get allocationAmount;
+
+  /// No description provided for @managerPersonalContribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Manager personal contribution'**
+  String get managerPersonalContribution;
+
+  /// No description provided for @companyCashbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Company cashbox'**
+  String get companyCashbox;
+
+  /// No description provided for @fundingReserved.
+  ///
+  /// In en, this message translates to:
+  /// **'Funding reserved'**
+  String get fundingReserved;
+
+  /// No description provided for @fundingConsumed.
+  ///
+  /// In en, this message translates to:
+  /// **'Funding consumed'**
+  String get fundingConsumed;
+
+  /// No description provided for @fundingReleased.
+  ///
+  /// In en, this message translates to:
+  /// **'Funding released'**
+  String get fundingReleased;
+
+  /// No description provided for @allocationTotalsMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Debt and funding allocations must each total the payment exactly.'**
+  String get allocationTotalsMismatch;
+
+  /// No description provided for @noSupplierPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'No supplier payments are available.'**
+  String get noSupplierPayments;
+
+  /// No description provided for @paymentPendingApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment pending approval'**
+  String get paymentPendingApproval;
+
+  /// No description provided for @confirmPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm payment'**
+  String get confirmPayment;
+
+  /// No description provided for @rejectPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject payment'**
+  String get rejectPayment;
+
+  /// No description provided for @confirmPaymentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm only after verifying the payment, debt allocations, and funding allocations.'**
+  String get confirmPaymentBody;
+
+  /// No description provided for @rejectPaymentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection preserves the record and releases reserved funding.'**
+  String get rejectPaymentBody;
+
+  /// No description provided for @supplierCreditNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier credit notes'**
+  String get supplierCreditNotes;
+
+  /// No description provided for @createCreditNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Create credit note'**
+  String get createCreditNote;
+
+  /// No description provided for @creditNoteDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit-note date'**
+  String get creditNoteDate;
+
+  /// No description provided for @creditReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit reason'**
+  String get creditReason;
+
+  /// No description provided for @availableCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'Available credit'**
+  String get availableCredit;
+
+  /// No description provided for @appliedCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied credit'**
+  String get appliedCredit;
+
+  /// No description provided for @approveCreditNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve credit note'**
+  String get approveCreditNote;
+
+  /// No description provided for @applyCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply credit'**
+  String get applyCredit;
+
+  /// No description provided for @creditAllocationExceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Allocations must be unique and cannot exceed available credit or eligible debt.'**
+  String get creditAllocationExceeded;
+
+  /// No description provided for @noCreditNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'No supplier credit notes are available.'**
+  String get noCreditNotes;
+
+  /// No description provided for @supplierRefunds.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier refunds'**
+  String get supplierRefunds;
+
+  /// No description provided for @refundHistoryOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Refund history is read-only. Refund creation and verification are not available.'**
+  String get refundHistoryOnly;
+
+  /// No description provided for @noSupplierRefunds.
+  ///
+  /// In en, this message translates to:
+  /// **'No supplier refund history is available.'**
+  String get noSupplierRefunds;
+
+  /// No description provided for @supplierStatement.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier statement'**
+  String get supplierStatement;
+
+  /// No description provided for @differentCurrenciesSeparate.
+  ///
+  /// In en, this message translates to:
+  /// **'Different currencies are shown separately and are never totaled together.'**
+  String get differentCurrenciesSeparate;
+
+  /// No description provided for @noStatementEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'No statement entries are available.'**
+  String get noStatementEntries;
+
+  /// No description provided for @operationOutcomeUncertain.
+  ///
+  /// In en, this message translates to:
+  /// **'The operation outcome is uncertain. Do not submit a different operation; retry the same operation with the preserved key.'**
+  String get operationOutcomeUncertain;
+
+  /// No description provided for @selectSupplier.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a supplier'**
+  String get selectSupplier;
+
+  /// No description provided for @selectDebt.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a debt'**
+  String get selectDebt;
+
+  /// No description provided for @selectFundingSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a funding source'**
+  String get selectFundingSource;
+
+  /// No description provided for @selectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a supplier-enabled expense category'**
+  String get selectCategory;
+
+  /// No description provided for @invalidQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a positive quantity with no more than three decimal places.'**
+  String get invalidQuantity;
+
+  /// No description provided for @createAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get createAction;
+
+  /// No description provided for @applyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get applyAction;
+
+  /// No description provided for @viewStatement.
+  ///
+  /// In en, this message translates to:
+  /// **'View statement'**
+  String get viewStatement;
+
+  /// No description provided for @viewRefunds.
+  ///
+  /// In en, this message translates to:
+  /// **'View refund history'**
+  String get viewRefunds;
+
+  /// No description provided for @viewInvoices.
+  ///
+  /// In en, this message translates to:
+  /// **'View invoices'**
+  String get viewInvoices;
+
+  /// No description provided for @viewPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'View payments'**
+  String get viewPayments;
+
+  /// No description provided for @viewCreditNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'View credit notes'**
+  String get viewCreditNotes;
+
+  /// No description provided for @supplierTypeGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General supplier'**
+  String get supplierTypeGeneral;
+
+  /// No description provided for @supplierTypeMaterials.
+  ///
+  /// In en, this message translates to:
+  /// **'Materials supplier'**
+  String get supplierTypeMaterials;
+
+  /// No description provided for @supplierTypeEquipment.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipment supplier'**
+  String get supplierTypeEquipment;
+
+  /// No description provided for @supplierTypeEquipmentRental.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipment rental'**
+  String get supplierTypeEquipmentRental;
+
+  /// No description provided for @supplierTypeFuel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel supplier'**
+  String get supplierTypeFuel;
+
+  /// No description provided for @supplierTypeSubcontractor.
+  ///
+  /// In en, this message translates to:
+  /// **'Subcontractor'**
+  String get supplierTypeSubcontractor;
+
+  /// No description provided for @supplierTypeTransport.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport provider'**
+  String get supplierTypeTransport;
+
+  /// No description provided for @supplierTypeMaintenance.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintenance provider'**
+  String get supplierTypeMaintenance;
+
+  /// No description provided for @supplierTypeService.
+  ///
+  /// In en, this message translates to:
+  /// **'Service provider'**
+  String get supplierTypeService;
+
+  /// No description provided for @transactionCashOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash only'**
+  String get transactionCashOnly;
+
+  /// No description provided for @transactionCreditOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit only'**
+  String get transactionCreditOnly;
+
+  /// No description provided for @transactionCashAndCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash and credit'**
+  String get transactionCashAndCredit;
+
+  /// No description provided for @accountTypeBank.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank account'**
+  String get accountTypeBank;
+
+  /// No description provided for @accountTypeWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile wallet'**
+  String get accountTypeWallet;
+
+  /// No description provided for @accountTypeCashCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash collection'**
+  String get accountTypeCashCollection;
+
+  /// No description provided for @creditReasonReturnedGoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned goods'**
+  String get creditReasonReturnedGoods;
+
+  /// No description provided for @creditReasonDamagedGoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Damaged goods'**
+  String get creditReasonDamagedGoods;
+
+  /// No description provided for @creditReasonPricingCorrection.
+  ///
+  /// In en, this message translates to:
+  /// **'Pricing correction'**
+  String get creditReasonPricingCorrection;
+
+  /// No description provided for @creditReasonOverbilling.
+  ///
+  /// In en, this message translates to:
+  /// **'Overbilling'**
+  String get creditReasonOverbilling;
+
+  /// No description provided for @creditReasonAdditionalDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional discount'**
+  String get creditReasonAdditionalDiscount;
+
+  /// No description provided for @creditReasonServiceCompensation.
+  ///
+  /// In en, this message translates to:
+  /// **'Service compensation'**
+  String get creditReasonServiceCompensation;
+
+  /// No description provided for @unitPiece.
+  ///
+  /// In en, this message translates to:
+  /// **'Piece'**
+  String get unitPiece;
+
+  /// No description provided for @unitPackage.
+  ///
+  /// In en, this message translates to:
+  /// **'Package'**
+  String get unitPackage;
+
+  /// No description provided for @unitBox.
+  ///
+  /// In en, this message translates to:
+  /// **'Box'**
+  String get unitBox;
+
+  /// No description provided for @unitBag.
+  ///
+  /// In en, this message translates to:
+  /// **'Bag'**
+  String get unitBag;
+
+  /// No description provided for @unitKilogram.
+  ///
+  /// In en, this message translates to:
+  /// **'Kilogram'**
+  String get unitKilogram;
+
+  /// No description provided for @unitTon.
+  ///
+  /// In en, this message translates to:
+  /// **'Ton'**
+  String get unitTon;
+
+  /// No description provided for @unitMeter.
+  ///
+  /// In en, this message translates to:
+  /// **'Meter'**
+  String get unitMeter;
+
+  /// No description provided for @unitSquareMeter.
+  ///
+  /// In en, this message translates to:
+  /// **'Square meter'**
+  String get unitSquareMeter;
+
+  /// No description provided for @unitCubicMeter.
+  ///
+  /// In en, this message translates to:
+  /// **'Cubic meter'**
+  String get unitCubicMeter;
+
+  /// No description provided for @unitLiter.
+  ///
+  /// In en, this message translates to:
+  /// **'Liter'**
+  String get unitLiter;
+
+  /// No description provided for @unitHour.
+  ///
+  /// In en, this message translates to:
+  /// **'Hour'**
+  String get unitHour;
+
+  /// No description provided for @unitDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get unitDay;
+
+  /// No description provided for @unitTrip.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip'**
+  String get unitTrip;
+
+  /// No description provided for @unitService.
+  ///
+  /// In en, this message translates to:
+  /// **'Service'**
+  String get unitService;
+
+  /// No description provided for @unitLumpSum.
+  ///
+  /// In en, this message translates to:
+  /// **'Lump sum'**
+  String get unitLumpSum;
+
+  /// No description provided for @loadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get loadMore;
 }
 
 class _AppLocalizationsDelegate

@@ -13,6 +13,12 @@ namespace Ahdah.Api.Controllers;
 [Route("api/v1/supplier-payments")]
 public sealed class SupplierPaymentsController(ISupplierService supplierService) : SupplierControllerBase
 {
+    [Authorize(Policy = AhdahAuthorizationPolicies.SupplierPaymentRecorder)]
+    [HttpGet("funding-sources")]
+    public async Task<ActionResult<PagedResult<SupplierFundingSourceSummary>>> ListFundingSources(
+        [FromQuery] SupplierFundingSourceQuery query, CancellationToken cancellationToken) =>
+        SupplierResult(await supplierService.ListFundingSourcesAsync(query, cancellationToken));
+
     [Authorize(Policy = AhdahAuthorizationPolicies.SupplierFinancialViewer)]
     [HttpGet]
     public async Task<ActionResult<PagedResult<SupplierPaymentSummary>>> List(

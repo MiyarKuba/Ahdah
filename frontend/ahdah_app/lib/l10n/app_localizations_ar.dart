@@ -906,8 +906,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get amount => 'المبلغ';
 
   @override
-  String get invalidMoney =>
-      'أدخل مبلغًا موجبًا بحد أقصى 16 رقمًا صحيحًا ومنزلتين عشريتين.';
+  String get invalidMoney => 'أدخل مبلغاً موجباً بمنزلتين عشريتين كحد أقصى.';
 
   @override
   String get fundingTotalMismatch =>
@@ -1427,4 +1426,477 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get historyOutcomeSuccess => 'نجحت';
+
+  @override
+  String get navSuppliers => 'الموردون';
+
+  @override
+  String get suppliers => 'الموردون';
+
+  @override
+  String get supplierDetails => 'تفاصيل المورد';
+
+  @override
+  String get addSupplier => 'إضافة مورد';
+
+  @override
+  String get editSupplier => 'تعديل المورد';
+
+  @override
+  String get deactivateSupplier => 'إلغاء تنشيط المورد';
+
+  @override
+  String get deactivateSupplierTitle => 'هل تريد إلغاء تنشيط هذا المورد؟';
+
+  @override
+  String get deactivateSupplierBody =>
+      'سيتم منع النشاط المالي الجديد مع الاحتفاظ بكامل سجل المورد.';
+
+  @override
+  String get supplierHistoryPreserved =>
+      'يُحتفظ بسجل المورد بعد إلغاء التنشيط.';
+
+  @override
+  String get supplierName => 'اسم المورد';
+
+  @override
+  String get supplierCode => 'رمز المورد';
+
+  @override
+  String get supplierType => 'نوع المورد';
+
+  @override
+  String get contactPerson => 'جهة الاتصال';
+
+  @override
+  String get secondaryPhoneNumber => 'رقم الهاتف الثاني';
+
+  @override
+  String get emailAddress => 'البريد الإلكتروني';
+
+  @override
+  String get city => 'المدينة';
+
+  @override
+  String get defaultCurrency => 'العملة الافتراضية';
+
+  @override
+  String get transactionMode => 'نمط التعامل';
+
+  @override
+  String get paymentTermsDays => 'مدة السداد (بالأيام)';
+
+  @override
+  String get creditLimit => 'حد الائتمان';
+
+  @override
+  String get preferredPaymentMethod => 'طريقة الدفع المفضلة';
+
+  @override
+  String get commercialRegistration => 'رقم السجل التجاري';
+
+  @override
+  String get taxRegistration => 'رقم التسجيل الضريبي';
+
+  @override
+  String get searchSuppliers => 'ابحث بالاسم أو الرمز أو جهة الاتصال أو الهاتف';
+
+  @override
+  String get noSuppliers => 'لا يوجد موردون يطابقون عوامل التصفية.';
+
+  @override
+  String get supplierCreated => 'تم إنشاء المورد.';
+
+  @override
+  String get supplierUpdated => 'تم تحديث المورد.';
+
+  @override
+  String get supplierDeactivated => 'تم إلغاء تنشيط المورد مع الاحتفاظ بسجله.';
+
+  @override
+  String get paymentAccounts => 'حسابات الدفع';
+
+  @override
+  String get addPaymentAccount => 'إضافة حساب دفع';
+
+  @override
+  String get accountType => 'نوع الحساب';
+
+  @override
+  String get accountLabel => 'اسم الحساب';
+
+  @override
+  String get accountHolder => 'صاحب الحساب';
+
+  @override
+  String get bankBranch => 'فرع المصرف';
+
+  @override
+  String get accountNumber => 'رقم الحساب';
+
+  @override
+  String get iban => 'رقم IBAN';
+
+  @override
+  String get walletProvider => 'مزود المحفظة';
+
+  @override
+  String get walletNumber => 'رقم المحفظة';
+
+  @override
+  String get maskedAccount => 'الحساب المخفي';
+
+  @override
+  String get pendingVerification => 'بانتظار التحقق';
+
+  @override
+  String get noPaymentAccounts => 'لا توجد بيانات حسابات دفع.';
+
+  @override
+  String get supplierInvoices => 'فواتير الموردين';
+
+  @override
+  String get supplierDebts => 'ديون الموردين';
+
+  @override
+  String get createSupplierInvoice => 'إنشاء فاتورة مورد';
+
+  @override
+  String get invoiceDate => 'تاريخ الفاتورة';
+
+  @override
+  String get invoiceDescription => 'وصف الفاتورة';
+
+  @override
+  String get expenseCategory => 'فئة المصروف';
+
+  @override
+  String get invoiceItemsOptional => 'بنود الفاتورة (اختيارية)';
+
+  @override
+  String get addInvoiceItem => 'إضافة بند فاتورة';
+
+  @override
+  String get itemName => 'اسم البند';
+
+  @override
+  String get itemQuantity => 'الكمية';
+
+  @override
+  String get unitCode => 'الوحدة';
+
+  @override
+  String get unitPrice => 'سعر الوحدة';
+
+  @override
+  String get discountAmount => 'الخصم';
+
+  @override
+  String get taxAmount => 'الضريبة';
+
+  @override
+  String get duplicateInvoiceWarning =>
+      'مراجع الفواتير ليست فريدة في قاعدة البيانات. تحقق من التكرار قبل الإرسال.';
+
+  @override
+  String get noSupplierInvoices => 'لا توجد فواتير أو ديون موردين.';
+
+  @override
+  String get amountPaid => 'المبلغ المدفوع';
+
+  @override
+  String get debtNumber => 'رقم الدين';
+
+  @override
+  String get expenseStatus => 'حالة المصروف';
+
+  @override
+  String get debtStatus => 'حالة الدين';
+
+  @override
+  String get partialPayment => 'دفعة جزئية';
+
+  @override
+  String get fullPayment => 'دفعة كاملة';
+
+  @override
+  String get supplierPayments => 'دفعات الموردين';
+
+  @override
+  String get recordPayment => 'تسجيل دفعة';
+
+  @override
+  String get paymentDate => 'تاريخ الدفع';
+
+  @override
+  String get paymentAmount => 'مبلغ الدفع';
+
+  @override
+  String get paymentReference => 'مرجع الدفع';
+
+  @override
+  String get payerBankName => 'مصرف الدافع';
+
+  @override
+  String get proofPathOptional => 'مسار إثبات موجود (اختياري)';
+
+  @override
+  String get paymentFeesUnsupported => 'رسوم الدفع غير مدعومة في هذه المرحلة.';
+
+  @override
+  String get advanceFundingUnavailable =>
+      'تمويل المورد من رصيد العُهدة غير متاح.';
+
+  @override
+  String get finalSettlementUnavailable =>
+      'التسوية النهائية غير متاحة في هذه المرحلة.';
+
+  @override
+  String get debtAllocations => 'تخصيصات الديون';
+
+  @override
+  String get fundingAllocations => 'تخصيصات مصادر التمويل';
+
+  @override
+  String get allocationAmount => 'مبلغ التخصيص';
+
+  @override
+  String get managerPersonalContribution => 'مساهمة المدير الشخصية';
+
+  @override
+  String get companyCashbox => 'صندوق الشركة';
+
+  @override
+  String get fundingReserved => 'تم حجز التمويل';
+
+  @override
+  String get fundingConsumed => 'تم استهلاك التمويل';
+
+  @override
+  String get fundingReleased => 'تم تحرير التمويل';
+
+  @override
+  String get allocationTotalsMismatch =>
+      'يجب أن يساوي مجموع تخصيصات الديون ومصادر التمويل مبلغ الدفع تماماً.';
+
+  @override
+  String get noSupplierPayments => 'لا توجد دفعات موردين.';
+
+  @override
+  String get paymentPendingApproval => 'الدفعة بانتظار الاعتماد';
+
+  @override
+  String get confirmPayment => 'تأكيد الدفعة';
+
+  @override
+  String get rejectPayment => 'رفض الدفعة';
+
+  @override
+  String get confirmPaymentBody =>
+      'أكد فقط بعد التحقق من الدفعة وتخصيصات الديون ومصادر التمويل.';
+
+  @override
+  String get rejectPaymentBody => 'يحفظ الرفض السجل ويحرر التمويل المحجوز.';
+
+  @override
+  String get supplierCreditNotes => 'إشعارات دائن الموردين';
+
+  @override
+  String get createCreditNote => 'إنشاء إشعار دائن';
+
+  @override
+  String get creditNoteDate => 'تاريخ الإشعار الدائن';
+
+  @override
+  String get creditReason => 'سبب الإشعار الدائن';
+
+  @override
+  String get availableCredit => 'الرصيد الدائن المتاح';
+
+  @override
+  String get appliedCredit => 'الرصيد الدائن المطبق';
+
+  @override
+  String get approveCreditNote => 'اعتماد الإشعار الدائن';
+
+  @override
+  String get applyCredit => 'تطبيق الرصيد الدائن';
+
+  @override
+  String get creditAllocationExceeded =>
+      'يجب أن تكون التخصيصات فريدة وألا تتجاوز الرصيد الدائن المتاح أو الدين المؤهل.';
+
+  @override
+  String get noCreditNotes => 'لا توجد إشعارات دائنة للموردين.';
+
+  @override
+  String get supplierRefunds => 'مبالغ الموردين المستردة';
+
+  @override
+  String get refundHistoryOnly =>
+      'سجل الاسترداد للقراءة فقط. إنشاء الاسترداد والتحقق منه غير متاحين.';
+
+  @override
+  String get noSupplierRefunds => 'لا يوجد سجل مبالغ مستردة من الموردين.';
+
+  @override
+  String get supplierStatement => 'كشف حساب المورد';
+
+  @override
+  String get differentCurrenciesSeparate =>
+      'تُعرض العملات المختلفة منفصلة ولا تُجمع معاً أبداً.';
+
+  @override
+  String get noStatementEntries => 'لا توجد حركات في كشف الحساب.';
+
+  @override
+  String get operationOutcomeUncertain =>
+      'نتيجة العملية غير مؤكدة. لا ترسل عملية مختلفة؛ أعد محاولة العملية نفسها بالمفتاح المحفوظ.';
+
+  @override
+  String get selectSupplier => 'اختر مورداً';
+
+  @override
+  String get selectDebt => 'اختر ديناً';
+
+  @override
+  String get selectFundingSource => 'اختر مصدر تمويل';
+
+  @override
+  String get selectCategory => 'اختر فئة مصروف تدعم الموردين';
+
+  @override
+  String get invalidQuantity => 'أدخل كمية موجبة بثلاث منازل عشرية كحد أقصى.';
+
+  @override
+  String get createAction => 'إنشاء';
+
+  @override
+  String get applyAction => 'تطبيق';
+
+  @override
+  String get viewStatement => 'عرض كشف الحساب';
+
+  @override
+  String get viewRefunds => 'عرض سجل الاسترداد';
+
+  @override
+  String get viewInvoices => 'عرض الفواتير';
+
+  @override
+  String get viewPayments => 'عرض الدفعات';
+
+  @override
+  String get viewCreditNotes => 'عرض الإشعارات الدائنة';
+
+  @override
+  String get supplierTypeGeneral => 'مورد عام';
+
+  @override
+  String get supplierTypeMaterials => 'مورد مواد';
+
+  @override
+  String get supplierTypeEquipment => 'مورد معدات';
+
+  @override
+  String get supplierTypeEquipmentRental => 'تأجير معدات';
+
+  @override
+  String get supplierTypeFuel => 'مورد وقود';
+
+  @override
+  String get supplierTypeSubcontractor => 'مقاول من الباطن';
+
+  @override
+  String get supplierTypeTransport => 'مزود نقل';
+
+  @override
+  String get supplierTypeMaintenance => 'مزود صيانة';
+
+  @override
+  String get supplierTypeService => 'مزود خدمات';
+
+  @override
+  String get transactionCashOnly => 'نقدي فقط';
+
+  @override
+  String get transactionCreditOnly => 'آجل فقط';
+
+  @override
+  String get transactionCashAndCredit => 'نقدي وآجل';
+
+  @override
+  String get accountTypeBank => 'حساب مصرفي';
+
+  @override
+  String get accountTypeWallet => 'محفظة إلكترونية';
+
+  @override
+  String get accountTypeCashCollection => 'تحصيل نقدي';
+
+  @override
+  String get creditReasonReturnedGoods => 'بضاعة مرتجعة';
+
+  @override
+  String get creditReasonDamagedGoods => 'بضاعة تالفة';
+
+  @override
+  String get creditReasonPricingCorrection => 'تصحيح تسعير';
+
+  @override
+  String get creditReasonOverbilling => 'فوترة زائدة';
+
+  @override
+  String get creditReasonAdditionalDiscount => 'خصم إضافي';
+
+  @override
+  String get creditReasonServiceCompensation => 'تعويض خدمة';
+
+  @override
+  String get unitPiece => 'قطعة';
+
+  @override
+  String get unitPackage => 'عبوة';
+
+  @override
+  String get unitBox => 'صندوق';
+
+  @override
+  String get unitBag => 'كيس';
+
+  @override
+  String get unitKilogram => 'كيلوغرام';
+
+  @override
+  String get unitTon => 'طن';
+
+  @override
+  String get unitMeter => 'متر';
+
+  @override
+  String get unitSquareMeter => 'متر مربع';
+
+  @override
+  String get unitCubicMeter => 'متر مكعب';
+
+  @override
+  String get unitLiter => 'لتر';
+
+  @override
+  String get unitHour => 'ساعة';
+
+  @override
+  String get unitDay => 'يوم';
+
+  @override
+  String get unitTrip => 'رحلة';
+
+  @override
+  String get unitService => 'خدمة';
+
+  @override
+  String get unitLumpSum => 'مبلغ مقطوع';
+
+  @override
+  String get loadMore => 'تحميل المزيد';
 }

@@ -1,5 +1,6 @@
 final class RoleCapabilities {
   const RoleCapabilities._({
+    required this.role,
     required this.canManageAccess,
     required this.canViewProjects,
     required this.canManageProjects,
@@ -26,6 +27,7 @@ final class RoleCapabilities {
     required this.canContributeExpenseDocuments,
   });
 
+  final String? role;
   final bool canManageAccess;
   final bool canViewProjects;
   final bool canManageProjects;
@@ -51,8 +53,27 @@ final class RoleCapabilities {
   final bool canCreatePersonalFundsExpense;
   final bool canContributeExpenseDocuments;
 
+  bool get canViewSuppliers => switch (role) {
+    'Manager' || 'Deputy' || 'Accountant' || 'Supervisor' => true,
+    _ => false,
+  };
+  bool get canManageSuppliers => role == 'Manager';
+  bool get canCreateSupplierInvoice =>
+      role == 'Manager' || role == 'Deputy' || role == 'Accountant';
+  bool get canViewSupplierFinancials =>
+      role == 'Manager' || role == 'Deputy' || role == 'Accountant';
+  bool get canRecordSupplierPayment =>
+      role == 'Manager' || role == 'Accountant';
+  bool get canConfirmSupplierPayment => canRecordSupplierPayment;
+  bool get canManageSupplierCredits => canRecordSupplierPayment;
+  bool get canCreateSupplierPaymentAccount => canRecordSupplierPayment;
+  bool get canViewSupplierRefunds => canViewSupplierFinancials;
+  bool get canViewSupplierStatement => canViewSupplierFinancials;
+  bool get requiresAssignedSupplierProjects => role == 'Supervisor';
+
   factory RoleCapabilities.forRole(String? role) => switch (role) {
     'Manager' => const RoleCapabilities._(
+      role: 'Manager',
       canManageAccess: true,
       canViewProjects: true,
       canManageProjects: true,
@@ -79,6 +100,7 @@ final class RoleCapabilities {
       canContributeExpenseDocuments: true,
     ),
     'Deputy' => const RoleCapabilities._(
+      role: 'Deputy',
       canManageAccess: false,
       canViewProjects: true,
       canManageProjects: false,
@@ -105,6 +127,7 @@ final class RoleCapabilities {
       canContributeExpenseDocuments: true,
     ),
     'Accountant' => const RoleCapabilities._(
+      role: 'Accountant',
       canManageAccess: false,
       canViewProjects: true,
       canManageProjects: false,
@@ -131,6 +154,7 @@ final class RoleCapabilities {
       canContributeExpenseDocuments: true,
     ),
     'Supervisor' => const RoleCapabilities._(
+      role: 'Supervisor',
       canManageAccess: false,
       canViewProjects: true,
       canManageProjects: false,
@@ -157,6 +181,7 @@ final class RoleCapabilities {
       canContributeExpenseDocuments: true,
     ),
     'Worker' => const RoleCapabilities._(
+      role: 'Worker',
       canManageAccess: false,
       canViewProjects: false,
       canManageProjects: false,
@@ -183,6 +208,7 @@ final class RoleCapabilities {
       canContributeExpenseDocuments: true,
     ),
     _ => const RoleCapabilities._(
+      role: null,
       canManageAccess: false,
       canViewProjects: false,
       canManageProjects: false,

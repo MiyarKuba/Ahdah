@@ -52,7 +52,6 @@ void main() {
 
   test('no unsupported financial command route is introduced', () {
     final endpoints = _read('lib/core/network/api_endpoints.dart');
-    expect(endpoints, isNot(contains('supplier-debts')));
     expect(endpoints, isNot(contains('settlements')));
     expect(endpoints, isNot(contains('claim-payment')));
     expect(endpoints, isNot(contains('original-status')));

@@ -62,7 +62,6 @@ void main() {
         '/receipts',
         '/settlements',
         '/advance-closures',
-        '/suppliers',
         '/claims',
       ]) {
         expect(endpointSource, isNot(contains(endpoint)));

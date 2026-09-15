@@ -52,6 +52,11 @@ public sealed record SupplierPaymentFundingSummary(
     Guid SupplierPaymentFundingSourceId, Guid FundingSourceId, string SourceType,
     decimal AllocatedAmount, DateTimeOffset CreatedAtUtc);
 
+public sealed record SupplierFundingSourceSummary(
+    Guid FundingSourceId, string SourceType, DateOnly SourceDate,
+    string CurrencyCode, decimal AvailableAmount, string Status,
+    IReadOnlyList<string> PaymentMethods);
+
 public sealed record SupplierPaymentSummary(
     Guid SupplierPaymentId, string PaymentNumber, Guid SupplierId, string SupplierName,
     DateOnly PaymentDate, decimal PaymentAmount, string CurrencyCode, string PaymentMethod,

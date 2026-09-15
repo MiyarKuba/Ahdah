@@ -35,6 +35,25 @@ abstract final class AppRoutes {
   static const expenseCategoryCreate = 'expenseCategoryCreate';
   static const reimbursements = 'reimbursements';
   static const reimbursementDetails = 'reimbursementDetails';
+  static const suppliers = 'suppliers';
+  static const supplierCreate = 'supplierCreate';
+  static const supplierDetails = 'supplierDetails';
+  static const supplierEdit = 'supplierEdit';
+  static const supplierPaymentAccounts = 'supplierPaymentAccounts';
+  static const supplierStatement = 'supplierStatement';
+  static const supplierInvoices = 'supplierInvoices';
+  static const supplierInvoiceCreate = 'supplierInvoiceCreate';
+  static const supplierInvoiceDetails = 'supplierInvoiceDetails';
+  static const supplierDebts = 'supplierDebts';
+  static const supplierDebtDetails = 'supplierDebtDetails';
+  static const supplierPayments = 'supplierPayments';
+  static const supplierPaymentCreate = 'supplierPaymentCreate';
+  static const supplierPaymentDetails = 'supplierPaymentDetails';
+  static const supplierCreditNotes = 'supplierCreditNotes';
+  static const supplierCreditCreate = 'supplierCreditCreate';
+  static const supplierCreditDetails = 'supplierCreditDetails';
+  static const supplierCreditAllocate = 'supplierCreditAllocate';
+  static const supplierRefunds = 'supplierRefunds';
   static const account = 'account';
   static const unavailable = 'unavailable';
 
@@ -59,6 +78,16 @@ abstract final class AppRoutes {
   static const expenseCategoriesPath = '/expense-categories';
   static const expenseCategoryCreatePath = '/expense-categories/new';
   static const reimbursementsPath = '/reimbursements';
+  static const suppliersPath = '/suppliers';
+  static const supplierCreatePath = '/suppliers/new';
+  static const supplierInvoicesPath = '/supplier-invoices';
+  static const supplierInvoiceCreatePath = '/supplier-invoices/new';
+  static const supplierDebtsPath = '/supplier-debts';
+  static const supplierPaymentsPath = '/supplier-payments';
+  static const supplierPaymentCreatePath = '/supplier-payments/new';
+  static const supplierCreditNotesPath = '/supplier-credit-notes';
+  static const supplierCreditCreatePath = '/supplier-credit-notes/new';
+  static const supplierRefundsPath = '/supplier-refunds';
   static const accountPath = '/account';
   static const unavailablePath = '/unavailable';
 }

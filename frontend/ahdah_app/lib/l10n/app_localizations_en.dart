@@ -925,7 +925,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invalidMoney =>
-      'Enter a positive amount with up to 16 whole digits and 2 decimal places.';
+      'Enter a positive amount with no more than two decimal places.';
 
   @override
   String get fundingTotalMismatch =>
@@ -1454,4 +1454,482 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyOutcomeSuccess => 'Succeeded';
+
+  @override
+  String get navSuppliers => 'Suppliers';
+
+  @override
+  String get suppliers => 'Suppliers';
+
+  @override
+  String get supplierDetails => 'Supplier details';
+
+  @override
+  String get addSupplier => 'Add supplier';
+
+  @override
+  String get editSupplier => 'Edit supplier';
+
+  @override
+  String get deactivateSupplier => 'Deactivate supplier';
+
+  @override
+  String get deactivateSupplierTitle => 'Deactivate this supplier?';
+
+  @override
+  String get deactivateSupplierBody =>
+      'New financial activity will be blocked, while all supplier history is preserved.';
+
+  @override
+  String get supplierHistoryPreserved =>
+      'Supplier history is preserved after deactivation.';
+
+  @override
+  String get supplierName => 'Supplier name';
+
+  @override
+  String get supplierCode => 'Supplier code';
+
+  @override
+  String get supplierType => 'Supplier type';
+
+  @override
+  String get contactPerson => 'Contact person';
+
+  @override
+  String get secondaryPhoneNumber => 'Secondary phone number';
+
+  @override
+  String get emailAddress => 'Email address';
+
+  @override
+  String get city => 'City';
+
+  @override
+  String get defaultCurrency => 'Default currency';
+
+  @override
+  String get transactionMode => 'Transaction mode';
+
+  @override
+  String get paymentTermsDays => 'Payment terms (days)';
+
+  @override
+  String get creditLimit => 'Credit limit';
+
+  @override
+  String get preferredPaymentMethod => 'Preferred payment method';
+
+  @override
+  String get commercialRegistration => 'Commercial registration number';
+
+  @override
+  String get taxRegistration => 'Tax registration number';
+
+  @override
+  String get searchSuppliers => 'Search supplier name, code, contact, or phone';
+
+  @override
+  String get noSuppliers => 'No suppliers match these filters.';
+
+  @override
+  String get supplierCreated => 'The supplier was created.';
+
+  @override
+  String get supplierUpdated => 'The supplier was updated.';
+
+  @override
+  String get supplierDeactivated =>
+      'The supplier was deactivated and its history was preserved.';
+
+  @override
+  String get paymentAccounts => 'Payment accounts';
+
+  @override
+  String get addPaymentAccount => 'Add payment account';
+
+  @override
+  String get accountType => 'Account type';
+
+  @override
+  String get accountLabel => 'Account label';
+
+  @override
+  String get accountHolder => 'Account holder';
+
+  @override
+  String get bankBranch => 'Bank branch';
+
+  @override
+  String get accountNumber => 'Account number';
+
+  @override
+  String get iban => 'IBAN';
+
+  @override
+  String get walletProvider => 'Wallet provider';
+
+  @override
+  String get walletNumber => 'Wallet number';
+
+  @override
+  String get maskedAccount => 'Masked account';
+
+  @override
+  String get pendingVerification => 'Pending verification';
+
+  @override
+  String get noPaymentAccounts => 'No payment-account metadata is available.';
+
+  @override
+  String get supplierInvoices => 'Supplier invoices';
+
+  @override
+  String get supplierDebts => 'Supplier debts';
+
+  @override
+  String get createSupplierInvoice => 'Create supplier invoice';
+
+  @override
+  String get invoiceDate => 'Invoice date';
+
+  @override
+  String get invoiceDescription => 'Invoice description';
+
+  @override
+  String get expenseCategory => 'Expense category';
+
+  @override
+  String get invoiceItemsOptional => 'Invoice items (optional)';
+
+  @override
+  String get addInvoiceItem => 'Add invoice item';
+
+  @override
+  String get itemName => 'Item name';
+
+  @override
+  String get itemQuantity => 'Quantity';
+
+  @override
+  String get unitCode => 'Unit';
+
+  @override
+  String get unitPrice => 'Unit price';
+
+  @override
+  String get discountAmount => 'Discount';
+
+  @override
+  String get taxAmount => 'Tax';
+
+  @override
+  String get duplicateInvoiceWarning =>
+      'Invoice references are not uniquely enforced. Verify possible duplicates before submitting.';
+
+  @override
+  String get noSupplierInvoices =>
+      'No supplier invoices or debts are available.';
+
+  @override
+  String get amountPaid => 'Amount paid';
+
+  @override
+  String get debtNumber => 'Debt number';
+
+  @override
+  String get expenseStatus => 'Expense status';
+
+  @override
+  String get debtStatus => 'Debt status';
+
+  @override
+  String get partialPayment => 'Partial payment';
+
+  @override
+  String get fullPayment => 'Full payment';
+
+  @override
+  String get supplierPayments => 'Supplier payments';
+
+  @override
+  String get recordPayment => 'Record payment';
+
+  @override
+  String get paymentDate => 'Payment date';
+
+  @override
+  String get paymentAmount => 'Payment amount';
+
+  @override
+  String get paymentReference => 'Payment reference';
+
+  @override
+  String get payerBankName => 'Payer bank name';
+
+  @override
+  String get proofPathOptional => 'Existing proof path (optional)';
+
+  @override
+  String get paymentFeesUnsupported =>
+      'Payment fees are not supported in this phase.';
+
+  @override
+  String get advanceFundingUnavailable =>
+      'Advance-balance supplier funding is unavailable.';
+
+  @override
+  String get finalSettlementUnavailable =>
+      'Final settlement is unavailable in this phase.';
+
+  @override
+  String get debtAllocations => 'Debt allocations';
+
+  @override
+  String get fundingAllocations => 'Funding allocations';
+
+  @override
+  String get allocationAmount => 'Allocation amount';
+
+  @override
+  String get managerPersonalContribution => 'Manager personal contribution';
+
+  @override
+  String get companyCashbox => 'Company cashbox';
+
+  @override
+  String get fundingReserved => 'Funding reserved';
+
+  @override
+  String get fundingConsumed => 'Funding consumed';
+
+  @override
+  String get fundingReleased => 'Funding released';
+
+  @override
+  String get allocationTotalsMismatch =>
+      'Debt and funding allocations must each total the payment exactly.';
+
+  @override
+  String get noSupplierPayments => 'No supplier payments are available.';
+
+  @override
+  String get paymentPendingApproval => 'Payment pending approval';
+
+  @override
+  String get confirmPayment => 'Confirm payment';
+
+  @override
+  String get rejectPayment => 'Reject payment';
+
+  @override
+  String get confirmPaymentBody =>
+      'Confirm only after verifying the payment, debt allocations, and funding allocations.';
+
+  @override
+  String get rejectPaymentBody =>
+      'Rejection preserves the record and releases reserved funding.';
+
+  @override
+  String get supplierCreditNotes => 'Supplier credit notes';
+
+  @override
+  String get createCreditNote => 'Create credit note';
+
+  @override
+  String get creditNoteDate => 'Credit-note date';
+
+  @override
+  String get creditReason => 'Credit reason';
+
+  @override
+  String get availableCredit => 'Available credit';
+
+  @override
+  String get appliedCredit => 'Applied credit';
+
+  @override
+  String get approveCreditNote => 'Approve credit note';
+
+  @override
+  String get applyCredit => 'Apply credit';
+
+  @override
+  String get creditAllocationExceeded =>
+      'Allocations must be unique and cannot exceed available credit or eligible debt.';
+
+  @override
+  String get noCreditNotes => 'No supplier credit notes are available.';
+
+  @override
+  String get supplierRefunds => 'Supplier refunds';
+
+  @override
+  String get refundHistoryOnly =>
+      'Refund history is read-only. Refund creation and verification are not available.';
+
+  @override
+  String get noSupplierRefunds => 'No supplier refund history is available.';
+
+  @override
+  String get supplierStatement => 'Supplier statement';
+
+  @override
+  String get differentCurrenciesSeparate =>
+      'Different currencies are shown separately and are never totaled together.';
+
+  @override
+  String get noStatementEntries => 'No statement entries are available.';
+
+  @override
+  String get operationOutcomeUncertain =>
+      'The operation outcome is uncertain. Do not submit a different operation; retry the same operation with the preserved key.';
+
+  @override
+  String get selectSupplier => 'Select a supplier';
+
+  @override
+  String get selectDebt => 'Select a debt';
+
+  @override
+  String get selectFundingSource => 'Select a funding source';
+
+  @override
+  String get selectCategory => 'Select a supplier-enabled expense category';
+
+  @override
+  String get invalidQuantity =>
+      'Enter a positive quantity with no more than three decimal places.';
+
+  @override
+  String get createAction => 'Create';
+
+  @override
+  String get applyAction => 'Apply';
+
+  @override
+  String get viewStatement => 'View statement';
+
+  @override
+  String get viewRefunds => 'View refund history';
+
+  @override
+  String get viewInvoices => 'View invoices';
+
+  @override
+  String get viewPayments => 'View payments';
+
+  @override
+  String get viewCreditNotes => 'View credit notes';
+
+  @override
+  String get supplierTypeGeneral => 'General supplier';
+
+  @override
+  String get supplierTypeMaterials => 'Materials supplier';
+
+  @override
+  String get supplierTypeEquipment => 'Equipment supplier';
+
+  @override
+  String get supplierTypeEquipmentRental => 'Equipment rental';
+
+  @override
+  String get supplierTypeFuel => 'Fuel supplier';
+
+  @override
+  String get supplierTypeSubcontractor => 'Subcontractor';
+
+  @override
+  String get supplierTypeTransport => 'Transport provider';
+
+  @override
+  String get supplierTypeMaintenance => 'Maintenance provider';
+
+  @override
+  String get supplierTypeService => 'Service provider';
+
+  @override
+  String get transactionCashOnly => 'Cash only';
+
+  @override
+  String get transactionCreditOnly => 'Credit only';
+
+  @override
+  String get transactionCashAndCredit => 'Cash and credit';
+
+  @override
+  String get accountTypeBank => 'Bank account';
+
+  @override
+  String get accountTypeWallet => 'Mobile wallet';
+
+  @override
+  String get accountTypeCashCollection => 'Cash collection';
+
+  @override
+  String get creditReasonReturnedGoods => 'Returned goods';
+
+  @override
+  String get creditReasonDamagedGoods => 'Damaged goods';
+
+  @override
+  String get creditReasonPricingCorrection => 'Pricing correction';
+
+  @override
+  String get creditReasonOverbilling => 'Overbilling';
+
+  @override
+  String get creditReasonAdditionalDiscount => 'Additional discount';
+
+  @override
+  String get creditReasonServiceCompensation => 'Service compensation';
+
+  @override
+  String get unitPiece => 'Piece';
+
+  @override
+  String get unitPackage => 'Package';
+
+  @override
+  String get unitBox => 'Box';
+
+  @override
+  String get unitBag => 'Bag';
+
+  @override
+  String get unitKilogram => 'Kilogram';
+
+  @override
+  String get unitTon => 'Ton';
+
+  @override
+  String get unitMeter => 'Meter';
+
+  @override
+  String get unitSquareMeter => 'Square meter';
+
+  @override
+  String get unitCubicMeter => 'Cubic meter';
+
+  @override
+  String get unitLiter => 'Liter';
+
+  @override
+  String get unitHour => 'Hour';
+
+  @override
+  String get unitDay => 'Day';
+
+  @override
+  String get unitTrip => 'Trip';
+
+  @override
+  String get unitService => 'Service';
+
+  @override
+  String get unitLumpSum => 'Lump sum';
+
+  @override
+  String get loadMore => 'Load more';
 }

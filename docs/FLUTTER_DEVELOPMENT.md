@@ -145,3 +145,14 @@ C:\dev\flutter\bin\flutter.bat build apk --debug --dart-define=API_BASE_URL=http
 ```
 
 Automated Flutter tests use fake repositories/token stores and a controlled Dio adapter. They do not call the real API or database. iOS compilation/signing still requires macOS and Xcode. This phase made no PostgreSQL change, migration, or generated EF modification.
+## Suppliers and payables
+
+Supplier routes are registered beneath the authenticated shell and guarded through `RoleCapabilities`. Keep new actions consistent with the backend matrix: Manager manages supplier metadata; Deputy is read-only except invoice creation; Accountant records financial operations and accounts; Supervisor has assigned-project reads only; Worker and unknown roles have no access. Do not infer permission from a visible button—routes and the API must also authorize it.
+
+Use the focused paged controllers for supplier, invoice, payment, credit-note, and refund collections. Preserve loaded rows if load-more fails, deduplicate by stable server ID, and reset to page 1 when a filter changes. Supplier accounts and statements use their dedicated providers. Never calculate an authoritative payable from client-side history or total different currencies.
+
+Use `DecimalQuantity` for `NUMERIC(18,3)` quantities and the existing exact minor-unit helpers for `NUMERIC(18,2)` money. Do not use `double` for validation, totals, allocation equality, or financial request serialization. Unknown backend enum values must render the localized fallback instead of crashing.
+
+All supplier financial and lifecycle writes use `FinancialCommandController`. A network error or timeout is uncertain: the UI may explicitly retry the same payload/key, or the user may edit/cancel and start a new operation. Never add automatic write retries or persist/display/log an idempotency key. Tests must use fake repositories or controlled Dio adapters and must not call the live API or database.
+
+Refund writes, account verification/default changes, reversal/correction, binary proof upload, advance-balance supplier funding, and final settlement are not supported. Do not add UI placeholders that imply these workflows exist.

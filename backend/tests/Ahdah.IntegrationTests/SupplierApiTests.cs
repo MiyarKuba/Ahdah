@@ -75,6 +75,19 @@ public sealed class SupplierApiTests(IdentityApiFactory factory) : IClassFixture
         Assert.Equal(expected, response.StatusCode);
     }
 
+    [Theory]
+    [InlineData("Manager", HttpStatusCode.OK)]
+    [InlineData("Accountant", HttpStatusCode.OK)]
+    [InlineData("Deputy", HttpStatusCode.Forbidden)]
+    [InlineData("Supervisor", HttpStatusCode.Forbidden)]
+    public async Task Payment_funding_source_selection_matches_payment_recorder_policy(
+        string role, HttpStatusCode expected)
+    {
+        using var client = Authenticated(role);
+        Assert.Equal(expected,
+            (await client.GetAsync("/api/v1/supplier-payments/funding-sources")).StatusCode);
+    }
+
     [Fact]
     public async Task Financial_commands_require_idempotency_key()
     {
@@ -168,6 +181,8 @@ internal sealed class FakeSupplierService : ISupplierService
     public Task<AccessResult<SupplierInvoiceDetails>> CreateInvoiceAsync(CreateSupplierInvoiceRequest request, string? key, CancellationToken token) => GetInvoiceAsync(DebtId, token);
     public Task<AccessResult<PagedResult<SupplierPaymentSummary>>> ListPaymentsAsync(SupplierPaymentQuery query, CancellationToken token) =>
         Result(new PagedResult<SupplierPaymentSummary>([Payment()], query.Page, query.PageSize, 1, 1));
+    public Task<AccessResult<PagedResult<SupplierFundingSourceSummary>>> ListFundingSourcesAsync(SupplierFundingSourceQuery query, CancellationToken token) =>
+        Result(new PagedResult<SupplierFundingSourceSummary>([], query.Page, query.PageSize, 0, 0));
     public Task<AccessResult<SupplierPaymentDetails>> GetPaymentAsync(Guid id, CancellationToken token) => Result(PaymentDetails());
     public Task<AccessResult<SupplierPaymentDetails>> CreatePaymentAsync(CreateSupplierPaymentRequest request, string? key, CancellationToken token) => Result(PaymentDetails());
     public Task<AccessResult<SupplierPaymentDetails>> ConfirmPaymentAsync(Guid id, ReviewSupplierPaymentRequest request, string? key, CancellationToken token) => Result(PaymentDetails());

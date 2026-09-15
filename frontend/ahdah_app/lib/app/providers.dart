@@ -19,6 +19,8 @@ import '../features/advances/domain/advance_repository.dart';
 import '../features/advances/domain/financial_operation_key.dart';
 import '../features/expenses/data/api_expense_repository.dart';
 import '../features/expenses/domain/expense_repository.dart';
+import '../features/suppliers/data/api_supplier_repository.dart';
+import '../features/suppliers/domain/supplier_repository.dart';
 
 final appConfigProvider = Provider<AppConfig>(
   (ref) => throw StateError('AppConfig must be supplied during bootstrap.'),
@@ -76,6 +78,10 @@ final advanceRepositoryProvider = Provider<AdvanceRepository>(
 
 final expenseRepositoryProvider = Provider<ExpenseRepository>(
   (ref) => ApiExpenseRepository(ref.watch(apiClientProvider)),
+);
+
+final supplierRepositoryProvider = Provider<SupplierRepository>(
+  (ref) => ApiSupplierRepository(ref.watch(apiClientProvider)),
 );
 
 final financialOperationKeyFactoryProvider =

@@ -2,7 +2,7 @@
 
 Ahdah is a multi-tenant platform for financial custody and construction operations. It is intended to help companies coordinate projects, custody balances, transfers, expenses, supplier obligations, worker claims, documents, audit trails, notifications, and scheduled reporting.
 
-This repository is currently in **Suppliers and Supplier Debt Foundation — Backend Phase 1**. The backend now exposes tenant-safe supplier directory, masked payment accounts, supplier-credit invoice/debt, line-item, partial/full payment, funding attribution, credit-note, refund-history, balance, and statement APIs. Supplier refund writes, account verification, payment/credit reversal, advance-balance supplier funding, binary upload, Flutter supplier UI, and final settlement remain deferred.
+This repository is currently in **Flutter Suppliers and Payables**. Android, iOS, and Web now share a role-guarded supplier directory and accounts-payable client for supplier-credit invoices/debts, supplier payments, credit notes, refund history, and currency-separated statements. Supplier refund writes, account verification, payment/credit reversal, advance-balance supplier funding, binary upload, and final settlement remain deferred.
 
 ## Technology stack
 
@@ -116,7 +116,7 @@ Expenses Foundation — Backend Phase 1 additionally exposes:
 
 Expense creation supports exact `AdvanceBalance` and `PersonalFunds` payment modes. It uses one optional direct project because the schema has no expense project-split table. Supplier credit, original-paper custody, binary upload, claim payment, and final settlement are intentionally not published. Financial and lifecycle commands require `Idempotency-Key`. See [docs/EXPENSES.md](docs/EXPENSES.md).
 
-Suppliers and Supplier Debt Foundation — Backend Phase 1 additionally exposes tenant/role-filtered supplier directory and statement reads, masked supplier payment accounts, supplier-credit invoices backed by `expenses` plus `supplier_debts`, optional `expense_items`, partial/full supplier payments with debt and funding allocations, payment confirmation/rejection, read-only refund history, and approved credit-note allocation. Financial commands reuse `Idempotency-Key`, explicit transactions, row locks, computed debt balances, immutable ledgers, and concurrency tokens. There is no standalone supplier-invoice table and no supplier-payment relationship to advance balances. See [docs/SUPPLIERS.md](docs/SUPPLIERS.md).
+Suppliers and Supplier Debt Foundation — Backend Phase 1 additionally exposes tenant/role-filtered supplier directory and statement reads, masked supplier payment accounts, supplier-credit invoices backed by `expenses` plus `supplier_debts`, optional `expense_items`, partial/full supplier payments with debt and funding allocations, payment confirmation/rejection, read-only refund history, and approved credit-note allocation. Financial commands reuse `Idempotency-Key`, explicit transactions, row locks, computed debt balances, immutable ledgers, and concurrency tokens. A role-safe read-only `/api/v1/supplier-payments/funding-sources` selector exposes only sources the authenticated payment recorder may use. There is no standalone supplier-invoice table and no supplier-payment relationship to advance balances. See [docs/SUPPLIERS.md](docs/SUPPLIERS.md).
 
 Manager and Deputy see all company projects; Accountant sees basic project structure without contract value; Supervisor sees only actively assigned projects; Worker sees no projects because the schema has no worker/project relationship. Project-member results contain active supervisor assignments only. Manager alone receives contract value and may set it during creation. Later contract-value changes are deferred to the existing `project_contract_changes` approval/history model, and `Completed`, `FinanciallyClosed`, and `Cancelled` transitions remain deferred.
 
@@ -173,6 +173,18 @@ Creation offers only `AdvanceBalance` and `PersonalFunds`. Project selection fol
 Expense creation, approval, and rejection reuse the existing 32-byte ephemeral financial operation key behavior. Timeout/network outcomes remain uncertain and allow only explicit same-payload retry with the same in-memory key. No automatic write retry, persistence, display, or logging of keys exists. Arabic remains default RTL and English remains LTR.
 
 This phase passes `flutter analyze`, 137 Flutter tests, a Web release build, and an Android debug APK build. The Android application was not launched. iOS build/signing verification remains pending macOS and Xcode.
+
+## Flutter suppliers and payables
+
+The authenticated shell adds `/suppliers` plus guarded supplier detail/edit/account/statement routes and separate invoice, debt, payment, credit-note, and refund routes. Manager has full supplier administration; Deputy has read access and invoice creation; Accountant has financial reads and invoice/payment/credit/account creation; Supervisor receives assigned-project supplier/debt visibility only; Worker and unknown roles receive no supplier destination. Router guards and page actions share centralized `RoleCapabilities`, while backend authorization remains authoritative.
+
+Lists use API pagination and stable-ID deduplication. Payment creation supports exact multi-debt and multi-funding allocation, verified bank/wallet account selection, and proof metadata without claiming binary upload. Invoice quantity uses exact three-decimal arithmetic and monetary requests use exact two-decimal arithmetic; neither is converted through binary floating point. Statements and balances remain separated by currency.
+
+Invoice, payment, confirmation/rejection, credit-note creation/approval/allocation, and supplier account commands use ephemeral cryptographically secure `Idempotency-Key` values. Writes are never automatically retried. Ambiguous network/timeouts expose only an explicit same-payload retry with the same in-memory key; changed payloads receive a new key. Refunds are read-only, and the UI does not invent settlement, reversal, verification, or advance-balance funding workflows.
+
+Automated tests use fakes and controlled network adapters and do not invoke live financial endpoints or PostgreSQL. Web and Android build commands remain below; iOS source compatibility is maintained, while compilation and signing require macOS/Xcode.
+
+This phase passes strict Dart formatting, `flutter analyze`, 189 Flutter tests, a Web release build (including the Wasm compatibility dry run), and an Android debug APK build. The Android application was not launched.
 
 ## Run backend tests
 

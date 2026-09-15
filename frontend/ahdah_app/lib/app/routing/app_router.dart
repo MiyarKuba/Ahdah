@@ -40,6 +40,8 @@ import '../../features/expenses/presentation/history/expense_history_page.dart';
 import '../../features/expenses/presentation/review/expense_review_page.dart';
 import '../../features/expenses/presentation/categories/expense_categories_page.dart';
 import '../../features/expenses/presentation/reimbursements/reimbursements_page.dart';
+import '../../features/suppliers/presentation/supplier_forms.dart';
+import '../../features/suppliers/presentation/supplier_pages.dart';
 import 'app_routes.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -79,6 +81,39 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isExpenseCategoryCreatePath =
           location == AppRoutes.expenseCategoryCreatePath;
       final isExpenseReviewPath = location.endsWith('/review');
+      final isSupplierDirectoryPath =
+          location == AppRoutes.suppliersPath ||
+          location.startsWith('${AppRoutes.suppliersPath}/');
+      final isSupplierInvoicePath =
+          location == AppRoutes.supplierInvoicesPath ||
+          location.startsWith('${AppRoutes.supplierInvoicesPath}/') ||
+          location == AppRoutes.supplierDebtsPath ||
+          location.startsWith('${AppRoutes.supplierDebtsPath}/');
+      final isSupplierPaymentPath =
+          location == AppRoutes.supplierPaymentsPath ||
+          location.startsWith('${AppRoutes.supplierPaymentsPath}/');
+      final isSupplierCreditPath =
+          location == AppRoutes.supplierCreditNotesPath ||
+          location.startsWith('${AppRoutes.supplierCreditNotesPath}/');
+      final isSupplierRefundPath = location == AppRoutes.supplierRefundsPath;
+      final isSupplierFeaturePath =
+          isSupplierDirectoryPath ||
+          isSupplierInvoicePath ||
+          isSupplierPaymentPath ||
+          isSupplierCreditPath ||
+          isSupplierRefundPath;
+      final isSupplierManagementPath =
+          location == AppRoutes.supplierCreatePath ||
+          location.endsWith('/edit');
+      final isSupplierAccountPath = location.endsWith('/payment-accounts');
+      final isSupplierStatementPath = location.endsWith('/statement');
+      final isSupplierInvoiceCreatePath =
+          location == AppRoutes.supplierInvoiceCreatePath;
+      final isSupplierPaymentCreatePath =
+          location == AppRoutes.supplierPaymentCreatePath;
+      final isSupplierCreditCommandPath =
+          location == AppRoutes.supplierCreditCreatePath ||
+          location.endsWith('/allocate');
       final isAdvanceDistributionPath = location.endsWith('/distribute');
       final isAdvanceReturnPath = location.endsWith('/return');
       final isAuthorizedBalancePath = location.startsWith(
@@ -96,7 +131,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           isProjectPath ||
           isCompanyDirectoryPath ||
           isAdvancePath ||
-          isExpenseFeaturePath;
+          isExpenseFeaturePath ||
+          isSupplierFeaturePath;
       final isUnavailable = location == AppRoutes.unavailablePath;
       final isOnboarding = {
         AppRoutes.welcomePath,
@@ -130,7 +166,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               isExpenseCategoryCreatePath &&
                   !capabilities.canManageExpenseCategories ||
               isExpenseReviewPath && !capabilities.canReviewExpenses ||
-              isReimbursementPath && !capabilities.canViewReimbursements) {
+              isReimbursementPath && !capabilities.canViewReimbursements ||
+              isSupplierFeaturePath && !capabilities.canViewSuppliers ||
+              isSupplierManagementPath && !capabilities.canManageSuppliers ||
+              isSupplierAccountPath &&
+                  !capabilities.canViewSupplierFinancials ||
+              isSupplierStatementPath &&
+                  !capabilities.canViewSupplierStatement ||
+              isSupplierInvoiceCreatePath &&
+                  !capabilities.canCreateSupplierInvoice ||
+              isSupplierPaymentPath &&
+                  !capabilities.canViewSupplierFinancials ||
+              isSupplierPaymentCreatePath &&
+                  !capabilities.canRecordSupplierPayment ||
+              isSupplierCreditPath && !capabilities.canViewSupplierFinancials ||
+              isSupplierCreditCommandPath &&
+                  !capabilities.canManageSupplierCredits ||
+              isSupplierRefundPath && !capabilities.canViewSupplierRefunds) {
             return AppRoutes.homePath;
           }
           return isOnboarding || isSplash || isUnavailable
@@ -333,6 +385,120 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.reimbursementsPath,
             name: AppRoutes.reimbursements,
             builder: (context, state) => const ReimbursementsPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.suppliersPath,
+            name: AppRoutes.suppliers,
+            builder: (context, state) => const SuppliersPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.supplierCreatePath,
+            name: AppRoutes.supplierCreate,
+            builder: (context, state) => const SupplierFormPage(),
+          ),
+          GoRoute(
+            path: '/suppliers/:supplierId',
+            name: AppRoutes.supplierDetails,
+            builder: (context, state) => SupplierDetailsPage(
+              supplierId: state.pathParameters['supplierId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/suppliers/:supplierId/edit',
+            name: AppRoutes.supplierEdit,
+            builder: (context, state) => SupplierFormPage(
+              supplierId: state.pathParameters['supplierId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/suppliers/:supplierId/payment-accounts',
+            name: AppRoutes.supplierPaymentAccounts,
+            builder: (context, state) => SupplierPaymentAccountsPage(
+              supplierId: state.pathParameters['supplierId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/suppliers/:supplierId/statement',
+            name: AppRoutes.supplierStatement,
+            builder: (context, state) => SupplierStatementPage(
+              supplierId: state.pathParameters['supplierId']!,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.supplierInvoicesPath,
+            name: AppRoutes.supplierInvoices,
+            builder: (context, state) => const SupplierInvoicesPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.supplierInvoiceCreatePath,
+            name: AppRoutes.supplierInvoiceCreate,
+            builder: (context, state) => const SupplierInvoiceCreatePage(),
+          ),
+          GoRoute(
+            path: '/supplier-invoices/:invoiceId',
+            name: AppRoutes.supplierInvoiceDetails,
+            builder: (context, state) => SupplierInvoiceDetailsPage(
+              debtId: state.pathParameters['invoiceId']!,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.supplierDebtsPath,
+            name: AppRoutes.supplierDebts,
+            builder: (context, state) =>
+                const SupplierInvoicesPage(debtsOnly: true),
+          ),
+          GoRoute(
+            path: '/supplier-debts/:debtId',
+            name: AppRoutes.supplierDebtDetails,
+            builder: (context, state) => SupplierInvoiceDetailsPage(
+              debtId: state.pathParameters['debtId']!,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.supplierPaymentsPath,
+            name: AppRoutes.supplierPayments,
+            builder: (context, state) => const SupplierPaymentsPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.supplierPaymentCreatePath,
+            name: AppRoutes.supplierPaymentCreate,
+            builder: (context, state) => const SupplierPaymentCreatePage(),
+          ),
+          GoRoute(
+            path: '/supplier-payments/:paymentId',
+            name: AppRoutes.supplierPaymentDetails,
+            builder: (context, state) => SupplierPaymentDetailsPage(
+              paymentId: state.pathParameters['paymentId']!,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.supplierCreditNotesPath,
+            name: AppRoutes.supplierCreditNotes,
+            builder: (context, state) => const SupplierCreditNotesPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.supplierCreditCreatePath,
+            name: AppRoutes.supplierCreditCreate,
+            builder: (context, state) => const SupplierCreditCreatePage(),
+          ),
+          GoRoute(
+            path: '/supplier-credit-notes/:creditNoteId',
+            name: AppRoutes.supplierCreditDetails,
+            builder: (context, state) => SupplierCreditNoteDetailsPage(
+              creditNoteId: state.pathParameters['creditNoteId']!,
+            ),
+          ),
+          GoRoute(
+            path: '/supplier-credit-notes/:creditNoteId/allocate',
+            name: AppRoutes.supplierCreditAllocate,
+            builder: (context, state) => SupplierCreditAllocatePage(
+              creditNoteId: state.pathParameters['creditNoteId']!,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.supplierRefundsPath,
+            name: AppRoutes.supplierRefunds,
+            builder: (context, state) => const SupplierRefundsPage(),
           ),
           GoRoute(
             path: '/reimbursements/:reimbursementId',

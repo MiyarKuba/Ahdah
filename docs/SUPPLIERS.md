@@ -125,4 +125,18 @@ Multi-table commands use explicit PostgreSQL transactions and tenant-filtered `F
 - Advance-balance payment funding and final advance settlement.
 - Binary upload, OCR, notifications, exchange rates, journal export, bank/gateway integration, and invoice similarity matching.
 
-No PostgreSQL object, generated Database-First file, migration, Flutter source, or final settlement workflow changed.
+No PostgreSQL object, generated Database-First file, migration, or final settlement workflow changed during the backend foundation.
+
+## Flutter Suppliers and Payables phase
+
+The shared Flutter client now consumes these contracts on Android, iOS, and Web. Handwritten immutable DTO mappings preserve backend enum strings, render unknown future values safely, and keep money as validated two-decimal text. Invoice item quantities use three-decimal `BigInt` arithmetic and banker’s rounding to match the backend; request JSON emits validated numeric tokens without converting through `double`.
+
+Authenticated routes cover supplier list/detail/create/edit/deactivate, masked payment accounts, supplier-credit invoice and debt list/detail/create, supplier payment list/detail/create/review, credit-note list/detail/create/approve/allocate, read-only refunds, and supplier statements. Centralized role capabilities mirror the API matrix. Supervisor screens rely on the API’s assigned-project predicates and never broaden visibility locally.
+
+The existing Manager-only advance funding selector could not safely support Accountant payment creation. The smallest backend correction adds `GET /api/v1/supplier-payments/funding-sources`, authorized for supplier-payment recorders. Its query is tenant-scoped, returns only available or partially used sources with positive availability, accepts optional currency/payment-method filters, and restricts Manager contributions to their authenticated Manager owner. It does not expose advance balances or create a new financial rule.
+
+Supplier payment creation requires one or more unique debt allocations and funding allocations whose exact integer-minor-unit totals equal the payment amount. Bank transfer and mobile wallet flows select a verified masked supplier account. The client treats displayed availability as an early usability bound only; the API revalidates and locks authoritative rows.
+
+Financial commands generate a 32-byte URL-safe key with `Random.secure`, retain it only in the auto-disposed operation controller, and never display, log, or persist it. There is no automatic write retry. Only an ambiguous timeout/network outcome offers an explicit retry of the identical payload with the identical key; editing the payload creates a new operation and key.
+
+Refund history remains read-only. Account verification/default management, supplier reactivation, payment or credit reversal/correction, supplier refund creation, binary proof upload, advance-balance funding, settlement, and closure remain intentionally unavailable.
