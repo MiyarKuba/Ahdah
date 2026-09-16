@@ -2,7 +2,7 @@
 
 Ahdah is a multi-tenant platform for financial custody and construction operations. It is intended to help companies coordinate projects, custody balances, transfers, expenses, supplier obligations, worker claims, documents, audit trails, notifications, and scheduled reporting.
 
-This repository is currently in **Flutter Project Settlement Readiness**. Project Details opens the read-only `/projects/:projectId/settlement` screen, consuming the completed backend foundation with Arabic/English labels, exact currency-separated amounts, role-limited findings, and explicit evaluation gaps. Financial finalization and closure writes remain deferred.
+This repository is currently in **Settlement Policy Design — awaiting product-owner decisions**. The [decision document](docs/SETTLEMENT_POLICY_DECISIONS.md) compares advance-attribution models and proposes settlement, closure, authorization, and correction policies; none is approved or implemented by that document. The delivered Flutter Project Details screen still opens the read-only `/projects/:projectId/settlement` route with Arabic/English labels, exact currency-separated amounts, role-limited findings, and explicit evaluation gaps. Financial finalization and closure writes remain deferred.
 
 `GET /api/v1/projects/{projectId}/settlement` returns blocker references, category totals, evaluation gaps and distinct settlement/closure impediments. `canSettle` and `canClose` are nullable: false means blocked; null means indeterminate. Zero known blockers does not establish readiness because advance/project attribution and project finalization policy are undefined. See [docs/SETTLEMENT.md](docs/SETTLEMENT.md) for the authoritative contract and limitations.
 
