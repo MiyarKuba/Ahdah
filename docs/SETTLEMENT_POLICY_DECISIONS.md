@@ -4,6 +4,8 @@
 
 Sections 15–16 control where the original recommendations differ from the owner's instructions. Technical mechanisms, optional alternatives and tenant-specific configuration elsewhere remain design inputs; they are not additional approved business rules merely because the policy baseline was accepted.
 
+**Detailed design follow-up (2026-09-16):** [SETTLEMENT_SCHEMA_CUTOVER_DESIGN.md](SETTLEMENT_SCHEMA_CUTOVER_DESIGN.md) verifies the deployed PostgreSQL catalog read-only and specifies proposed custody, financial controls, certification, reopening, evidence, writer gating and legacy cutover. Its 26 new tables and five existing-table alterations are proposals awaiting separate design approval; no DDL or application behavior changed. The earlier no-live-catalog statements below describe this original policy review, not the subsequent catalog-design milestone. D01–D16 remain unchanged.
+
 Review date: 2026-09-16. Baseline: `eb5fbadb6387557dc87cbba6b114c3d3374f4d82`. Scope: project advance attribution, settlement, financial closure, and correction. This is an operational financial-control design, not a claim of compliance with a particular accounting standard or jurisdiction.
 
 **Reading guide:** start with the executive summary, then use sections 15–16 for the approved decisions. Sections 2–14 contain the evidence, alternatives and consequences; section 17 turns approved choices into implementation gates.

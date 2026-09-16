@@ -1,63 +1,47 @@
 # Project status
 
-## Project
-
-Ahdah — عُهدة
-
 ## Current phase
 
-Settlement Policy v1 Approved — detailed schema/cutover design and implementation pending
+**Settlement Database-First schema and cutover design complete — awaiting design approval.** Approved D01–D16 Policy v1 remains unchanged. Schema execution and application implementation remain pending; financial closure stays disabled.
 
-## Date, workspace, and branch
+## Date, workspace and branch
 
 - Date: `2026-09-16`.
-- Workspace: `C:\dev\Ahdah`.
-- Branch: `docs/settlement-policy-decisions`.
-- Baseline: `eb5fbadb6387557dc87cbba6b114c3d3374f4d82` (`feat: add Flutter project settlement readiness`).
-- Documentation branch created directly from the verified baseline. Existing history and main preserved.
-- Pre-existing `frontend/ahdah_app/devtools_options.yaml` remains untouched and untracked.
+- Workspace: `C:/dev/Ahdah`.
+- Branch: `design/settlement-schema-cutover`, created from `f962d6119281906b5144b80fe1ffdac7e4525d9e` on `docs/settlement-policy-decisions`.
+- Existing history preserved. No merge or PR.
+- Pre-existing `frontend/ahdah_app/devtools_options.yaml` remains unread, untouched and untracked.
 
 ## Delivered scope
 
-- [docs/SETTLEMENT_POLICY_DECISIONS.md](docs/SETTLEMENT_POLICY_DECISIONS.md): 17-section product/accounting/schema/authorization/lifecycle review, source evidence register, five advance-attribution options, concrete shared-custody example, transfer/return comparisons, eligibility predicates, snapshot alternatives, role matrix, post-close operation rules, reopening, cancelled-project run-off, currency rules, schema classifications, and phased rollout.
-- D01–D16 decisions now recorded as approved policy v1, with D01 release clarification, D06 configurable paper policy, D08 qualifying contractual retention and D11 practical independent-approval rule. No policy is implemented by this documentation update.
-- Approval-record update follows review commit `6b72dfea875b56ce027a3534aaef204283e50954`; the original recommendations remain in Git history.
-- Relevant README phase wording and settlement-contract documentation updated. No application, generated model, migration, SQL or PostgreSQL change.
+- [Schema and cutover design](docs/SETTLEMENT_SCHEMA_CUTOVER_DESIGN.md): 26 proposed new tables, five proposed existing-table changes, 48 current/future writer and boundary entries, 24 specified acceptance fixtures, detailed financial-control/custody/certification/reopen/evidence/owner/effect/credit/policy structures, constraint responsibilities, canonical lock ordering and legacy rollout/rollback.
+- Catalog metadata inspected read-only using existing secure configuration: PostgreSQL 18.4, `ahdah_db`, `ahdah`, 91 tables, transaction read-only on. No business/customer rows or sequence values queried; no credentials printed or retained. Appendix A records 49 relevant table signatures from the full inspection.
+- Compared all 91 generated table/column sets and inspected scalar nullability, numeric precision, generated values, keys, relationships, defaults and index coverage. No missing table/column/PK/FK name or scalar nullability/decimal-generation discrepancy found. Expected omissions: live CHECKs/triggers and 22 expression indexes are not represented in generated mappings; zero/false CLR defaults are often omitted. Partial-unique singular navigations require set-based evaluation.
+- Confirmed no project designation in custody, no aggregate financial revision, no universal project write gate or typed project closure history. The advance closure computed readiness omits separate debt/claim amounts; metadata-only attachments do not prove bytes or paper custody.
+- README, settlement contract and policy document link the new artifact. No business policy reinterpreted; no deployed constraint directly contradicts the approved baseline.
 
-## Confirmed current-system findings
+## Design decisions
 
-- Funding source, custody holder, project intent, recorded project expenditure and unspent custody are distinct. Existing advances, user balances, transfers and advance settlement/closure entities do not establish project ownership of remaining funds.
-- Expenses/claims/debts have project relationships; shared payments/credits use allocations. Existing category totals overlap and must never be combined; currencies remain separate.
-- Expense and supplier-invoice creation currently validate project existence without a comprehensive FinanciallyClosed write guard. A status-only close command would not safely lock the project.
-- Project version is not an aggregate financial revision. Per-record versions and a read-only RepeatableRead GET cannot authorize a future certification; that command must re-evaluate complete authoritative state inside its write transaction.
-- Project status/completion fields, generic audits and advance-level closure records do not preserve an adequate project certification with immutable evidence, actor, reason, timestamp, policy and financial revision.
-- Existing document metadata does not prove verified binary evidence or original-paper custody; approved-return effects, credit intent, legacy attribution and final owner/currency rules have unresolved gaps.
+- One project financial-control row per project, with Open/InSettlement/Settled/FinanciallyClosed state, material revision and concurrency version, same-project active cycle/certificate pointers and attribution status.
+- One nullable-project custody position per balance/project, including a unique explicit unassigned position. Current available/reserved totals reconcile exactly to authoritative balances; immutable movements are historical, not additional spendable money. Deferred aggregate triggers plus transaction logic are proposed; CHECKs do not validate cross-row sums.
+- Immutable detailed snapshots, workflow events, closure certificates and reopen records. Completed closure projects operational FinanciallyClosed; Cancelled stays Cancelled. Reopening starts a new cycle, preserves history and advances material revision.
+- Exact per-currency owner schedules retain qualified undisputed contractual retention as disclosed outstanding. Unknown/disputed/unclassified positions cannot certify closure. No cross-currency netting or implicit write-off.
+- Versioned company/category digital and paper rules, separate verified binary evidence and physical-original events, evidenced scoped exceptions. Credit intent becomes actual allocation without double counting; typed return/difference effects prevent duplicate posting.
+- Every material writer gates all affected projects before financial rows and increments each project once per logical command. Sorted project/balance locks, full authoritative approval/closure evaluation, Serializable certification/reopening and idempotent full-transaction retries are proposed. Existing writers must be upgraded before activation.
+- Legacy cutover uses a drained financial-write boundary, holder declarations, reviewed opening slices/reservations, scoped uncertainty and unchanged historical ledgers. Unrelated reviewed projects are not blocked by unrelated company custody.
 
-## Approved policy baseline
+## Verification and scope boundary
 
-- Explicit project allocations within user/advance custody, including an explicit company-unassigned component and immutable movement history. Designation release does not erase company custody or repay a liability.
-- Separate physical completion from financial reconciliation. Approved settlement records a complete reconciliation at a particular financial revision/policy; closure independently certifies the current settlement and locks ordinary financial activity.
-- Accountant/Deputy prepare/submit; independent Manager approves/closes; Supervisor acknowledges physical completion only. Current read scope remains limited; no default self-approval exception.
-- Paper custody is configurable (Required / Not required / Required for selected categories); explicit evidence-backed exceptions are allowed, and missing policy never means Not required.
-- Qualifying undisputed contractual owner retention can remain outside immediate cash settlement only with known amount/currency, contractual basis, due/release condition and explicit classification. Unknown/disputed/unclassified owner positions block final closure. Retention remains disclosed outstanding, never silently zeroed.
-- Accountant/Deputy prepare allocation/reallocation/release; Manager approves. Release requires reconciled holder custody, no project reservation or unresolved difference, and recorded reason/approval.
-- A later explicitly configured delegated approver supports small companies; no silent self-approval or permanent two-Manager requirement. Beneficiary conflicts require another authorized reviewer.
-- Persist detailed snapshots and certification/reopening history. Deliver controlled Manager reopening with a new cycle before closure activation; return normal projects to Completed, preserve Cancelled for run-off cases.
-- Require all financial writers to participate in a shared project gate, authoritative closed-state check and financial-revision protocol. Support only narrow audited administrative corrections and append-only supplemental evidence after closure.
-- Necessary schema proposals cover custody slices/effects, financial-control state, settlement snapshots, closure/reopening evidence, credit intent, return/difference effects, owner denomination/reconciliation and policy/cutover evidence. Recommended/optional additions and rejected shortcuts are classified in the decision document.
+- `git diff --check` and `git diff --cached --check`: passed. Complete documentation changes reviewed; local links, table structure and T01–T26/W01–W48/F01–F24 counts checked. Staged scope is exactly the five authorized Markdown files; temporary inspection files removed.
+- No DDL, SQL migration, PostgreSQL mutation, EF scaffold or generated-model change; no C#, Dart or ARB modifications.
+- No application builds/tests run for this documentation-only milestone. The 24 fixtures are specifications, not executed tests.
+- Historical results only: 242 Flutter tests, clean analysis/formatting, Web release and Android debug builds in the prior Flutter milestone; 356 backend tests in the earlier backend foundation. These were not rerun here.
+- No app launch, financial command, iOS verification, merge or PR. The requested documentation branch is to be committed and pushed after final checks.
 
-## Verification and review boundary
+## Remaining inputs and risks
 
-- `git diff --check`: passed for the documentation milestone. Status/stat and documentation content reviewed; all 17 sections are present, local evidence links resolve, and table column counts are consistent.
-- Repository implementation and generated Database-First mappings were inspected. No live database connection or catalog query was performed in this review. Earlier catalog findings are labeled historical; deployed constraints/triggers must be checked before concrete schema work.
-- No application code changed. Backend/Flutter builds and tests were intentionally not rerun for documentation-only changes.
-- Historical baseline only: 242 Flutter tests, clean analysis/formatting, Web release and Android debug builds passed in the preceding milestone; 356 backend tests passed in the backend foundation. These are not new verification claims.
-- No app runtime launch, iOS verification, financial operation, database mutation, merge or PR is part of this milestone.
+Company/category evidence choices, actual contract denomination/retention terms, reviewed legacy attribution and financing classifications, durable binary storage and cutover declarations are still needed. No production/customer-row correctness was asserted. Deferred triggers, source/effect budgets, canonical snapshots, generated mappings and all writer/race paths require staging proof. Closure cannot activate while an old writer or direct DML bypass remains. Privileged maintenance requires controlled suspension and reconciliation; post-posting rollback cannot drop history or restore only part of the financial state.
 
-## Remaining decisions and risks
+## Exact next task
 
-D01–D16 have been approved as clarified/amended in the decision document. Remaining work is detailed schema/cutover design, current catalog verification, explicit tenant/category/contract configuration, and implementation proof. No financial rule or missing configuration value may be inferred. Closure remains disabled until D16’s attribution, resolution workflows, universal guards, valid true-readiness evaluation, history, reopening and race tests are complete. No DDL, generated model refresh or application behavior is authorized by this documentation record.
-
-## Exact recommended next task
-
-Use approved policy v1 (including D01/D06/D08/D11 clarifications) to produce the detailed Database-First schema and cutover design for custody, certification, evidence and concurrency. Verify current PostgreSQL catalog metadata read-only, specify constraints and every writer's lock/revision obligations, and prepare migration/reconciliation acceptance fixtures. Do not execute DDL, re-scaffold or implement commands until the concrete schema artifact and cutover plan receive separate approval.
+After explicit approval of [the schema design](docs/SETTLEMENT_SCHEMA_CUTOVER_DESIGN.md), prepare reviewable Database-First forward/rollback DDL and metadata verification/cutover rehearsal scripts for T01–T26 and the five listed existing-table alterations. Do not execute those scripts, mutate any database, scaffold models or implement commands in that preparation task. Present the artifacts and staging execution/rollback checklist for separate execution authorization.

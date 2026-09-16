@@ -1,5 +1,9 @@
 # Settlement and closure foundation — Phase 1
 
+## Database-First design follow-up (2026-09-16)
+
+[SETTLEMENT_SCHEMA_CUTOVER_DESIGN.md](SETTLEMENT_SCHEMA_CUTOVER_DESIGN.md) specifies the proposed Policy v1 implementation schema and cutover: 26 new tables, five existing-table changes, 48 writer/action entries, a universal project financial gate and 24 acceptance fixtures. Metadata-only inspection confirmed PostgreSQL 18.4 and 91 deployed tables. The artifact distinguishes deployed constraints from generated EF omissions, explicit project custody from funding provenance, and immutable approval/closure history from mutable control projections. Design approval and a separately authorized DDL-preparation task come next. No database, generated-model, API, Flutter or current readiness behavior changed; the contract and limitations below still apply.
+
 ## Discovery (before implementation)
 
 Baseline: `115cc5a544f18cbc11213f1e080ab9599128cc72`. Generated Database-First entities, mappings, existing financial services, and business documentation were inspected. Read-only PostgreSQL catalog inspection confirmed lifecycle CHECK constraints on 2026-09-15. No database objects or generated files are changed.
