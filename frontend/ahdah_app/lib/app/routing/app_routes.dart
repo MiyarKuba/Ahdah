@@ -12,6 +12,7 @@ abstract final class AppRoutes {
   static const projects = 'projects';
   static const projectCreate = 'projectCreate';
   static const projectDetails = 'projectDetails';
+  static const projectSettlement = 'projectSettlement';
   static const projectEdit = 'projectEdit';
   static const projectSupervisor = 'projectSupervisor';
   static const projectMembers = 'projectMembers';

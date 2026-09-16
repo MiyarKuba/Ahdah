@@ -78,6 +78,16 @@ class _ProjectDetailsPageState extends ConsumerState<ProjectDetailsPage> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
+                    if (capabilities.canViewProjectSettlement)
+                      OutlinedButton.icon(
+                        key: const Key('project-settlement-action'),
+                        onPressed: () => context.goNamed(
+                          AppRoutes.projectSettlement,
+                          pathParameters: {'projectId': project.id},
+                        ),
+                        icon: const Icon(Icons.fact_check_outlined),
+                        label: Text(l10n.settlementTitle),
+                      ),
                     if (capabilities.canViewProjectMembers)
                       OutlinedButton.icon(
                         onPressed: () => context.goNamed(

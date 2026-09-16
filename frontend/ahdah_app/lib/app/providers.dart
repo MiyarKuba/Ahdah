@@ -1,3 +1,5 @@
+import '../features/settlements/data/api_settlement_repository.dart';
+import '../features/settlements/domain/settlement_repository.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -88,3 +90,7 @@ final financialOperationKeyFactoryProvider =
     Provider<FinancialOperationKeyFactory>(
       (ref) => SecureFinancialOperationKeyFactory(),
     );
+
+final settlementRepositoryProvider = Provider<SettlementRepository>(
+  (ref) => ApiSettlementRepository(ref.watch(apiClientProvider)),
+);

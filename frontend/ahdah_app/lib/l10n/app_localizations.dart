@@ -3745,6 +3745,630 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Load more'**
   String get loadMore;
+
+  /// No description provided for @settlementCodeAdvances.
+  ///
+  /// In en, this message translates to:
+  /// **'Advances'**
+  String get settlementCodeAdvances;
+
+  /// No description provided for @settlementCodeExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses'**
+  String get settlementCodeExpenses;
+
+  /// No description provided for @settlementCodeExpenseDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense documents'**
+  String get settlementCodeExpenseDocuments;
+
+  /// No description provided for @settlementCodeReimbursements.
+  ///
+  /// In en, this message translates to:
+  /// **'Reimbursements'**
+  String get settlementCodeReimbursements;
+
+  /// No description provided for @settlementCodeManagerContributions.
+  ///
+  /// In en, this message translates to:
+  /// **'Manager contribution claims'**
+  String get settlementCodeManagerContributions;
+
+  /// No description provided for @settlementCodeSupplierDebt.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier debt'**
+  String get settlementCodeSupplierDebt;
+
+  /// No description provided for @settlementCodeSupplierPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier payments'**
+  String get settlementCodeSupplierPayments;
+
+  /// No description provided for @settlementCodeSupplierCredits.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier credit notes'**
+  String get settlementCodeSupplierCredits;
+
+  /// No description provided for @settlementCodeReimbursementPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Reimbursement payments'**
+  String get settlementCodeReimbursementPayments;
+
+  /// No description provided for @settlementCodeExpenseReturns.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense returns'**
+  String get settlementCodeExpenseReturns;
+
+  /// No description provided for @settlementCodeSupplierRefunds.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier refunds'**
+  String get settlementCodeSupplierRefunds;
+
+  /// No description provided for @settlementCodeOwnerOperations.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner operations'**
+  String get settlementCodeOwnerOperations;
+
+  /// No description provided for @settlementCodeProjectLifecycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Project lifecycle'**
+  String get settlementCodeProjectLifecycle;
+
+  /// No description provided for @settlementCodeEvaluated.
+  ///
+  /// In en, this message translates to:
+  /// **'Evaluated'**
+  String get settlementCodeEvaluated;
+
+  /// No description provided for @settlementCodeNotVisible.
+  ///
+  /// In en, this message translates to:
+  /// **'Not visible'**
+  String get settlementCodeNotVisible;
+
+  /// No description provided for @settlementCodeNotAttributable.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot be attributed'**
+  String get settlementCodeNotAttributable;
+
+  /// No description provided for @settlementCodeBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked'**
+  String get settlementCodeBlocked;
+
+  /// No description provided for @settlementCodeIndeterminate.
+  ///
+  /// In en, this message translates to:
+  /// **'Indeterminate'**
+  String get settlementCodeIndeterminate;
+
+  /// No description provided for @settlementCodeCompanyFinancial.
+  ///
+  /// In en, this message translates to:
+  /// **'Company financial view'**
+  String get settlementCodeCompanyFinancial;
+
+  /// No description provided for @settlementCodeAssignedProjectLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Limited assigned-project view'**
+  String get settlementCodeAssignedProjectLimited;
+
+  /// No description provided for @settlementCodeKnownFinancialBlockers.
+  ///
+  /// In en, this message translates to:
+  /// **'Known financial blockers remain.'**
+  String get settlementCodeKnownFinancialBlockers;
+
+  /// No description provided for @settlementCodeProjectCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'The project is cancelled.'**
+  String get settlementCodeProjectCancelled;
+
+  /// No description provided for @settlementCodeProjectAlreadyFinanciallyClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'The project is already financially closed.'**
+  String get settlementCodeProjectAlreadyFinanciallyClosed;
+
+  /// No description provided for @settlementCodeProjectNotCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'The project is not operationally completed.'**
+  String get settlementCodeProjectNotCompleted;
+
+  /// No description provided for @settlementCodeUnknownProjectStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'The project status needs review.'**
+  String get settlementCodeUnknownProjectStatus;
+
+  /// No description provided for @settlementCodeProjectCompletionEvidenceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Project completion evidence is unavailable.'**
+  String get settlementCodeProjectCompletionEvidenceUnavailable;
+
+  /// No description provided for @settlementCodeExpenseDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'An expense is still a draft.'**
+  String get settlementCodeExpenseDraft;
+
+  /// No description provided for @settlementCodeExpensePendingReview.
+  ///
+  /// In en, this message translates to:
+  /// **'An expense is awaiting review.'**
+  String get settlementCodeExpensePendingReview;
+
+  /// No description provided for @settlementCodeExpenseCorrectionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'An expense needs correction.'**
+  String get settlementCodeExpenseCorrectionRequired;
+
+  /// No description provided for @settlementCodeMissingExpenseDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Required expense documentation is missing.'**
+  String get settlementCodeMissingExpenseDocument;
+
+  /// No description provided for @settlementCodeUnresolvedReimbursement.
+  ///
+  /// In en, this message translates to:
+  /// **'A reimbursement claim remains unresolved.'**
+  String get settlementCodeUnresolvedReimbursement;
+
+  /// No description provided for @settlementCodeUnsettledManagerContributionClaim.
+  ///
+  /// In en, this message translates to:
+  /// **'A manager contribution claim remains unsettled.'**
+  String get settlementCodeUnsettledManagerContributionClaim;
+
+  /// No description provided for @settlementCodeOutstandingSupplierDebt.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier debt remains outstanding.'**
+  String get settlementCodeOutstandingSupplierDebt;
+
+  /// No description provided for @settlementCodePendingSupplierPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'A supplier payment is pending.'**
+  String get settlementCodePendingSupplierPayment;
+
+  /// No description provided for @settlementCodePendingSupplierCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'A supplier credit note is pending.'**
+  String get settlementCodePendingSupplierCredit;
+
+  /// No description provided for @settlementCodePendingReimbursementPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'A reimbursement payment is pending.'**
+  String get settlementCodePendingReimbursementPayment;
+
+  /// No description provided for @settlementCodePendingExpenseReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'An expense return is pending.'**
+  String get settlementCodePendingExpenseReturn;
+
+  /// No description provided for @settlementCodePendingSupplierRefund.
+  ///
+  /// In en, this message translates to:
+  /// **'A supplier refund awaits verification.'**
+  String get settlementCodePendingSupplierRefund;
+
+  /// No description provided for @settlementCodePendingOwnerRefund.
+  ///
+  /// In en, this message translates to:
+  /// **'An owner refund awaits approval.'**
+  String get settlementCodePendingOwnerRefund;
+
+  /// No description provided for @settlementCodePendingProjectContractChange.
+  ///
+  /// In en, this message translates to:
+  /// **'A project contract change awaits approval.'**
+  String get settlementCodePendingProjectContractChange;
+
+  /// No description provided for @settlementCodeProjectAdvanceAttributionUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Advance balances cannot currently be safely attributed to this project.'**
+  String get settlementCodeProjectAdvanceAttributionUnavailable;
+
+  /// No description provided for @settlementCodeApprovedReturnEffectsRequireReconciliation.
+  ///
+  /// In en, this message translates to:
+  /// **'The financial effects of approved returns still need reconciliation.'**
+  String get settlementCodeApprovedReturnEffectsRequireReconciliation;
+
+  /// No description provided for @settlementCodeUnallocatedCreditProjectIntentUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unallocated supplier credit cannot be assigned to a project from the available records.'**
+  String get settlementCodeUnallocatedCreditProjectIntentUnavailable;
+
+  /// No description provided for @settlementCodeFinancialRecordRequiresReview.
+  ///
+  /// In en, this message translates to:
+  /// **'A financial record needs review before evaluation can be completed.'**
+  String get settlementCodeFinancialRecordRequiresReview;
+
+  /// No description provided for @settlementCodeOutstandingAmountUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The authoritative outstanding amount is unavailable.'**
+  String get settlementCodeOutstandingAmountUnavailable;
+
+  /// No description provided for @settlementCodeProjectSettlementPolicyUndefined.
+  ///
+  /// In en, this message translates to:
+  /// **'Project settlement rules have not yet been defined.'**
+  String get settlementCodeProjectSettlementPolicyUndefined;
+
+  /// No description provided for @settlementCodeProjectClosurePolicyUndefined.
+  ///
+  /// In en, this message translates to:
+  /// **'Project financial closure rules have not yet been defined.'**
+  String get settlementCodeProjectClosurePolicyUndefined;
+
+  /// No description provided for @settlementCodeActiveDocumentSettingsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Active document requirements are unavailable.'**
+  String get settlementCodeActiveDocumentSettingsUnavailable;
+
+  /// No description provided for @settlementCodeDocumentPolicyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Document requirements cannot currently be determined.'**
+  String get settlementCodeDocumentPolicyUnavailable;
+
+  /// No description provided for @settlementCodeFinancialCategoryNotVisible.
+  ///
+  /// In en, this message translates to:
+  /// **'Your access does not include this financial category.'**
+  String get settlementCodeFinancialCategoryNotVisible;
+
+  /// No description provided for @settlementCodeUnknownExpenseStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'An expense has an unrecognized status.'**
+  String get settlementCodeUnknownExpenseStatus;
+
+  /// No description provided for @settlementCodeUnknownSupplierDebtStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'A supplier debt has an unrecognized status.'**
+  String get settlementCodeUnknownSupplierDebtStatus;
+
+  /// No description provided for @settlementCodeUnknownClaimStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'A claim has an unrecognized status.'**
+  String get settlementCodeUnknownClaimStatus;
+
+  /// No description provided for @settlementCodeUnknownSupplierPaymentStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'A supplier payment has an unrecognized status.'**
+  String get settlementCodeUnknownSupplierPaymentStatus;
+
+  /// No description provided for @settlementCodeUnknownSupplierCreditStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'A supplier credit has an unrecognized status.'**
+  String get settlementCodeUnknownSupplierCreditStatus;
+
+  /// No description provided for @settlementCodeUnknownClaimPaymentStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'A reimbursement payment has an unrecognized status.'**
+  String get settlementCodeUnknownClaimPaymentStatus;
+
+  /// No description provided for @settlementCodeUnknownExpenseReturnStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'An expense return has an unrecognized status.'**
+  String get settlementCodeUnknownExpenseReturnStatus;
+
+  /// No description provided for @settlementCodeUnknownSupplierRefundStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'A supplier refund has an unrecognized status.'**
+  String get settlementCodeUnknownSupplierRefundStatus;
+
+  /// No description provided for @settlementCodePendingExpenseAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense amounts awaiting review'**
+  String get settlementCodePendingExpenseAmount;
+
+  /// No description provided for @settlementCodeOutstandingLiability.
+  ///
+  /// In en, this message translates to:
+  /// **'Outstanding liabilities'**
+  String get settlementCodeOutstandingLiability;
+
+  /// No description provided for @settlementCodePendingProjectAllocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending allocations to this project'**
+  String get settlementCodePendingProjectAllocation;
+
+  /// No description provided for @settlementCodePendingReturnAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending return amounts'**
+  String get settlementCodePendingReturnAmount;
+
+  /// No description provided for @settlementCodePendingRefundAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending refund amounts'**
+  String get settlementCodePendingRefundAmount;
+
+  /// No description provided for @settlementCodeNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No monetary total'**
+  String get settlementCodeNone;
+
+  /// No description provided for @settlementCodeExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense'**
+  String get settlementCodeExpense;
+
+  /// No description provided for @settlementCodePersonalClaim.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal claim'**
+  String get settlementCodePersonalClaim;
+
+  /// No description provided for @settlementCodeSupplierPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier payment'**
+  String get settlementCodeSupplierPayment;
+
+  /// No description provided for @settlementCodeSupplierCreditNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier credit note'**
+  String get settlementCodeSupplierCreditNote;
+
+  /// No description provided for @settlementCodePersonalClaimPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal claim payment'**
+  String get settlementCodePersonalClaimPayment;
+
+  /// No description provided for @settlementCodeExpenseReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense return'**
+  String get settlementCodeExpenseReturn;
+
+  /// No description provided for @settlementCodeSupplierRefund.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier refund'**
+  String get settlementCodeSupplierRefund;
+
+  /// No description provided for @settlementCodeOwnerPaymentRefund.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner refund'**
+  String get settlementCodeOwnerPaymentRefund;
+
+  /// No description provided for @settlementCodeProjectContractChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Project contract change'**
+  String get settlementCodeProjectContractChange;
+
+  /// No description provided for @settlementTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Project settlement'**
+  String get settlementTitle;
+
+  /// No description provided for @settlementSettlement.
+  ///
+  /// In en, this message translates to:
+  /// **'Settlement readiness'**
+  String get settlementSettlement;
+
+  /// No description provided for @settlementClosure.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial closure readiness'**
+  String get settlementClosure;
+
+  /// No description provided for @settlementSettlementUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Settlement readiness cannot yet be fully determined.'**
+  String get settlementSettlementUnknown;
+
+  /// No description provided for @settlementClosureUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial closure readiness cannot yet be fully determined.'**
+  String get settlementClosureUnknown;
+
+  /// No description provided for @settlementSettlementBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Known impediments prevent settlement.'**
+  String get settlementSettlementBlocked;
+
+  /// No description provided for @settlementClosureBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Known impediments prevent financial closure.'**
+  String get settlementClosureBlocked;
+
+  /// No description provided for @settlementUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This state is not supported by this app version. Readiness is not certified.'**
+  String get settlementUnsupported;
+
+  /// No description provided for @settlementKnownBlockers.
+  ///
+  /// In en, this message translates to:
+  /// **'Known / visible blockers'**
+  String get settlementKnownBlockers;
+
+  /// No description provided for @settlementNoKnown.
+  ///
+  /// In en, this message translates to:
+  /// **'No known blockers in the evaluated categories. This does not certify financial readiness.'**
+  String get settlementNoKnown;
+
+  /// No description provided for @settlementCountScope.
+  ///
+  /// In en, this message translates to:
+  /// **'This count covers visible findings only, not every possible obligation.'**
+  String get settlementCountScope;
+
+  /// No description provided for @settlementGaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Evaluation gaps'**
+  String get settlementGaps;
+
+  /// No description provided for @settlementGapsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'These limitations explain why readiness cannot be fully certified.'**
+  String get settlementGapsHelp;
+
+  /// No description provided for @settlementNoGaps.
+  ///
+  /// In en, this message translates to:
+  /// **'No evaluation gaps were reported. Readiness remains as reported above.'**
+  String get settlementNoGaps;
+
+  /// No description provided for @settlementCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial categories'**
+  String get settlementCategories;
+
+  /// No description provided for @settlementHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'This category is outside your access. Its records and amounts are not shown.'**
+  String get settlementHidden;
+
+  /// No description provided for @settlementUnattributable.
+  ///
+  /// In en, this message translates to:
+  /// **'The system cannot safely assign this category to this project. This is not a zero balance.'**
+  String get settlementUnattributable;
+
+  /// No description provided for @settlementNoCategoryBlockers.
+  ///
+  /// In en, this message translates to:
+  /// **'No known blockers in this evaluated category.'**
+  String get settlementNoCategoryBlockers;
+
+  /// No description provided for @settlementCurrencies.
+  ///
+  /// In en, this message translates to:
+  /// **'Amounts remain separate by category and currency. Do not add them together.'**
+  String get settlementCurrencies;
+
+  /// No description provided for @settlementEvaluatedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Evaluated at'**
+  String get settlementEvaluatedAt;
+
+  /// No description provided for @settlementVisibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Visibility scope'**
+  String get settlementVisibility;
+
+  /// No description provided for @settlementProjectReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Project reference'**
+  String get settlementProjectReference;
+
+  /// No description provided for @settlementSettlementImpediments.
+  ///
+  /// In en, this message translates to:
+  /// **'Settlement impediments'**
+  String get settlementSettlementImpediments;
+
+  /// No description provided for @settlementClosureImpediments.
+  ///
+  /// In en, this message translates to:
+  /// **'Closure impediments'**
+  String get settlementClosureImpediments;
+
+  /// No description provided for @settlementNoImpediments.
+  ///
+  /// In en, this message translates to:
+  /// **'No impediments reported in this section.'**
+  String get settlementNoImpediments;
+
+  /// No description provided for @settlementOpenRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'View record'**
+  String get settlementOpenRecord;
+
+  /// No description provided for @settlementRecordReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Record reference'**
+  String get settlementRecordReference;
+
+  /// No description provided for @settlementUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unrecognized value — review required'**
+  String get settlementUnknown;
+
+  /// No description provided for @settlementRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh evaluation'**
+  String get settlementRefresh;
+
+  /// No description provided for @settlementBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Project details'**
+  String get settlementBack;
+
+  /// No description provided for @settlementNoCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'No financial categories were returned. Readiness is not certified.'**
+  String get settlementNoCategories;
 }
 
 class _AppLocalizationsDelegate

@@ -2,9 +2,11 @@
 
 Ahdah is a multi-tenant platform for financial custody and construction operations. It is intended to help companies coordinate projects, custody balances, transfers, expenses, supplier obligations, worker claims, documents, audit trails, notifications, and scheduled reporting.
 
-This repository is currently in **Settlement and Closure Foundation, Phase 1**. The backend exposes read-only project financial blockers with tenant enforcement, role-limited visibility, exact currency-separated totals, and explicit gaps where settlement or closure cannot be certified. The existing Flutter supplier/payables workflows remain available. Financial finalization and closure writes are deferred.
+This repository is currently in **Flutter Project Settlement Readiness**. Project Details opens the read-only `/projects/:projectId/settlement` screen, consuming the completed backend foundation with Arabic/English labels, exact currency-separated amounts, role-limited findings, and explicit evaluation gaps. Financial finalization and closure writes remain deferred.
 
 `GET /api/v1/projects/{projectId}/settlement` returns blocker references, category totals, evaluation gaps and distinct settlement/closure impediments. `canSettle` and `canClose` are nullable: false means blocked; null means indeterminate. Zero known blockers does not establish readiness because advance/project attribution and project finalization policy are undefined. See [docs/SETTLEMENT.md](docs/SETTLEMENT.md) for the authoritative contract and limitations.
+
+Manager, Deputy, Accountant, and assigned Supervisor can view settlement according to backend access; Worker and unknown roles cannot. `NotVisible` categories show no counts, records, or amounts. `NotAttributable` means unavailable attribution, never a zero balance. Blockers link only to existing permitted detail screens by record type and ID. Category/currency totals are never combined, and no finalize/close controls exist. Current verification is recorded in [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
 ## Technology stack
 

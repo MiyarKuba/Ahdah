@@ -1899,4 +1899,363 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get loadMore => 'تحميل المزيد';
+
+  @override
+  String get settlementCodeAdvances => 'العُهد';
+
+  @override
+  String get settlementCodeExpenses => 'المصروفات';
+
+  @override
+  String get settlementCodeExpenseDocuments => 'مستندات المصروفات';
+
+  @override
+  String get settlementCodeReimbursements => 'المطالبات الشخصية';
+
+  @override
+  String get settlementCodeManagerContributions => 'مطالبات مساهمات المدير';
+
+  @override
+  String get settlementCodeSupplierDebt => 'ديون الموردين';
+
+  @override
+  String get settlementCodeSupplierPayments => 'دفعات الموردين';
+
+  @override
+  String get settlementCodeSupplierCredits => 'الإشعارات الدائنة للموردين';
+
+  @override
+  String get settlementCodeReimbursementPayments => 'دفعات المطالبات الشخصية';
+
+  @override
+  String get settlementCodeExpenseReturns => 'مرتجعات المصروفات';
+
+  @override
+  String get settlementCodeSupplierRefunds => 'المبالغ المستردة من الموردين';
+
+  @override
+  String get settlementCodeOwnerOperations => 'عمليات المالك';
+
+  @override
+  String get settlementCodeProjectLifecycle => 'دورة حياة المشروع';
+
+  @override
+  String get settlementCodeEvaluated => 'تم التقييم';
+
+  @override
+  String get settlementCodeNotVisible => 'غير متاح للاطلاع';
+
+  @override
+  String get settlementCodeNotAttributable => 'يتعذر إسنادها للمشروع';
+
+  @override
+  String get settlementCodeBlocked => 'توجد عوائق';
+
+  @override
+  String get settlementCodeIndeterminate => 'غير محسوم';
+
+  @override
+  String get settlementCodeCompanyFinancial => 'عرض مالي للشركة';
+
+  @override
+  String get settlementCodeAssignedProjectLimited =>
+      'عرض محدود للمشروع المكلّف به';
+
+  @override
+  String get settlementCodeKnownFinancialBlockers =>
+      'توجد عوائق مالية معروفة لم تُحل بعد.';
+
+  @override
+  String get settlementCodeProjectCancelled => 'المشروع ملغى.';
+
+  @override
+  String get settlementCodeProjectAlreadyFinanciallyClosed =>
+      'المشروع مغلق مالياً بالفعل.';
+
+  @override
+  String get settlementCodeProjectNotCompleted => 'لم يكتمل تنفيذ المشروع بعد.';
+
+  @override
+  String get settlementCodeUnknownProjectStatus =>
+      'حالة المشروع تحتاج إلى مراجعة.';
+
+  @override
+  String get settlementCodeProjectCompletionEvidenceUnavailable =>
+      'أدلة اكتمال المشروع غير متاحة.';
+
+  @override
+  String get settlementCodeExpenseDraft => 'يوجد مصروف ما زال مسودة.';
+
+  @override
+  String get settlementCodeExpensePendingReview => 'يوجد مصروف ينتظر المراجعة.';
+
+  @override
+  String get settlementCodeExpenseCorrectionRequired =>
+      'يوجد مصروف يحتاج إلى تصحيح.';
+
+  @override
+  String get settlementCodeMissingExpenseDocument =>
+      'مستندات المصروف المطلوبة غير مكتملة.';
+
+  @override
+  String get settlementCodeUnresolvedReimbursement =>
+      'توجد مطالبة شخصية لم تتم تسويتها.';
+
+  @override
+  String get settlementCodeUnsettledManagerContributionClaim =>
+      'توجد مطالبة بمساهمة مدير لم تتم تسويتها.';
+
+  @override
+  String get settlementCodeOutstandingSupplierDebt => 'يوجد دين مستحق للمورد.';
+
+  @override
+  String get settlementCodePendingSupplierPayment => 'توجد دفعة مورد معلّقة.';
+
+  @override
+  String get settlementCodePendingSupplierCredit =>
+      'يوجد إشعار دائن لمورد قيد الاعتماد.';
+
+  @override
+  String get settlementCodePendingReimbursementPayment =>
+      'توجد دفعة مطالبة شخصية معلّقة.';
+
+  @override
+  String get settlementCodePendingExpenseReturn => 'يوجد مرتجع مصروف معلّق.';
+
+  @override
+  String get settlementCodePendingSupplierRefund =>
+      'يوجد مبلغ مسترد من مورد ينتظر التحقق.';
+
+  @override
+  String get settlementCodePendingOwnerRefund =>
+      'يوجد مبلغ مسترد للمالك ينتظر الاعتماد.';
+
+  @override
+  String get settlementCodePendingProjectContractChange =>
+      'يوجد تعديل لعقد المشروع ينتظر الاعتماد.';
+
+  @override
+  String get settlementCodeProjectAdvanceAttributionUnavailable =>
+      'لا يمكن حالياً إسناد أرصدة العُهد إلى هذا المشروع بصورة موثوقة.';
+
+  @override
+  String get settlementCodeApprovedReturnEffectsRequireReconciliation =>
+      'ما زالت الآثار المالية للمرتجعات المعتمدة بحاجة إلى مطابقة.';
+
+  @override
+  String get settlementCodeUnallocatedCreditProjectIntentUnavailable =>
+      'لا يمكن تحديد مشروع الإشعارات الدائنة غير الموزعة من السجلات المتاحة.';
+
+  @override
+  String get settlementCodeFinancialRecordRequiresReview =>
+      'يحتاج سجل مالي إلى مراجعة قبل استكمال التقييم.';
+
+  @override
+  String get settlementCodeOutstandingAmountUnavailable =>
+      'قيمة المبلغ المستحق المعتمدة غير متاحة.';
+
+  @override
+  String get settlementCodeProjectSettlementPolicyUndefined =>
+      'لم تُحدّد بعد قواعد تسوية المشروع.';
+
+  @override
+  String get settlementCodeProjectClosurePolicyUndefined =>
+      'لم تُحدّد بعد قواعد الإغلاق المالي للمشروع.';
+
+  @override
+  String get settlementCodeActiveDocumentSettingsUnavailable =>
+      'متطلبات المستندات السارية غير متاحة.';
+
+  @override
+  String get settlementCodeDocumentPolicyUnavailable =>
+      'يتعذر حالياً تحديد متطلبات المستندات.';
+
+  @override
+  String get settlementCodeFinancialCategoryNotVisible =>
+      'صلاحياتك لا تتيح الاطلاع على هذه الفئة المالية.';
+
+  @override
+  String get settlementCodeUnknownExpenseStatus =>
+      'يوجد مصروف بحالة غير معروفة.';
+
+  @override
+  String get settlementCodeUnknownSupplierDebtStatus =>
+      'يوجد دين مورد بحالة غير معروفة.';
+
+  @override
+  String get settlementCodeUnknownClaimStatus =>
+      'توجد مطالبة بحالة غير معروفة.';
+
+  @override
+  String get settlementCodeUnknownSupplierPaymentStatus =>
+      'توجد دفعة مورد بحالة غير معروفة.';
+
+  @override
+  String get settlementCodeUnknownSupplierCreditStatus =>
+      'يوجد إشعار دائن بحالة غير معروفة.';
+
+  @override
+  String get settlementCodeUnknownClaimPaymentStatus =>
+      'توجد دفعة مطالبة بحالة غير معروفة.';
+
+  @override
+  String get settlementCodeUnknownExpenseReturnStatus =>
+      'يوجد مرتجع مصروف بحالة غير معروفة.';
+
+  @override
+  String get settlementCodeUnknownSupplierRefundStatus =>
+      'يوجد مبلغ مسترد من مورد بحالة غير معروفة.';
+
+  @override
+  String get settlementCodePendingExpenseAmount =>
+      'مبالغ المصروفات التي تنتظر المراجعة';
+
+  @override
+  String get settlementCodeOutstandingLiability => 'الالتزامات المستحقة';
+
+  @override
+  String get settlementCodePendingProjectAllocation =>
+      'التوزيعات المعلّقة لهذا المشروع';
+
+  @override
+  String get settlementCodePendingReturnAmount => 'مبالغ المرتجعات المعلّقة';
+
+  @override
+  String get settlementCodePendingRefundAmount => 'المبالغ المستردة المعلّقة';
+
+  @override
+  String get settlementCodeNone => 'لا يوجد إجمالي نقدي';
+
+  @override
+  String get settlementCodeExpense => 'مصروف';
+
+  @override
+  String get settlementCodePersonalClaim => 'مطالبة شخصية';
+
+  @override
+  String get settlementCodeSupplierPayment => 'دفعة مورد';
+
+  @override
+  String get settlementCodeSupplierCreditNote => 'إشعار دائن لمورد';
+
+  @override
+  String get settlementCodePersonalClaimPayment => 'دفعة مطالبة شخصية';
+
+  @override
+  String get settlementCodeExpenseReturn => 'مرتجع مصروف';
+
+  @override
+  String get settlementCodeSupplierRefund => 'مبلغ مسترد من مورد';
+
+  @override
+  String get settlementCodeOwnerPaymentRefund => 'مبلغ مسترد للمالك';
+
+  @override
+  String get settlementCodeProjectContractChange => 'تعديل عقد المشروع';
+
+  @override
+  String get settlementTitle => 'تسوية المشروع';
+
+  @override
+  String get settlementSettlement => 'جاهزية التسوية';
+
+  @override
+  String get settlementClosure => 'جاهزية الإغلاق المالي';
+
+  @override
+  String get settlementSettlementUnknown =>
+      'لا يمكن حتى الآن تحديد جاهزية التسوية بشكل كامل.';
+
+  @override
+  String get settlementClosureUnknown =>
+      'لا يمكن حتى الآن تحديد جاهزية الإغلاق المالي بشكل كامل.';
+
+  @override
+  String get settlementSettlementBlocked => 'توجد عوائق معروفة تمنع التسوية.';
+
+  @override
+  String get settlementClosureBlocked =>
+      'توجد عوائق معروفة تمنع الإغلاق المالي.';
+
+  @override
+  String get settlementUnsupported =>
+      'هذه الحالة غير مدعومة في إصدار التطبيق الحالي. لم يتم تأكيد الجاهزية.';
+
+  @override
+  String get settlementKnownBlockers => 'العوائق المعروفة / المتاحة للاطلاع';
+
+  @override
+  String get settlementNoKnown =>
+      'لا توجد عوائق معروفة في الفئات التي تم تقييمها. هذا لا يؤكد الجاهزية المالية.';
+
+  @override
+  String get settlementCountScope =>
+      'يشمل هذا العدد النتائج المتاحة للاطلاع فقط، ولا يشمل بالضرورة كل الالتزامات.';
+
+  @override
+  String get settlementGaps => 'جوانب التقييم غير المحسومة';
+
+  @override
+  String get settlementGapsHelp =>
+      'توضح هذه القيود أسباب تعذر تأكيد الجاهزية بالكامل.';
+
+  @override
+  String get settlementNoGaps =>
+      'لم يذكر الخادم جوانب تقييم غير محسومة. تبقى الجاهزية كما هي موضحة أعلاه.';
+
+  @override
+  String get settlementCategories => 'الفئات المالية';
+
+  @override
+  String get settlementHidden =>
+      'هذه الفئة خارج نطاق صلاحياتك. لا تُعرض سجلاتها أو مبالغها.';
+
+  @override
+  String get settlementUnattributable =>
+      'لا يستطيع النظام إسناد هذه الفئة إلى المشروع بصورة موثوقة. هذا لا يعني أن الرصيد صفر.';
+
+  @override
+  String get settlementNoCategoryBlockers =>
+      'لا توجد عوائق معروفة في هذه الفئة التي تم تقييمها.';
+
+  @override
+  String get settlementCurrencies =>
+      'تُعرض المبالغ منفصلة حسب الفئة والعملة. لا تُجمع هذه المبالغ معاً.';
+
+  @override
+  String get settlementEvaluatedAt => 'وقت التقييم';
+
+  @override
+  String get settlementVisibility => 'نطاق الاطلاع';
+
+  @override
+  String get settlementProjectReference => 'مرجع المشروع';
+
+  @override
+  String get settlementSettlementImpediments => 'عوائق التسوية';
+
+  @override
+  String get settlementClosureImpediments => 'عوائق الإغلاق المالي';
+
+  @override
+  String get settlementNoImpediments => 'لم تُذكر عوائق في هذا القسم.';
+
+  @override
+  String get settlementOpenRecord => 'عرض السجل';
+
+  @override
+  String get settlementRecordReference => 'مرجع السجل';
+
+  @override
+  String get settlementUnknown => 'قيمة غير معروفة — تحتاج إلى مراجعة';
+
+  @override
+  String get settlementRefresh => 'تحديث التقييم';
+
+  @override
+  String get settlementBack => 'تفاصيل المشروع';
+
+  @override
+  String get settlementNoCategories =>
+      'لم تُرجع أي فئات مالية. لم يتم تأكيد الجاهزية.';
 }

@@ -25,6 +25,8 @@ abstract final class ApiEndpoints {
   static String approveJoinRequest(String id) => '$joinRequests/$id/approve';
   static String rejectJoinRequest(String id) => '$joinRequests/$id/reject';
   static String project(String id) => '$projects/$id';
+  static String projectSettlement(String id) =>
+      '$projects/${Uri.encodeComponent(id)}/settlement';
   static String projectSupervisor(String id) => '$projects/$id/supervisor';
   static String projectMembers(String id) => '$projects/$id/members';
   static String companyMember(String id) => '$companyMembers/$id';

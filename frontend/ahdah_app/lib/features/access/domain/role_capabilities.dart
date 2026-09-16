@@ -28,6 +28,10 @@ final class RoleCapabilities {
   });
 
   final String? role;
+  bool get canViewProjectSettlement => switch (role) {
+    'Manager' || 'Deputy' || 'Accountant' || 'Supervisor' => true,
+    _ => false,
+  };
   final bool canManageAccess;
   final bool canViewProjects;
   final bool canManageProjects;

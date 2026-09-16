@@ -1932,4 +1932,371 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loadMore => 'Load more';
+
+  @override
+  String get settlementCodeAdvances => 'Advances';
+
+  @override
+  String get settlementCodeExpenses => 'Expenses';
+
+  @override
+  String get settlementCodeExpenseDocuments => 'Expense documents';
+
+  @override
+  String get settlementCodeReimbursements => 'Reimbursements';
+
+  @override
+  String get settlementCodeManagerContributions =>
+      'Manager contribution claims';
+
+  @override
+  String get settlementCodeSupplierDebt => 'Supplier debt';
+
+  @override
+  String get settlementCodeSupplierPayments => 'Supplier payments';
+
+  @override
+  String get settlementCodeSupplierCredits => 'Supplier credit notes';
+
+  @override
+  String get settlementCodeReimbursementPayments => 'Reimbursement payments';
+
+  @override
+  String get settlementCodeExpenseReturns => 'Expense returns';
+
+  @override
+  String get settlementCodeSupplierRefunds => 'Supplier refunds';
+
+  @override
+  String get settlementCodeOwnerOperations => 'Owner operations';
+
+  @override
+  String get settlementCodeProjectLifecycle => 'Project lifecycle';
+
+  @override
+  String get settlementCodeEvaluated => 'Evaluated';
+
+  @override
+  String get settlementCodeNotVisible => 'Not visible';
+
+  @override
+  String get settlementCodeNotAttributable => 'Cannot be attributed';
+
+  @override
+  String get settlementCodeBlocked => 'Blocked';
+
+  @override
+  String get settlementCodeIndeterminate => 'Indeterminate';
+
+  @override
+  String get settlementCodeCompanyFinancial => 'Company financial view';
+
+  @override
+  String get settlementCodeAssignedProjectLimited =>
+      'Limited assigned-project view';
+
+  @override
+  String get settlementCodeKnownFinancialBlockers =>
+      'Known financial blockers remain.';
+
+  @override
+  String get settlementCodeProjectCancelled => 'The project is cancelled.';
+
+  @override
+  String get settlementCodeProjectAlreadyFinanciallyClosed =>
+      'The project is already financially closed.';
+
+  @override
+  String get settlementCodeProjectNotCompleted =>
+      'The project is not operationally completed.';
+
+  @override
+  String get settlementCodeUnknownProjectStatus =>
+      'The project status needs review.';
+
+  @override
+  String get settlementCodeProjectCompletionEvidenceUnavailable =>
+      'Project completion evidence is unavailable.';
+
+  @override
+  String get settlementCodeExpenseDraft => 'An expense is still a draft.';
+
+  @override
+  String get settlementCodeExpensePendingReview =>
+      'An expense is awaiting review.';
+
+  @override
+  String get settlementCodeExpenseCorrectionRequired =>
+      'An expense needs correction.';
+
+  @override
+  String get settlementCodeMissingExpenseDocument =>
+      'Required expense documentation is missing.';
+
+  @override
+  String get settlementCodeUnresolvedReimbursement =>
+      'A reimbursement claim remains unresolved.';
+
+  @override
+  String get settlementCodeUnsettledManagerContributionClaim =>
+      'A manager contribution claim remains unsettled.';
+
+  @override
+  String get settlementCodeOutstandingSupplierDebt =>
+      'Supplier debt remains outstanding.';
+
+  @override
+  String get settlementCodePendingSupplierPayment =>
+      'A supplier payment is pending.';
+
+  @override
+  String get settlementCodePendingSupplierCredit =>
+      'A supplier credit note is pending.';
+
+  @override
+  String get settlementCodePendingReimbursementPayment =>
+      'A reimbursement payment is pending.';
+
+  @override
+  String get settlementCodePendingExpenseReturn =>
+      'An expense return is pending.';
+
+  @override
+  String get settlementCodePendingSupplierRefund =>
+      'A supplier refund awaits verification.';
+
+  @override
+  String get settlementCodePendingOwnerRefund =>
+      'An owner refund awaits approval.';
+
+  @override
+  String get settlementCodePendingProjectContractChange =>
+      'A project contract change awaits approval.';
+
+  @override
+  String get settlementCodeProjectAdvanceAttributionUnavailable =>
+      'Advance balances cannot currently be safely attributed to this project.';
+
+  @override
+  String get settlementCodeApprovedReturnEffectsRequireReconciliation =>
+      'The financial effects of approved returns still need reconciliation.';
+
+  @override
+  String get settlementCodeUnallocatedCreditProjectIntentUnavailable =>
+      'Unallocated supplier credit cannot be assigned to a project from the available records.';
+
+  @override
+  String get settlementCodeFinancialRecordRequiresReview =>
+      'A financial record needs review before evaluation can be completed.';
+
+  @override
+  String get settlementCodeOutstandingAmountUnavailable =>
+      'The authoritative outstanding amount is unavailable.';
+
+  @override
+  String get settlementCodeProjectSettlementPolicyUndefined =>
+      'Project settlement rules have not yet been defined.';
+
+  @override
+  String get settlementCodeProjectClosurePolicyUndefined =>
+      'Project financial closure rules have not yet been defined.';
+
+  @override
+  String get settlementCodeActiveDocumentSettingsUnavailable =>
+      'Active document requirements are unavailable.';
+
+  @override
+  String get settlementCodeDocumentPolicyUnavailable =>
+      'Document requirements cannot currently be determined.';
+
+  @override
+  String get settlementCodeFinancialCategoryNotVisible =>
+      'Your access does not include this financial category.';
+
+  @override
+  String get settlementCodeUnknownExpenseStatus =>
+      'An expense has an unrecognized status.';
+
+  @override
+  String get settlementCodeUnknownSupplierDebtStatus =>
+      'A supplier debt has an unrecognized status.';
+
+  @override
+  String get settlementCodeUnknownClaimStatus =>
+      'A claim has an unrecognized status.';
+
+  @override
+  String get settlementCodeUnknownSupplierPaymentStatus =>
+      'A supplier payment has an unrecognized status.';
+
+  @override
+  String get settlementCodeUnknownSupplierCreditStatus =>
+      'A supplier credit has an unrecognized status.';
+
+  @override
+  String get settlementCodeUnknownClaimPaymentStatus =>
+      'A reimbursement payment has an unrecognized status.';
+
+  @override
+  String get settlementCodeUnknownExpenseReturnStatus =>
+      'An expense return has an unrecognized status.';
+
+  @override
+  String get settlementCodeUnknownSupplierRefundStatus =>
+      'A supplier refund has an unrecognized status.';
+
+  @override
+  String get settlementCodePendingExpenseAmount =>
+      'Expense amounts awaiting review';
+
+  @override
+  String get settlementCodeOutstandingLiability => 'Outstanding liabilities';
+
+  @override
+  String get settlementCodePendingProjectAllocation =>
+      'Pending allocations to this project';
+
+  @override
+  String get settlementCodePendingReturnAmount => 'Pending return amounts';
+
+  @override
+  String get settlementCodePendingRefundAmount => 'Pending refund amounts';
+
+  @override
+  String get settlementCodeNone => 'No monetary total';
+
+  @override
+  String get settlementCodeExpense => 'Expense';
+
+  @override
+  String get settlementCodePersonalClaim => 'Personal claim';
+
+  @override
+  String get settlementCodeSupplierPayment => 'Supplier payment';
+
+  @override
+  String get settlementCodeSupplierCreditNote => 'Supplier credit note';
+
+  @override
+  String get settlementCodePersonalClaimPayment => 'Personal claim payment';
+
+  @override
+  String get settlementCodeExpenseReturn => 'Expense return';
+
+  @override
+  String get settlementCodeSupplierRefund => 'Supplier refund';
+
+  @override
+  String get settlementCodeOwnerPaymentRefund => 'Owner refund';
+
+  @override
+  String get settlementCodeProjectContractChange => 'Project contract change';
+
+  @override
+  String get settlementTitle => 'Project settlement';
+
+  @override
+  String get settlementSettlement => 'Settlement readiness';
+
+  @override
+  String get settlementClosure => 'Financial closure readiness';
+
+  @override
+  String get settlementSettlementUnknown =>
+      'Settlement readiness cannot yet be fully determined.';
+
+  @override
+  String get settlementClosureUnknown =>
+      'Financial closure readiness cannot yet be fully determined.';
+
+  @override
+  String get settlementSettlementBlocked =>
+      'Known impediments prevent settlement.';
+
+  @override
+  String get settlementClosureBlocked =>
+      'Known impediments prevent financial closure.';
+
+  @override
+  String get settlementUnsupported =>
+      'This state is not supported by this app version. Readiness is not certified.';
+
+  @override
+  String get settlementKnownBlockers => 'Known / visible blockers';
+
+  @override
+  String get settlementNoKnown =>
+      'No known blockers in the evaluated categories. This does not certify financial readiness.';
+
+  @override
+  String get settlementCountScope =>
+      'This count covers visible findings only, not every possible obligation.';
+
+  @override
+  String get settlementGaps => 'Evaluation gaps';
+
+  @override
+  String get settlementGapsHelp =>
+      'These limitations explain why readiness cannot be fully certified.';
+
+  @override
+  String get settlementNoGaps =>
+      'No evaluation gaps were reported. Readiness remains as reported above.';
+
+  @override
+  String get settlementCategories => 'Financial categories';
+
+  @override
+  String get settlementHidden =>
+      'This category is outside your access. Its records and amounts are not shown.';
+
+  @override
+  String get settlementUnattributable =>
+      'The system cannot safely assign this category to this project. This is not a zero balance.';
+
+  @override
+  String get settlementNoCategoryBlockers =>
+      'No known blockers in this evaluated category.';
+
+  @override
+  String get settlementCurrencies =>
+      'Amounts remain separate by category and currency. Do not add them together.';
+
+  @override
+  String get settlementEvaluatedAt => 'Evaluated at';
+
+  @override
+  String get settlementVisibility => 'Visibility scope';
+
+  @override
+  String get settlementProjectReference => 'Project reference';
+
+  @override
+  String get settlementSettlementImpediments => 'Settlement impediments';
+
+  @override
+  String get settlementClosureImpediments => 'Closure impediments';
+
+  @override
+  String get settlementNoImpediments =>
+      'No impediments reported in this section.';
+
+  @override
+  String get settlementOpenRecord => 'View record';
+
+  @override
+  String get settlementRecordReference => 'Record reference';
+
+  @override
+  String get settlementUnknown => 'Unrecognized value — review required';
+
+  @override
+  String get settlementRefresh => 'Refresh evaluation';
+
+  @override
+  String get settlementBack => 'Project details';
+
+  @override
+  String get settlementNoCategories =>
+      'No financial categories were returned. Readiness is not certified.';
 }

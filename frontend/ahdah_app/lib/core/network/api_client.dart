@@ -15,6 +15,7 @@ import '../../features/expenses/domain/expense_models.dart';
 import '../../features/expenses/domain/expense_requests.dart';
 import '../../features/suppliers/domain/supplier_models.dart';
 import '../../features/suppliers/domain/supplier_requests.dart';
+import '../../features/settlements/domain/settlement_models.dart';
 import '../errors/app_exception.dart';
 import '../errors/problem_details.dart';
 import 'api_endpoints.dart';
@@ -24,6 +25,18 @@ final class ApiClient {
   ApiClient(this._dio);
 
   final Dio _dio;
+
+  Future<ProjectSettlement> getProjectSettlement(String projectId) async {
+    try {
+      return ProjectSettlement.fromJson(
+        await _financialGet(ApiEndpoints.projectSettlement(projectId)),
+      );
+    } on FormatException {
+      throw const AppException(AppExceptionKind.server);
+    } on TypeError {
+      throw const AppException(AppExceptionKind.server);
+    }
+  }
 
   Future<AuthenticationResult> login(LoginRequest request) async {
     final response = await _send(

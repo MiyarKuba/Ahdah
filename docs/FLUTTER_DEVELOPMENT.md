@@ -156,3 +156,15 @@ Use `DecimalQuantity` for `NUMERIC(18,3)` quantities and the existing exact mino
 All supplier financial and lifecycle writes use `FinancialCommandController`. A network error or timeout is uncertain: the UI may explicitly retry the same payload/key, or the user may edit/cancel and start a new operation. Never add automatic write retries or persist/display/log an idempotency key. Tests must use fake repositories or controlled Dio adapters and must not call the live API or database.
 
 Refund writes, account verification/default changes, reversal/correction, binary proof upload, advance-balance supplier funding, and final settlement are not supported. Do not add UI placeholders that imply these workflows exist.
+
+## Project settlement readiness
+
+Project Details opens named route `projectSettlement` at `/projects/:projectId/settlement`. Manager/Deputy/Accountant have tenant project access; Supervisor requires backend assignment and receives limited findings; Worker/unknown roles are redirected. Owner-operation visibility remains backend-controlled. Direct links display project ID; an existing loaded project context also supplies its name.
+
+Use `settlementRepositoryProvider` and the project-scoped `settlementControllerProvider`. Pull-to-refresh and the explicit refresh button share one GET implementation. Loading, refresh, 401 session expiry, forbidden, missing/cross-company project, network, and malformed-response errors are distinct from empty evaluated findings. Failed refresh clears stale data; no automatic retry loop is added.
+
+Keep `canSettle`/`canClose` nullable: false means blocked; null means indeterminate. A zero visible blocker count never means ready. Render settlement and closure separately with their respective impediments. `NotVisible` suppresses category counts/totals/IDs/navigation even when unexpected nested data is present. `NotAttributable` explains missing safe attribution, without displaying zero. Unknown codes and unsupported readiness combinations use localized uncertainty text. There are no finalize/close buttons.
+
+Financial JSON uses the existing raw-response token protection before JSON decoding; settlement models require exact decimal text or integer tokens, and normalize to two decimals. Never use floating-point calculations or total categories/currencies. Navigation allows existing expense, personal claim, supplier debt, payment, and credit-note detail routes only when permitted; unsupported records have no action, and `resourcePath` is ignored. Settlement labels reuse existing status translations where accurate and map all current settlement codes in both ARBs; run `flutter gen-l10n` after localization edits.
+
+Settlement tests cover contract decoding, exact nested decimal tokens, safe requests/navigation, controller lifecycle, role guards, hidden/unattributable data, evaluated-empty findings, uncertainty, errors/refresh, and narrow English/Arabic layouts. The source test compares emitted backend codes against both localization mappings. Full milestone verification and platform limitations are recorded in [../PROJECT_STATUS.md](../PROJECT_STATUS.md).

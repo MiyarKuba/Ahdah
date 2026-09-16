@@ -43,6 +43,7 @@ import '../../features/expenses/presentation/reimbursements/reimbursements_page.
 import '../../features/suppliers/presentation/supplier_forms.dart';
 import '../../features/suppliers/presentation/supplier_pages.dart';
 import 'app_routes.dart';
+import '../../features/settlements/presentation/project_settlement_page.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final session = ref.watch(sessionControllerProvider);
@@ -150,6 +151,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         SessionStatus.authenticated => () {
           final capabilities = RoleCapabilities.forRole(session.current?.role);
           if (isAccessManagerPath && !capabilities.canManageAccess ||
+              isProjectPath &&
+                  location.endsWith('/settlement') &&
+                  !capabilities.canViewProjectSettlement ||
               isProjectPath && !capabilities.canViewProjects ||
               isProjectManagementPath && !capabilities.canManageProjects ||
               isProjectMembersPath && !capabilities.canViewProjectMembers ||
@@ -257,6 +261,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.projectCreatePath,
             name: AppRoutes.projectCreate,
             builder: (context, state) => const ProjectCreatePage(),
+          ),
+          GoRoute(
+            path: '/projects/:projectId/settlement',
+            name: AppRoutes.projectSettlement,
+            builder: (context, state) => ProjectSettlementPage(
+              projectId: state.pathParameters['projectId']!,
+            ),
           ),
           GoRoute(
             path: '/projects/:projectId',
