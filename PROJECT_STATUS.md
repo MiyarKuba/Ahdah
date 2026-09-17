@@ -2,46 +2,37 @@
 
 ## Current phase
 
-**Settlement Database-First schema and cutover design complete — awaiting design approval.** Approved D01–D16 Policy v1 remains unchanged. Schema execution and application implementation remain pending; financial closure stays disabled.
+**Settlement DDL, verification and cutover-rehearsal artifacts prepared — review pending, execution not approved.** Policy v1 meaning is unchanged. No settlement command or financial closure capability has been enabled.
 
-## Date, workspace and branch
+## Baselines and branch
 
-- Date: `2026-09-16`.
-- Workspace: `C:/dev/Ahdah`.
-- Branch: `design/settlement-schema-cutover`, created from `f962d6119281906b5144b80fe1ffdac7e4525d9e` on `docs/settlement-policy-decisions`.
-- Existing history preserved. No merge or PR.
-- Pre-existing `frontend/ahdah_app/devtools_options.yaml` remains unread, untouched and untracked.
+- Date: 2026-09-17; workspace: `C:/dev/Ahdah`.
+- Policy: `f962d6119281906b5144b80fe1ffdac7e4525d9e`.
+- Reviewed schema design: `a8df2e8d48c110959c172a1f35835ee973b495aa`.
+- Branch: `design/settlement-ddl-artifacts`, created directly from the reviewed design commit.
+- Existing history preserved. `frontend/ahdah_app/devtools_options.yaml` remains unread, untouched and untracked.
 
-## Delivered scope
+## Delivered artifacts
 
-- [Schema and cutover design](docs/SETTLEMENT_SCHEMA_CUTOVER_DESIGN.md): 26 proposed new tables, five proposed existing-table changes, 48 current/future writer and boundary entries, 24 specified acceptance fixtures, detailed financial-control/custody/certification/reopen/evidence/owner/effect/credit/policy structures, constraint responsibilities, canonical lock ordering and legacy rollout/rollback.
-- Catalog metadata inspected read-only using existing secure configuration: PostgreSQL 18.4, `ahdah_db`, `ahdah`, 91 tables, transaction read-only on. No business/customer rows or sequence values queried; no credentials printed or retained. Appendix A records 49 relevant table signatures from the full inspection.
-- Compared all 91 generated table/column sets and inspected scalar nullability, numeric precision, generated values, keys, relationships, defaults and index coverage. No missing table/column/PK/FK name or scalar nullability/decimal-generation discrepancy found. Expected omissions: live CHECKs/triggers and 22 expression indexes are not represented in generated mappings; zero/false CLR defaults are often omitted. Partial-unique singular navigations require set-based evaluation.
-- Confirmed no project designation in custody, no aggregate financial revision, no universal project write gate or typed project closure history. The advance closure computed readiness omits separate debt/claim amounts; metadata-only attachments do not prove bytes or paper custody.
-- README, settlement contract and policy document link the new artifact. No business policy reinterpreted; no deployed constraint directly contradicts the approved baseline.
+- [database/settlement](database/settlement/README.md): 18 SQL files covering all 26 new tables, five reviewed existing-table changes, forward dependency order, least-privilege installation, metadata preflight/verification, authorized future business reconciliation, synthetic structural rehearsal, staged enforcement and pre-cutover empty-schema rollback.
+- 420 new-table columns; 500 named table constraints (plus eleven deferred constraint-trigger entries, excluding implicit PostgreSQL NOT NULL entries); 219 indexes; 61 triggers; eleven new functions. Two deployed trigger functions reused without modification.
+- [DDL review](docs/SETTLEMENT_DDL_REVIEW.md), [index workload register](database/settlement/INDEX_REVIEW.md), [24 fixture specifications](database/settlement/REHEARSAL.md) and [seven two-session race schedules](database/settlement/RACES.md).
+- Schema installation, legacy population, invariant verification, enforcement activation and operational enablement are separate. New runtime tables remain read-only after installation. All applicable entries in the 48-writer inventory still require upgrades before closure.
 
-## Design decisions
+## Catalog and static verification
 
-- One project financial-control row per project, with Open/InSettlement/Settled/FinanciallyClosed state, material revision and concurrency version, same-project active cycle/certificate pointers and attribution status.
-- One nullable-project custody position per balance/project, including a unique explicit unassigned position. Current available/reserved totals reconcile exactly to authoritative balances; immutable movements are historical, not additional spendable money. Deferred aggregate triggers plus transaction logic are proposed; CHECKs do not validate cross-row sums.
-- Immutable detailed snapshots, workflow events, closure certificates and reopen records. Completed closure projects operational FinanciallyClosed; Cancelled stays Cancelled. Reopening starts a new cycle, preserves history and advances material revision.
-- Exact per-currency owner schedules retain qualified undisputed contractual retention as disclosed outstanding. Unknown/disputed/unclassified positions cannot certify closure. No cross-currency netting or implicit write-off.
-- Versioned company/category digital and paper rules, separate verified binary evidence and physical-original events, evidenced scoped exceptions. Credit intent becomes actual allocation without double counting; typed return/difference effects prevent duplicate posting.
-- Every material writer gates all affected projects before financial rows and increments each project once per logical command. Sorted project/balance locks, full authoritative approval/closure evaluation, Serializable certification/reopening and idempotent full-transaction retries are proposed. Existing writers must be upgraded before activation.
-- Legacy cutover uses a drained financial-write boundary, holder declarations, reviewed opening slices/reservations, scoped uncertainty and unchanged historical ledgers. Unrelated reviewed projects are not blocked by unrelated company custody.
+- Recaptured catalog metadata in READ ONLY/ROLLBACK: PostgreSQL 18.4, ahdah_db/ahdah, 91 tables. No differences found in the 49 recorded relevant table signatures/keys/FKs/triggers.
+- Metadata-only preflight executed successfully. It checks 7,966 metadata signature rows using fingerprint `d697e4fbc6699faed6076d576a814d38`, version/schema/functions/table count and proposed object-name conflicts. No customer/business rows or sequence values queried; no credentials printed or committed.
+- Local pglast 8.4 SQL/native PL/pgSQL parsing completed without syntax errors. Its high-level trigger-AST JSON decoder has a reproducible wrapper error; native parser syntax acceptance is recorded separately from execution/binding validation.
+- Static dependency, tenant FK column/unique-key coverage, identifier length, duplicate names, artifact inventories and documentation checks performed. Working/staged diff checks and final intended-file scope are verified before commit.
+- No DDL, schema/data mutation, privilege change, fixture execution, invariant/business-row query, migration, EF scaffold, C#, Dart, ARB or generated-model change. No application builds/tests run. No safe disposable database was created or assumed; 24 fixtures and seven races are not execution passes.
 
-## Verification and scope boundary
+## Resolved clarification and residual risks
 
-- `git diff --check` and `git diff --cached --check`: passed. Complete documentation changes reviewed; local links, table structure and T01–T26/W01–W48/F01–F24 counts checked. Staged scope is exactly the five authorized Markdown files; temporary inspection files removed.
-- No DDL, SQL migration, PostgreSQL mutation, EF scaffold or generated-model change; no C#, Dart or ARB modifications.
-- No application builds/tests run for this documentation-only milestone. The 24 fixtures are specifications, not executed tests.
-- Historical results only: 242 Flutter tests, clean analysis/formatting, Web release and Android debug builds in the prior Flutter milestone; 356 backend tests in the earlier backend foundation. These were not rerun here.
-- No app launch, financial command, iOS verification, merge or PR. The requested documentation branch is to be committed and pushed after final checks.
+The owner-approved physical-design correction resolves Opening authorization: confirmed AdvanceDelivery/BalanceCreated receipt or approved evidenced legacy Balance review establishes unassigned custody only. Separate Designate remains Manager-authorized and gated. Project Correction uses CorrectCustody project authority; company-only Correction uses existing approved balance-resolution or legacy-review authority. See the DDL review for source integrity and unchanged Policy v1.
 
-## Remaining inputs and risks
-
-Company/category evidence choices, actual contract denomination/retention terms, reviewed legacy attribution and financing classifications, durable binary storage and cutover declarations are still needed. No production/customer-row correctness was asserted. Deferred triggers, source/effect budgets, canonical snapshots, generated mappings and all writer/race paths require staging proof. Closure cannot activate while an old writer or direct DML bypass remains. Privileged maintenance requires controlled suspension and reconciliation; post-posting rollback cannot drop history or restore only part of the financial state.
+Trigger behavior, database binding, privileges, packet sealing concurrency and all application writers need separately authorized staging proof. The SQL harness provides structural probes; future command-level fixture bindings must test the actual missing commands. The approved schema has no per-company enforcement activation flag, so companies may be prepared in phases but structural activation waits for all-company coverage. Runtime ownership/inherited privileged roles and unrestricted legacy writers remain blockers to closure activation.
 
 ## Exact next task
 
-After explicit approval of [the schema design](docs/SETTLEMENT_SCHEMA_CUTOVER_DESIGN.md), prepare reviewable Database-First forward/rollback DDL and metadata verification/cutover rehearsal scripts for T01–T26 and the five listed existing-table alterations. Do not execute those scripts, mutate any database, scaffold models or implement commands in that preparation task. Present the artifacts and staging execution/rollback checklist for separate execution authorization.
+Review [SETTLEMENT_DDL_REVIEW.md](docs/SETTLEMENT_DDL_REVIEW.md) and the SQL artifacts. Verify the clarified source paths and operation scopes. After separate explicit staging-execution authorization, verify backup/restore and role separation, rerun metadata preflight, execute only the approved installation on the named isolated staging target, compare catalog/deparsed definitions and run authorized structural probes. Do not enable closure, populate real cutover data, scaffold EF or implement commands without their separately approved scope. Production execution remains separately gated.
