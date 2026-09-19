@@ -1,4 +1,15 @@
 \set ON_ERROR_STOP on
+\if :{?expected_database}
+\else
+\echo 'STOP: provide expected_database'
+\quit 3
+\endif
+SELECT current_database() = :'expected_database' AS expected_database_ok \gset
+\if :expected_database_ok
+\else
+\echo 'STOP: connected database does not match expected_database'
+\quit 3
+\endif
 \echo 'LOCAL EMPTY REHEARSAL DATABASE ONLY — NEVER DEPLOYED AHDah — ROLLBACK AT END'
 \if :{?fixture_only_approved}
 \else
@@ -16,14 +27,16 @@
 BEGIN;
 DO $guard$
 BEGIN
- IF current_database() NOT LIKE 'ahdah_settlement_rehearsal_%' THEN RAISE EXCEPTION 'Dedicated rehearsal database required'; END IF;
+ IF current_database() !~ '^ahdah_settlement_rehearsal_[A-Za-z0-9]+$' THEN RAISE EXCEPTION 'Dedicated rehearsal database required'; END IF;
  IF EXISTS(SELECT 1 FROM ahdah.companies) THEN RAISE EXCEPTION 'Rehearsal target must have no tenant/customer data'; END IF;
 END $guard$;
 -- Use deterministic, explicitly synthetic identities; never use customer actors.
 INSERT INTO ahdah.companies(company_id,company_name,company_code)
  VALUES ('10000000-0000-0000-0000-000000000001','Synthetic fixture only','REHEARSAL');
-INSERT INTO ahdah.app_users(user_id,company_id,full_name,phone_number,password_hash,role)
- VALUES ('10000000-0000-0000-0000-000000000002','10000000-0000-0000-0000-000000000001','Fixture Manager','+12025550101','NOT_A_LOGIN_CREDENTIAL','Manager');
+INSERT INTO ahdah.app_users(user_id,company_id,full_name,phone_number,password_hash,role,identity_verification_status)
+ VALUES ('10000000-0000-0000-0000-000000000002','10000000-0000-0000-0000-000000000001','Fixture Manager','+12025550101','NOT_A_LOGIN_CREDENTIAL','Manager','Pending');
+INSERT INTO ahdah.app_users(user_id,company_id,full_name,phone_number,password_hash,role,identity_verification_status)
+ VALUES ('10000000-0000-0000-0000-000000000011','10000000-0000-0000-0000-000000000001','Fixture Accountant','+12025550103','NOT_A_LOGIN_CREDENTIAL','Accountant','Pending');
 INSERT INTO ahdah.project_owners(project_owner_id,company_id,owner_name,phone_number,created_by_user_id)
  VALUES ('10000000-0000-0000-0000-000000000003','10000000-0000-0000-0000-000000000001','Fixture Owner','+12025550102','10000000-0000-0000-0000-000000000002');
 INSERT INTO ahdah.projects(project_id,company_id,project_owner_id,project_name,site_address,contract_value,contract_date,start_date,created_by_user_id,contract_currency_code)
@@ -104,9 +117,21 @@ INSERT INTO ahdah.project_settlement_snapshot_categories(company_id,project_id,s
 INSERT INTO ahdah.project_settlement_snapshots(project_settlement_snapshot_id,company_id,project_id,project_settlement_id,snapshot_number,purpose,project_version,financial_revision,policy_version_id,evaluator_version,schema_version,evaluated_at,canonical_payload,payload,hash_algorithm,snapshot_hash,evaluated_by_user_id,blocker_count,mandatory_gap_count)
  VALUES ('10000000-0000-0000-0000-000000000010','10000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000004','10000000-0000-0000-0000-000000000009',1,'Evaluation',1,1,'10000000-0000-0000-0000-000000000008','fixture',1,CURRENT_TIMESTAMP,convert_to('{}','UTF8'),'{}','SHA256',sha256(convert_to('{}','UTF8')),'10000000-0000-0000-0000-000000000002',0,0);
 SET CONSTRAINTS ALL IMMEDIATE;
+UPDATE ahdah.project_settlements
+ SET status='Approved',evaluated_at=CURRENT_TIMESTAMP,submitted_by_user_id='10000000-0000-0000-0000-000000000002',submitted_at=CURRENT_TIMESTAMP,
+     approved_by_user_id='10000000-0000-0000-0000-000000000011',approved_at=CURRENT_TIMESTAMP,
+     snapshot_id='10000000-0000-0000-0000-000000000010',snapshot_hash=sha256(convert_to('{}','UTF8'))
+ WHERE project_settlement_id='10000000-0000-0000-0000-000000000009';
 DO $packet_probe$
 DECLARE rejected boolean:=false;
 BEGIN
+ BEGIN
+  INSERT INTO ahdah.project_settlement_snapshots(project_settlement_snapshot_id,company_id,project_id,project_settlement_id,snapshot_number,purpose,project_version,financial_revision,policy_version_id,evaluator_version,schema_version,evaluated_at,canonical_payload,payload,hash_algorithm,snapshot_hash,evaluated_by_user_id,blocker_count,mandatory_gap_count)
+   VALUES ('10000000-0000-0000-0000-000000000012','10000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000004','10000000-0000-0000-0000-000000000009',2,'Evaluation',1,1,'10000000-0000-0000-0000-000000000008','fixture',1,CURRENT_TIMESTAMP,convert_to('{}','UTF8'),'{}','SHA256',sha256(convert_to('{}','UTF8')),'10000000-0000-0000-0000-000000000002',0,0);
+ EXCEPTION WHEN foreign_key_violation OR check_violation THEN rejected:=true;
+ END;
+ IF NOT rejected THEN RAISE EXCEPTION 'Incomplete snapshot packet accepted'; END IF;
+ rejected:=false;
  BEGIN
   INSERT INTO ahdah.project_settlement_snapshot_categories(company_id,project_id,snapshot_id,category_code,evaluation_status,currency_code,amount_meaning,exact_amount,blocker_count,gap_count,details)
    VALUES ('10000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000004','10000000-0000-0000-0000-000000000010','LateCategory','Evaluated','LYD','CurrentAvailable',0,0,0,'[]');
@@ -119,6 +144,18 @@ BEGIN
  EXCEPTION WHEN raise_exception THEN rejected:=true;
  END;
  IF NOT rejected THEN RAISE EXCEPTION 'Immutable snapshot changed'; END IF;
+ rejected:=false;
+ BEGIN
+  DELETE FROM ahdah.project_settlement_snapshots WHERE project_settlement_snapshot_id='10000000-0000-0000-0000-000000000010';
+ EXCEPTION WHEN raise_exception THEN rejected:=true;
+ END;
+ IF NOT rejected THEN RAISE EXCEPTION 'Immutable snapshot deleted'; END IF;
+ rejected:=false;
+ BEGIN
+  UPDATE ahdah.project_settlements SET notes='rewritten' WHERE project_settlement_id='10000000-0000-0000-0000-000000000009';
+ EXCEPTION WHEN check_violation THEN rejected:=true;
+ END;
+ IF NOT rejected THEN RAISE EXCEPTION 'Approved settlement history changed'; END IF;
 END $packet_probe$;
 ROLLBACK;
 \echo 'Structural probes finished and rolled back. This is NOT a passing F01-F24 application/race suite.'

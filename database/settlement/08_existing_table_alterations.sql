@@ -1,14 +1,5 @@
 \set ON_ERROR_STOP on
--- PREPARATION ONLY; run in the installation transaction, never independently.
-\if :{?settlement_ddl_approved}
-\else
-\quit 3
-\endif
-\if :settlement_ddl_approved
-\else
-\echo 'STOP: settlement_ddl_approved must be true'
-\quit 3
-\endif
+-- Included only by install_reviewed.sql; the top-level runner owns all parameter checks and the transaction.
 -- Nullable forever until an independently reviewed backfill and NOT NULL proposal.
 -- No guessed currency/default; no existing constraint/index is removed.
 ALTER TABLE ahdah.projects ADD COLUMN contract_currency_code varchar(3),

@@ -1,14 +1,38 @@
 \set ON_ERROR_STOP on
-\echo 'INSTALLATION REQUIRES SEPARATE EXECUTION APPROVAL. PREPARATION ONLY.'
+\if :{?expected_database}
+\else
+DO $$ BEGIN RAISE EXCEPTION 'provide expected_database'; END $$;
+\endif
+\if :{?expected_catalog_fingerprint}
+\else
+DO $$ BEGIN RAISE EXCEPTION 'provide expected_catalog_fingerprint'; END $$;
+\endif
+\if :{?runtime_role}
+\else
+DO $$ BEGIN RAISE EXCEPTION 'provide runtime_role'; END $$;
+\endif
 \if :{?settlement_ddl_approved}
 \else
-\quit 3
+DO $$ BEGIN RAISE EXCEPTION 'provide settlement_ddl_approved'; END $$;
 \endif
 \if :settlement_ddl_approved
 \else
-\echo 'STOP: settlement_ddl_approved must be true'
-\quit 3
+DO $$ BEGIN RAISE EXCEPTION 'settlement_ddl_approved must be true'; END $$;
 \endif
+SELECT current_database() = :'expected_database' AS expected_database_ok \gset
+\if :expected_database_ok
+\else
+DO $$ BEGIN RAISE EXCEPTION 'connected database does not match expected_database'; END $$;
+\endif
+SELECT set_config('ahdah.runtime_role', :'runtime_role', false);
+DO $top_role$
+DECLARE role_name text:=current_setting('ahdah.runtime_role');
+BEGIN
+ IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname=role_name AND NOT rolsuper AND NOT rolcreaterole AND NOT rolcreatedb AND NOT rolbypassrls) THEN
+  RAISE EXCEPTION 'Runtime role absent or privileged';
+ END IF;
+END $top_role$;
+\echo 'INSTALLATION REQUIRES SEPARATE EXECUTION APPROVAL.'
 \ir 00_preflight.sql
 BEGIN;
 SET LOCAL lock_timeout='5s';

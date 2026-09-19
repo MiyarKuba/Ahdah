@@ -1,4 +1,15 @@
 \set ON_ERROR_STOP on
+\if :{?expected_database}
+\else
+\echo 'STOP: provide expected_database'
+\quit 3
+\endif
+SELECT current_database() = :'expected_database' AS expected_database_ok \gset
+\if :expected_database_ok
+\else
+\echo 'STOP: connected database does not match expected_database'
+\quit 3
+\endif
 \echo 'METADATA VERIFICATION ONLY — NO DATABASE CHANGES'
 \if :{?runtime_role}
 \else
@@ -7,10 +18,10 @@
 \endif
 BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;
 SET LOCAL search_path=ahdah,pg_catalog;
-SELECT current_database()='ahdah_db' AND (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='ahdah' AND c.relkind IN ('r','p'))=117 AS ok \gset
+SELECT (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='ahdah' AND c.relkind IN ('r','p'))=117 AS ok \gset
 \if :ok
 \else
-\echo 'STOP: database/table count'
+\echo 'STOP: installed table count'
 \quit 3
 \endif
 WITH expected(t,c,typ,nn,def) AS (VALUES

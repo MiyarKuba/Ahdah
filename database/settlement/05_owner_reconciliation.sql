@@ -1,15 +1,5 @@
 \set ON_ERROR_STOP on
--- PREPARATION ARTIFACT ONLY. NOT EXECUTED. Run only through the reviewed installation transaction.
-\if :{?settlement_ddl_approved}
-\else
-\echo 'STOP: future execution requires separate approval and settlement_ddl_approved variable.'
-\quit 3
-\endif
-\if :settlement_ddl_approved
-\else
-\echo 'STOP: settlement_ddl_approved must be true'
-\quit 3
-\endif
+-- Included only by install_reviewed.sql; the top-level runner owns all parameter checks and the transaction.
 
 -- T19
 CREATE TABLE ahdah.project_owner_reconciliations (

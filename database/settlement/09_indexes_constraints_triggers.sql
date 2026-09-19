@@ -1,15 +1,5 @@
 \set ON_ERROR_STOP on
--- PREPARATION ARTIFACT ONLY. NOT EXECUTED. FKs and indexes; trigger definitions follow in this module.
-\if :{?settlement_ddl_approved}
-\else
-\echo 'STOP: future execution requires separate approval and settlement_ddl_approved variable.'
-\quit 3
-\endif
-\if :settlement_ddl_approved
-\else
-\echo 'STOP: settlement_ddl_approved must be true'
-\quit 3
-\endif
+-- Included only by install_reviewed.sql; the top-level runner owns all parameter checks and the transaction.
 ALTER TABLE ahdah.project_financial_controls ADD CONSTRAINT fk_t01_company_id FOREIGN KEY (company_id) REFERENCES ahdah.companies (company_id) ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE ahdah.project_financial_controls ADD CONSTRAINT fk_t01_project_id FOREIGN KEY (company_id, project_id) REFERENCES ahdah.projects (company_id, project_id) ON UPDATE NO ACTION ON DELETE NO ACTION;
 ALTER TABLE ahdah.project_financial_controls ADD CONSTRAINT fk_t01_active_settlement_id FOREIGN KEY (company_id, project_id, active_settlement_id) REFERENCES ahdah.project_settlements (company_id, project_id, project_settlement_id) ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED;
@@ -557,6 +547,7 @@ CREATE INDEX ix_t10_cycle_closure_snapshot_id ON ahdah.project_closure_certifica
 -- deadlock and abort, never repair amounts. Retry the entire transaction.
 CREATE FUNCTION ahdah.settlement_check_custody() RETURNS trigger
 LANGUAGE plpgsql SET search_path = pg_catalog, ahdah AS $body$
+#variable_conflict error
 DECLARE old_j jsonb; new_j jsonb; company uuid; balance_ids uuid[] := '{}';
  position_ids uuid[] := '{}'; bid uuid; b record; av numeric; rs numeric;
 BEGIN
@@ -598,6 +589,7 @@ END $body$;
 
 CREATE FUNCTION ahdah.settlement_fixed_keys() RETURNS trigger
 LANGUAGE plpgsql SET search_path = pg_catalog, ahdah AS $body$
+#variable_conflict error
 DECLARE col text;
 BEGIN
  FOREACH col IN ARRAY TG_ARGV LOOP
@@ -610,6 +602,7 @@ END $body$;
 
 CREATE FUNCTION ahdah.settlement_freeze_status() RETURNS trigger
 LANGUAGE plpgsql SET search_path = pg_catalog, ahdah AS $body$
+#variable_conflict error
 BEGIN
  IF OLD.status=TG_ARGV[0] THEN
   RAISE EXCEPTION 'Finalized record is immutable; append a successor' USING ERRCODE='23514';
@@ -620,6 +613,7 @@ END $body$;
 
 CREATE FUNCTION ahdah.settlement_child_freeze() RETURNS trigger
 LANGUAGE plpgsql SET search_path = pg_catalog, ahdah AS $body$
+#variable_conflict error
 DECLARE j jsonb; parent_status text; owner_id uuid;
 BEGIN
  j := CASE WHEN TG_OP='DELETE' THEN to_jsonb(OLD) ELSE to_jsonb(NEW) END;
@@ -645,6 +639,7 @@ END $body$;
 
 CREATE FUNCTION ahdah.settlement_owner_approval() RETURNS trigger
 LANGUAGE plpgsql SET search_path = pg_catalog, ahdah AS $body$
+#variable_conflict error
 BEGIN
  IF NEW.status='Approved' THEN
   IF NOT EXISTS(SELECT 1 FROM ahdah.project_owner_reconciliation_positions WHERE company_id=NEW.company_id AND owner_reconciliation_id=NEW.project_owner_reconciliation_id)
@@ -664,6 +659,7 @@ END $body$;
 -- dependence: validation happens at insertion commit, not years later.
 CREATE FUNCTION ahdah.settlement_category_insert() RETURNS trigger
 LANGUAGE plpgsql SET search_path = pg_catalog, ahdah AS $body$
+#variable_conflict error
 BEGIN
  PERFORM 1 FROM ahdah.project_financial_controls WHERE company_id=NEW.company_id AND project_id=NEW.project_id FOR UPDATE;
  IF NOT FOUND THEN RAISE EXCEPTION 'Project gate missing' USING ERRCODE='23503'; END IF;
@@ -674,6 +670,7 @@ BEGIN
 END $body$;
 CREATE FUNCTION ahdah.settlement_packet_check() RETURNS trigger
 LANGUAGE plpgsql SET search_path = pg_catalog, ahdah AS $body$
+#variable_conflict error
 DECLARE sid uuid; cid uuid;
 BEGIN
  cid:=NEW.company_id;
@@ -692,6 +689,7 @@ END $body$;
 
 CREATE FUNCTION ahdah.settlement_control_check() RETURNS trigger
 LANGUAGE plpgsql SET search_path = pg_catalog, ahdah AS $body$
+#variable_conflict error
 DECLARE cid uuid; pid uuid; j jsonb; p record; c record; st record; cert record; snap record;
 BEGIN
  j:=CASE WHEN TG_OP='DELETE' THEN to_jsonb(OLD) ELSE to_jsonb(NEW) END;
@@ -724,6 +722,7 @@ END $body$;
 
 CREATE FUNCTION ahdah.settlement_advance_currency() RETURNS trigger
 LANGUAGE plpgsql SET search_path = pg_catalog, ahdah AS $body$
+#variable_conflict error
 BEGIN
  IF OLD.currency_code IS DISTINCT FROM NEW.currency_code AND EXISTS(
   SELECT 1 FROM ahdah.user_advance_balances WHERE company_id=OLD.company_id AND advance_id=OLD.advance_id) THEN
@@ -799,6 +798,7 @@ ALTER TABLE ahdah.advances DISABLE TRIGGER trg_settlement_advance_currency;
 -- structural binding and freezes exactly the approved packet.
 CREATE FUNCTION ahdah.settlement_approval_packet() RETURNS trigger
 LANGUAGE plpgsql SET search_path=pg_catalog,ahdah AS $body$
+#variable_conflict error
 DECLARE s record;
 BEGIN
  IF NEW.status IN ('Submitted','Approved') THEN
@@ -832,151 +832,152 @@ CREATE UNIQUE INDEX ux_t03_legacy_opening ON ahdah.custody_operations (company_i
 -- prior designation; they must never be relabeled Opening.
 CREATE FUNCTION ahdah.settlement_custody_authority() RETURNS trigger
 LANGUAGE plpgsql SET search_path=pg_catalog,ahdah AS $body$
-DECLARE opid uuid; cid uuid; op record; e record; b record; delivery record;
- review record; resolution record; auth record; pid uuid; bid uuid; target_balance uuid;
+#variable_conflict error
+DECLARE operation_id uuid; company_id_value uuid; operation_row record; movement_row record; balance_row record; delivery_row record;
+ review_row record; resolution_row record; authorization_row record; affected_project_id uuid; affected_balance_id uuid; target_balance_id uuid;
  entry_count integer; project_count integer; amount_available numeric; amount_reserved numeric;
  expected_action text;
 BEGIN
- opid:=NEW.custody_operation_id; cid:=NEW.company_id;
- SELECT * INTO op FROM ahdah.custody_operations WHERE company_id=cid AND custody_operation_id=opid;
- IF NOT FOUND OR op.status<>'Posted' THEN RETURN NULL; END IF;
+ operation_id:=NEW.custody_operation_id; company_id_value:=NEW.company_id;
+ SELECT * INTO operation_row FROM ahdah.custody_operations WHERE company_id=company_id_value AND custody_operation_id=operation_id;
+ IF NOT FOUND OR operation_row.status<>'Posted' THEN RETURN NULL; END IF;
  -- Application already holds the full canonical gate/parent set. These locks
  -- validate the immutable posted group, not repair a writer's earlier lock order.
- FOR pid IN SELECT DISTINCT p.project_id FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p
+ FOR affected_project_id IN SELECT DISTINCT p.project_id FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p
   ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id
-  WHERE x.company_id=cid AND x.custody_operation_id=opid AND p.project_id IS NOT NULL ORDER BY p.project_id LOOP
-  PERFORM 1 FROM ahdah.project_financial_controls WHERE company_id=cid AND project_id=pid AND financial_state<>'FinanciallyClosed' FOR UPDATE;
+  WHERE x.company_id=company_id_value AND x.custody_operation_id=operation_id AND p.project_id IS NOT NULL ORDER BY p.project_id LOOP
+  PERFORM 1 FROM ahdah.project_financial_controls WHERE company_id=company_id_value AND project_id=affected_project_id AND financial_state<>'FinanciallyClosed' FOR UPDATE;
   IF NOT FOUND THEN RAISE EXCEPTION 'Project gate missing or closed' USING ERRCODE='23514'; END IF;
  END LOOP;
- FOR bid IN SELECT DISTINCT p.user_advance_balance_id FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p
+ FOR affected_balance_id IN SELECT DISTINCT p.user_advance_balance_id FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p
   ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id
-  WHERE x.company_id=cid AND x.custody_operation_id=opid ORDER BY p.user_advance_balance_id LOOP
-  PERFORM 1 FROM ahdah.user_advance_balances WHERE company_id=cid AND user_advance_balance_id=bid FOR UPDATE;
+  WHERE x.company_id=company_id_value AND x.custody_operation_id=operation_id ORDER BY p.user_advance_balance_id LOOP
+  PERFORM 1 FROM ahdah.user_advance_balances WHERE company_id=company_id_value AND user_advance_balance_id=affected_balance_id FOR UPDATE;
  END LOOP;
  SELECT count(*),count(DISTINCT p.project_id),coalesce(sum(x.delta_available_amount),0),coalesce(sum(x.delta_reserved_amount),0)
  INTO entry_count,project_count,amount_available,amount_reserved
  FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p
- ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id WHERE x.company_id=cid AND x.custody_operation_id=opid;
+ ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id WHERE x.company_id=company_id_value AND x.custody_operation_id=operation_id;
  IF EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p
  ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id
- WHERE x.company_id=cid AND x.custody_operation_id=opid AND (p.project_id IS NULL)<>(x.financial_revision_after IS NULL)) THEN
+ WHERE x.company_id=company_id_value AND x.custody_operation_id=operation_id AND (p.project_id IS NULL)<>(x.financial_revision_after IS NULL)) THEN
   RAISE EXCEPTION 'Movement financial revision must match project scope' USING ERRCODE='23514';
  END IF;
- IF op.operation_type='Opening' THEN
+ IF operation_row.operation_type='Opening' THEN
   IF project_count<>0 OR entry_count>1 THEN RAISE EXCEPTION 'Opening targets one unassigned balance only' USING ERRCODE='23514'; END IF;
-  IF op.money_transfer_id IS NOT NULL THEN
-   SELECT * INTO delivery FROM ahdah.money_transfers WHERE company_id=cid AND money_transfer_id=op.money_transfer_id FOR UPDATE;
-   IF NOT FOUND OR delivery.transfer_type<>'AdvanceDelivery' OR delivery.status<>'Confirmed' OR delivery.advance_id IS NULL
-     OR delivery.confirmed_by_user_id IS DISTINCT FROM delivery.recipient_user_id OR delivery.confirmed_at IS NULL OR entry_count<>1 THEN
+  IF operation_row.money_transfer_id IS NOT NULL THEN
+   SELECT * INTO delivery_row FROM ahdah.money_transfers WHERE company_id=company_id_value AND money_transfer_id=operation_row.money_transfer_id FOR UPDATE;
+   IF NOT FOUND OR delivery_row.transfer_type<>'AdvanceDelivery' OR delivery_row.status<>'Confirmed' OR delivery_row.advance_id IS NULL
+     OR delivery_row.confirmed_by_user_id IS DISTINCT FROM delivery_row.recipient_user_id OR delivery_row.confirmed_at IS NULL OR entry_count<>1 THEN
     RAISE EXCEPTION 'Live Opening requires real confirmed AdvanceDelivery authority' USING ERRCODE='23514';
    END IF;
-   SELECT x.*,p.user_advance_balance_id INTO e FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p
-    ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id WHERE x.company_id=cid AND x.custody_operation_id=opid;
-   SELECT * INTO b FROM ahdah.user_advance_balances WHERE company_id=cid AND user_advance_balance_id=e.user_advance_balance_id;
-   IF NOT FOUND OR b.advance_id<>delivery.advance_id OR b.user_id<>delivery.recipient_user_id
-    OR e.delta_available_amount<>delivery.transfer_amount OR e.delta_reserved_amount<>0 OR e.received_amount<>delivery.transfer_amount
-    OR e.restored_amount+e.expensed_amount+e.transferred_out_amount+e.returned_amount+e.adjustment_out_amount<>0
-    OR NOT EXISTS(SELECT 1 FROM ahdah.advances a WHERE a.company_id=cid AND a.advance_id=b.advance_id AND a.currency_code=delivery.currency_code AND a.confirmed_by_user_id=delivery.recipient_user_id AND a.confirmed_at IS NOT NULL)
-    OR NOT EXISTS(SELECT 1 FROM ahdah.balance_ledger_entries l WHERE l.company_id=cid AND l.balance_ledger_entry_id=e.balance_ledger_entry_id
-      AND l.user_advance_balance_id=b.user_advance_balance_id AND l.entry_type='BalanceCreated' AND l.reference_type='Advance'
-      AND l.reference_id=delivery.advance_id AND l.delta_received_amount=delivery.transfer_amount AND l.delta_available_amount=delivery.transfer_amount AND l.delta_reserved_amount=0) THEN
+   SELECT movement.*,position.user_advance_balance_id INTO movement_row FROM ahdah.custody_movement_entries movement JOIN ahdah.project_custody_positions position
+    ON position.company_id=movement.company_id AND position.project_custody_position_id=movement.project_custody_position_id WHERE movement.company_id=company_id_value AND movement.custody_operation_id=operation_id;
+   SELECT * INTO balance_row FROM ahdah.user_advance_balances WHERE company_id=company_id_value AND user_advance_balance_id=movement_row.user_advance_balance_id;
+   IF NOT FOUND OR balance_row.advance_id<>delivery_row.advance_id OR balance_row.user_id<>delivery_row.recipient_user_id
+    OR movement_row.delta_available_amount<>delivery_row.transfer_amount OR movement_row.delta_reserved_amount<>0 OR movement_row.received_amount<>delivery_row.transfer_amount
+    OR movement_row.restored_amount+movement_row.expensed_amount+movement_row.transferred_out_amount+movement_row.returned_amount+movement_row.adjustment_out_amount<>0
+    OR NOT EXISTS(SELECT 1 FROM ahdah.advances advance_row WHERE advance_row.company_id=company_id_value AND advance_row.advance_id=balance_row.advance_id AND advance_row.currency_code=delivery_row.currency_code AND advance_row.confirmed_by_user_id=delivery_row.recipient_user_id AND advance_row.confirmed_at IS NOT NULL)
+    OR NOT EXISTS(SELECT 1 FROM ahdah.balance_ledger_entries ledger_row WHERE ledger_row.company_id=company_id_value AND ledger_row.balance_ledger_entry_id=movement_row.balance_ledger_entry_id
+      AND ledger_row.user_advance_balance_id=balance_row.user_advance_balance_id AND ledger_row.entry_type='BalanceCreated' AND ledger_row.reference_type='Advance'
+      AND ledger_row.reference_id=delivery_row.advance_id AND ledger_row.delta_received_amount=delivery_row.transfer_amount AND ledger_row.delta_available_amount=delivery_row.transfer_amount AND ledger_row.delta_reserved_amount=0) THEN
     RAISE EXCEPTION 'Live Opening lineage/amount/currency mismatch' USING ERRCODE='23514';
    END IF;
-   target_balance:=b.user_advance_balance_id;
+   target_balance_id:=balance_row.user_advance_balance_id;
   ELSE
-   SELECT * INTO review FROM ahdah.legacy_attribution_reviews WHERE company_id=cid AND legacy_attribution_review_id=op.legacy_attribution_review_id;
-   IF NOT FOUND OR review.status<>'Approved' OR review.source_type<>'Balance' OR review.evidence_id IS NULL OR review.source_version IS NULL THEN
+   SELECT * INTO review_row FROM ahdah.legacy_attribution_reviews WHERE company_id=company_id_value AND legacy_attribution_review_id=operation_row.legacy_attribution_review_id;
+   IF NOT FOUND OR review_row.status<>'Approved' OR review_row.source_type<>'Balance' OR review_row.evidence_id IS NULL OR review_row.source_version IS NULL THEN
     RAISE EXCEPTION 'Legacy Opening requires approved evidenced Balance review' USING ERRCODE='23514';
    END IF;
-   SELECT * INTO b FROM ahdah.user_advance_balances WHERE company_id=cid AND user_advance_balance_id=review.source_id FOR UPDATE;
-   IF NOT FOUND OR b.version_number<>review.source_version OR amount_available<>b.available_amount OR amount_reserved<>b.reserved_amount THEN
+   SELECT * INTO balance_row FROM ahdah.user_advance_balances WHERE company_id=company_id_value AND user_advance_balance_id=review_row.source_id FOR UPDATE;
+   IF NOT FOUND OR balance_row.version_number<>review_row.source_version OR amount_available<>balance_row.available_amount OR amount_reserved<>balance_row.reserved_amount THEN
     RAISE EXCEPTION 'Legacy Opening must match reviewed boundary balance/version' USING ERRCODE='23514';
    END IF;
-   target_balance:=b.user_advance_balance_id;
-   IF NOT EXISTS(SELECT 1 FROM ahdah.project_custody_positions p WHERE p.company_id=cid AND p.user_advance_balance_id=target_balance AND p.project_id IS NULL)
+   target_balance_id:=balance_row.user_advance_balance_id;
+   IF NOT EXISTS(SELECT 1 FROM ahdah.project_custody_positions position WHERE position.company_id=company_id_value AND position.user_advance_balance_id=target_balance_id AND position.project_id IS NULL)
     OR EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id
-      WHERE x.company_id=cid AND x.custody_operation_id=opid AND (p.user_advance_balance_id<>target_balance OR x.delta_available_amount<0 OR x.delta_reserved_amount<0 OR x.received_amount+x.restored_amount+x.expensed_amount+x.transferred_out_amount+x.returned_amount+x.adjustment_out_amount<>0 OR x.balance_ledger_entry_id IS NOT NULL)) THEN
+      WHERE x.company_id=company_id_value AND x.custody_operation_id=operation_id AND (p.user_advance_balance_id<>target_balance_id OR x.delta_available_amount<0 OR x.delta_reserved_amount<0 OR x.received_amount+x.restored_amount+x.expensed_amount+x.transferred_out_amount+x.returned_amount+x.adjustment_out_amount<>0 OR x.balance_ledger_entry_id IS NOT NULL)) THEN
     RAISE EXCEPTION 'Legacy Opening is current unassigned custody, not another receipt/ledger posting' USING ERRCODE='23514';
    END IF;
   END IF;
   -- Parent balance lock serializes this cross-operation uniqueness test, including
   -- zero legacy openings which intentionally have no all-zero movement row.
-  IF EXISTS(SELECT 1 FROM ahdah.custody_operations o LEFT JOIN ahdah.legacy_attribution_reviews r
-   ON r.company_id=o.company_id AND r.legacy_attribution_review_id=o.legacy_attribution_review_id
-   WHERE o.company_id=cid AND o.custody_operation_id<>opid AND o.operation_type='Opening' AND o.status='Posted' AND
-   ((r.source_type='Balance' AND r.source_id=target_balance) OR EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p
-    ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id WHERE x.company_id=o.company_id AND x.custody_operation_id=o.custody_operation_id AND p.user_advance_balance_id=target_balance))) THEN
+  IF EXISTS(SELECT 1 FROM ahdah.custody_operations existing_operation LEFT JOIN ahdah.legacy_attribution_reviews existing_review
+   ON existing_review.company_id=existing_operation.company_id AND existing_review.legacy_attribution_review_id=existing_operation.legacy_attribution_review_id
+   WHERE existing_operation.company_id=company_id_value AND existing_operation.custody_operation_id<>operation_id AND existing_operation.operation_type='Opening' AND existing_operation.status='Posted' AND
+   ((existing_review.source_type='Balance' AND existing_review.source_id=target_balance_id) OR EXISTS(SELECT 1 FROM ahdah.custody_movement_entries movement JOIN ahdah.project_custody_positions position
+    ON position.company_id=movement.company_id AND position.project_custody_position_id=movement.project_custody_position_id WHERE movement.company_id=existing_operation.company_id AND movement.custody_operation_id=existing_operation.custody_operation_id AND position.user_advance_balance_id=target_balance_id))) THEN
    RAISE EXCEPTION 'Custody balance already opened' USING ERRCODE='23514';
   END IF;
- ELSIF op.operation_type IN ('Designate','Release','Reallocate','Correction') THEN
+ ELSIF operation_row.operation_type IN ('Designate','Release','Reallocate','Correction') THEN
   IF entry_count=0 THEN RAISE EXCEPTION 'Posted operation requires movement effects' USING ERRCODE='23514'; END IF;
-  IF op.operation_type='Correction' AND (op.source_operation_id=opid OR NOT EXISTS(SELECT 1 FROM ahdah.custody_operations WHERE company_id=cid AND custody_operation_id=op.source_operation_id AND status='Posted')) THEN
+  IF operation_row.operation_type='Correction' AND (operation_row.source_operation_id=operation_id OR NOT EXISTS(SELECT 1 FROM ahdah.custody_operations WHERE company_id=company_id_value AND custody_operation_id=operation_row.source_operation_id AND status='Posted')) THEN
    RAISE EXCEPTION 'Correction requires a different original posted operation' USING ERRCODE='23514';
   END IF;
-  IF op.operation_type='Correction' AND project_count=0 THEN
-   IF op.authorization_decision_id IS NOT NULL THEN RAISE EXCEPTION 'Company-only Correction cannot fabricate project authorization' USING ERRCODE='23514'; END IF;
-   IF NOT EXISTS(SELECT 1 FROM ahdah.custody_operations WHERE company_id=cid AND custody_operation_id=op.source_operation_id AND status='Posted') THEN
+  IF operation_row.operation_type='Correction' AND project_count=0 THEN
+   IF operation_row.authorization_decision_id IS NOT NULL THEN RAISE EXCEPTION 'Company-only Correction cannot fabricate project authorization' USING ERRCODE='23514'; END IF;
+   IF NOT EXISTS(SELECT 1 FROM ahdah.custody_operations WHERE company_id=company_id_value AND custody_operation_id=operation_row.source_operation_id AND status='Posted') THEN
     RAISE EXCEPTION 'Correction requires original posted operation' USING ERRCODE='23514';
    END IF;
-   IF op.legacy_attribution_review_id IS NOT NULL THEN
-    SELECT * INTO review FROM ahdah.legacy_attribution_reviews WHERE company_id=cid AND legacy_attribution_review_id=op.legacy_attribution_review_id;
-    IF NOT FOUND OR review.status<>'Approved' OR review.source_type<>'Balance' OR review.evidence_id IS NULL THEN RAISE EXCEPTION 'Company Correction requires evidenced approved legacy review' USING ERRCODE='23514'; END IF;
-    target_balance:=review.source_id;
+   IF operation_row.legacy_attribution_review_id IS NOT NULL THEN
+    SELECT * INTO review_row FROM ahdah.legacy_attribution_reviews WHERE company_id=company_id_value AND legacy_attribution_review_id=operation_row.legacy_attribution_review_id;
+    IF NOT FOUND OR review_row.status<>'Approved' OR review_row.source_type<>'Balance' OR review_row.evidence_id IS NULL THEN RAISE EXCEPTION 'Company Correction requires evidenced approved legacy review' USING ERRCODE='23514'; END IF;
+    target_balance_id:=review_row.source_id;
    ELSE
-    SELECT r.*,s.user_advance_balance_id,s.currency_code INTO resolution FROM ahdah.advance_settlement_resolutions r JOIN ahdah.advance_settlements s ON s.company_id=r.company_id AND s.advance_settlement_id=r.advance_settlement_id
-     WHERE r.company_id=cid AND r.advance_settlement_resolution_id=op.advance_settlement_resolution_id;
-    IF NOT FOUND OR resolution.status<>'Approved' THEN RAISE EXCEPTION 'Company Correction requires approved advance difference resolution' USING ERRCODE='23514'; END IF;
-    target_balance:=resolution.user_advance_balance_id;
-    IF NOT EXISTS(SELECT 1 FROM ahdah.user_advance_balances b JOIN ahdah.advances a ON a.company_id=b.company_id AND a.advance_id=b.advance_id WHERE b.company_id=cid AND b.user_advance_balance_id=target_balance AND a.currency_code=resolution.currency_code) THEN
+    SELECT resolution_source.*,settlement_source.user_advance_balance_id,settlement_source.currency_code INTO resolution_row FROM ahdah.advance_settlement_resolutions resolution_source JOIN ahdah.advance_settlements settlement_source ON settlement_source.company_id=resolution_source.company_id AND settlement_source.advance_settlement_id=resolution_source.advance_settlement_id
+     WHERE resolution_source.company_id=company_id_value AND resolution_source.advance_settlement_resolution_id=operation_row.advance_settlement_resolution_id;
+    IF NOT FOUND OR resolution_row.status<>'Approved' THEN RAISE EXCEPTION 'Company Correction requires approved advance difference resolution' USING ERRCODE='23514'; END IF;
+    target_balance_id:=resolution_row.user_advance_balance_id;
+    IF NOT EXISTS(SELECT 1 FROM ahdah.user_advance_balances balance_source JOIN ahdah.advances advance_source ON advance_source.company_id=balance_source.company_id AND advance_source.advance_id=balance_source.advance_id WHERE balance_source.company_id=company_id_value AND balance_source.user_advance_balance_id=target_balance_id AND advance_source.currency_code=resolution_row.currency_code) THEN
      RAISE EXCEPTION 'Correction currency source mismatch' USING ERRCODE='23514';
     END IF;
    END IF;
    IF EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id
-    WHERE x.company_id=cid AND x.custody_operation_id=opid AND p.user_advance_balance_id<>target_balance) THEN
+    WHERE x.company_id=company_id_value AND x.custody_operation_id=operation_id AND p.user_advance_balance_id<>target_balance_id) THEN
     RAISE EXCEPTION 'Company Correction target differs from authoritative source' USING ERRCODE='23514';
    END IF;
   ELSE
-   expected_action:=CASE WHEN op.operation_type='Correction' THEN 'CorrectCustody' ELSE op.operation_type END;
-   SELECT * INTO auth FROM ahdah.project_authorization_decisions WHERE company_id=cid AND project_authorization_decision_id=op.authorization_decision_id;
-   IF NOT FOUND OR auth.action_code<>expected_action OR auth.decision<>'Allowed' OR auth.actor_role<>'Manager'
-    OR op.approved_by_user_id IS DISTINCT FROM auth.actor_user_id OR op.approved_at IS NULL OR project_count=0 THEN
+   expected_action:=CASE WHEN operation_row.operation_type='Correction' THEN 'CorrectCustody' ELSE operation_row.operation_type END;
+   SELECT * INTO authorization_row FROM ahdah.project_authorization_decisions WHERE company_id=company_id_value AND project_authorization_decision_id=operation_row.authorization_decision_id;
+   IF NOT FOUND OR authorization_row.action_code<>expected_action OR authorization_row.decision<>'Allowed' OR authorization_row.actor_role<>'Manager'
+    OR operation_row.approved_by_user_id IS DISTINCT FROM authorization_row.actor_user_id OR operation_row.approved_at IS NULL OR project_count=0 THEN
     RAISE EXCEPTION 'Project custody operation requires matching Manager action authorization' USING ERRCODE='23514';
    END IF;
    IF NOT EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id
-    WHERE x.company_id=cid AND x.custody_operation_id=opid AND p.project_id=auth.project_id) THEN
+    WHERE x.company_id=company_id_value AND x.custody_operation_id=operation_id AND p.project_id=authorization_row.project_id) THEN
     RAISE EXCEPTION 'Authorization project is not affected' USING ERRCODE='23514';
    END IF;
-   FOR pid IN SELECT DISTINCT p.project_id FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id
-    WHERE x.company_id=cid AND x.custody_operation_id=opid AND p.project_id IS NOT NULL LOOP
-    IF pid<>auth.project_id AND NOT EXISTS(SELECT 1 FROM ahdah.project_authorization_decisions d WHERE d.company_id=cid AND d.project_id=pid AND d.action_code=expected_action AND d.decision='Allowed' AND d.actor_role='Manager' AND d.actor_user_id=op.approved_by_user_id AND d.request_hash=auth.request_hash AND d.details @> jsonb_build_object('custodyOperationId',opid::text)) THEN
+   FOR affected_project_id IN SELECT DISTINCT p.project_id FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id
+    WHERE x.company_id=company_id_value AND x.custody_operation_id=operation_id AND p.project_id IS NOT NULL LOOP
+    IF affected_project_id<>authorization_row.project_id AND NOT EXISTS(SELECT 1 FROM ahdah.project_authorization_decisions decision_row WHERE decision_row.company_id=company_id_value AND decision_row.project_id=affected_project_id AND decision_row.action_code=expected_action AND decision_row.decision='Allowed' AND decision_row.actor_role='Manager' AND decision_row.actor_user_id=operation_row.approved_by_user_id AND decision_row.request_hash=authorization_row.request_hash AND decision_row.details @> jsonb_build_object('custodyOperationId',operation_id::text)) THEN
      RAISE EXCEPTION 'Every affected project requires its own authorization decision' USING ERRCODE='23514';
     END IF;
    END LOOP;
   END IF;
-  IF op.operation_type IN ('Designate','Release','Reallocate') THEN
+  IF operation_row.operation_type IN ('Designate','Release','Reallocate') THEN
    IF EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id
-    WHERE x.company_id=cid AND x.custody_operation_id=opid GROUP BY p.user_advance_balance_id HAVING sum(x.delta_available_amount)<>0 OR sum(x.delta_reserved_amount)<>0)
-    OR EXISTS(SELECT 1 FROM ahdah.custody_movement_entries WHERE company_id=cid AND custody_operation_id=opid AND received_amount+restored_amount+expensed_amount+transferred_out_amount+returned_amount+adjustment_out_amount<>0) THEN
+    WHERE x.company_id=company_id_value AND x.custody_operation_id=operation_id GROUP BY p.user_advance_balance_id HAVING sum(x.delta_available_amount)<>0 OR sum(x.delta_reserved_amount)<>0)
+    OR EXISTS(SELECT 1 FROM ahdah.custody_movement_entries WHERE company_id=company_id_value AND custody_operation_id=operation_id AND received_amount+restored_amount+expensed_amount+transferred_out_amount+returned_amount+adjustment_out_amount<>0) THEN
     RAISE EXCEPTION 'Designation disposition must preserve each balance and its gross history' USING ERRCODE='23514';
    END IF;
-   IF op.operation_type='Designate' THEN
-    IF project_count<>1 OR NOT EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id WHERE x.company_id=cid AND x.custody_operation_id=opid AND p.project_id IS NULL)
-     OR EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id WHERE x.company_id=cid AND x.custody_operation_id=opid AND ((p.project_id IS NULL AND (x.delta_available_amount>0 OR x.delta_reserved_amount>0)) OR (p.project_id IS NOT NULL AND (x.delta_available_amount<0 OR x.delta_reserved_amount<0)))) THEN
+   IF operation_row.operation_type='Designate' THEN
+    IF project_count<>1 OR NOT EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id WHERE x.company_id=company_id_value AND x.custody_operation_id=operation_id AND p.project_id IS NULL)
+     OR EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id WHERE x.company_id=company_id_value AND x.custody_operation_id=operation_id AND ((p.project_id IS NULL AND (x.delta_available_amount>0 OR x.delta_reserved_amount>0)) OR (p.project_id IS NOT NULL AND (x.delta_available_amount<0 OR x.delta_reserved_amount<0)))) THEN
      RAISE EXCEPTION 'Designate moves only unassigned custody to one project' USING ERRCODE='23514';
     END IF;
     -- Reserved legacy attribution is a boundary mapping, never reassignment of
     -- an existing live reservation: create final T05 rows in the same cutover TX.
-    IF EXISTS(SELECT 1 FROM ahdah.custody_movement_entries WHERE company_id=cid AND custody_operation_id=opid AND delta_reserved_amount<>0) AND NOT EXISTS(
-     SELECT 1 FROM ahdah.legacy_attribution_reviews r WHERE r.company_id=cid AND r.legacy_attribution_review_id=op.legacy_attribution_review_id AND r.status='Approved' AND r.source_type='Balance' AND r.evidence_id IS NOT NULL AND r.source_version IS NOT NULL
-     AND NOT EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id JOIN ahdah.user_advance_balances b ON b.company_id=p.company_id AND b.user_advance_balance_id=p.user_advance_balance_id WHERE x.company_id=cid AND x.custody_operation_id=opid AND (p.user_advance_balance_id<>r.source_id OR b.version_number<>r.source_version))) THEN
+    IF EXISTS(SELECT 1 FROM ahdah.custody_movement_entries WHERE company_id=company_id_value AND custody_operation_id=operation_id AND delta_reserved_amount<>0) AND NOT EXISTS(
+     SELECT 1 FROM ahdah.legacy_attribution_reviews review_source WHERE review_source.company_id=company_id_value AND review_source.legacy_attribution_review_id=operation_row.legacy_attribution_review_id AND review_source.status='Approved' AND review_source.source_type='Balance' AND review_source.evidence_id IS NOT NULL AND review_source.source_version IS NOT NULL
+     AND NOT EXISTS(SELECT 1 FROM ahdah.custody_movement_entries movement JOIN ahdah.project_custody_positions position ON position.company_id=movement.company_id AND position.project_custody_position_id=movement.project_custody_position_id JOIN ahdah.user_advance_balances balance_source ON balance_source.company_id=position.company_id AND balance_source.user_advance_balance_id=position.user_advance_balance_id WHERE movement.company_id=company_id_value AND movement.custody_operation_id=operation_id AND (position.user_advance_balance_id<>review_source.source_id OR balance_source.version_number<>review_source.source_version))) THEN
      RAISE EXCEPTION 'Reserved designation requires reviewed legacy boundary' USING ERRCODE='23514';
     END IF;
-   ELSIF op.operation_type='Release' THEN
-    IF project_count<>1 OR EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id WHERE x.company_id=cid AND x.custody_operation_id=opid AND (x.delta_reserved_amount<>0 OR (p.project_id IS NULL AND x.delta_available_amount<0) OR (p.project_id IS NOT NULL AND x.delta_available_amount>0))) THEN
+   ELSIF operation_row.operation_type='Release' THEN
+    IF project_count<>1 OR EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id WHERE x.company_id=company_id_value AND x.custody_operation_id=operation_id AND (x.delta_reserved_amount<>0 OR (p.project_id IS NULL AND x.delta_available_amount<0) OR (p.project_id IS NOT NULL AND x.delta_available_amount>0))) THEN
      RAISE EXCEPTION 'Release moves only available project custody to unassigned' USING ERRCODE='23514';
     END IF;
    ELSE
-    IF project_count<>2 OR EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id WHERE x.company_id=cid AND x.custody_operation_id=opid AND (p.project_id IS NULL OR x.delta_reserved_amount<>0)) THEN
+    IF project_count<>2 OR EXISTS(SELECT 1 FROM ahdah.custody_movement_entries x JOIN ahdah.project_custody_positions p ON p.company_id=x.company_id AND p.project_custody_position_id=x.project_custody_position_id WHERE x.company_id=company_id_value AND x.custody_operation_id=operation_id AND (p.project_id IS NULL OR x.delta_reserved_amount<>0)) THEN
      RAISE EXCEPTION 'Reallocate uses two projects, no unassigned/reserved custody' USING ERRCODE='23514';
     END IF;
    END IF;

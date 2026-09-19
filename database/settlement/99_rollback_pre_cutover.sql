@@ -1,20 +1,46 @@
 \set ON_ERROR_STOP on
+\if :{?expected_database}
+\else
+DO $$ BEGIN RAISE EXCEPTION 'provide expected_database'; END $$;
+\endif
+SELECT current_database() = :'expected_database' AS expected_database_ok \gset
+\if :expected_database_ok
+\else
+DO $$ BEGIN RAISE EXCEPTION 'connected database does not match expected_database'; END $$;
+\endif
 \echo 'PRE-CUTOVER EMPTY-SCHEMA ROLLBACK ONLY. POST-CUTOVER ROLLBACK IS NOT DROP TABLE.'
 \if :{?rollback_approved}
 \else
-\quit 3
+DO $$ BEGIN RAISE EXCEPTION 'provide rollback_approved'; END $$;
 \endif
 \if :rollback_approved
 \else
-\echo 'STOP: rollback_approved must be true'
-\quit 3
+DO $$ BEGIN RAISE EXCEPTION 'rollback_approved must be true'; END $$;
 \endif
+\if :{?runtime_role}
+\else
+DO $$ BEGIN RAISE EXCEPTION 'provide runtime_role'; END $$;
+\endif
+\if :{?runtime_schema_usage_preexisting}
+\else
+DO $$ BEGIN RAISE EXCEPTION 'provide runtime_schema_usage_preexisting'; END $$;
+\endif
+SELECT lower(:'runtime_schema_usage_preexisting') IN ('true','false') AS runtime_schema_usage_preexisting_ok \gset
+\if :runtime_schema_usage_preexisting_ok
+\else
+DO $$ BEGIN RAISE EXCEPTION 'runtime_schema_usage_preexisting must be true or false'; END $$;
+\endif
+SELECT set_config('ahdah.runtime_role', :'runtime_role', false);
+SELECT set_config('ahdah.runtime_schema_usage_preexisting', lower(:'runtime_schema_usage_preexisting'), false);
+DO $runtime_role$
+DECLARE role_name text:=current_setting('ahdah.runtime_role');
+BEGIN
+ IF role_name !~ '^[A-Za-z_][A-Za-z0-9_]*$' OR NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname=role_name) THEN
+  RAISE EXCEPTION 'Runtime role absent or unsafe';
+ END IF;
+END $runtime_role$;
 BEGIN;
 SET LOCAL lock_timeout='5s';
-DO $guard$
-BEGIN
- IF current_database()<>'ahdah_db' THEN RAISE EXCEPTION 'Wrong database'; END IF;
-END $guard$;
 LOCK TABLE ahdah.company_settlement_policy_bindings, ahdah.custody_movement_entries, ahdah.custody_operations, ahdah.custody_reservations, ahdah.document_custody_events, ahdah.document_policy_exceptions, ahdah.financial_resolution_effects, ahdah.legacy_attribution_review_projects, ahdah.legacy_attribution_reviews, ahdah.project_authorization_decisions, ahdah.project_closure_certificates, ahdah.project_custody_positions, ahdah.project_financial_controls, ahdah.project_operational_events, ahdah.project_owner_reconciliation_positions, ahdah.project_owner_reconciliations, ahdah.project_owner_retention_items, ahdah.project_reopenings, ahdah.project_settlement_events, ahdah.project_settlement_snapshot_categories, ahdah.project_settlement_snapshots, ahdah.project_settlements, ahdah.settlement_policy_versions, ahdah.supplier_credit_intent_applications, ahdah.supplier_credit_intents, ahdah.verified_evidence_objects IN ACCESS EXCLUSIVE MODE;
 LOCK TABLE ahdah.projects,ahdah.project_contract_changes,ahdah.owner_payment_refunds,ahdah.user_advance_balances,ahdah.advances IN ACCESS EXCLUSIVE MODE;
 DO $empty$ BEGIN
@@ -310,7 +336,18 @@ DROP FUNCTION ahdah.settlement_freeze_status();
 DROP FUNCTION ahdah.settlement_owner_approval();
 DROP FUNCTION ahdah.settlement_packet_check();
 DROP FUNCTION ahdah.settlement_custody_authority();
+DO $restore_runtime_schema_usage$
+DECLARE role_name text:=current_setting('ahdah.runtime_role');
+ usage_preexisting boolean:=current_setting('ahdah.runtime_schema_usage_preexisting')::boolean;
+BEGIN
+ IF usage_preexisting THEN
+  EXECUTE format('GRANT USAGE ON SCHEMA ahdah TO %I',role_name);
+ ELSE
+  EXECUTE format('REVOKE USAGE ON SCHEMA ahdah FROM %I',role_name);
+ END IF;
+END $restore_runtime_schema_usage$;
 COMMIT;
 -- No CASCADE; an unexpected dependency aborts the whole rollback.
--- Dropped tables remove their own new keys/indexes/grants. Baseline functions,
--- roles, sequences, ledgers, indexes and privileges remain unchanged.
+-- Dropped tables remove their own new keys/indexes/grants. The caller-supplied
+-- pre-install schema-USAGE state is restored; capture it during change preparation.
+-- Other baseline functions, roles, sequences, ledgers, indexes and privileges remain unchanged.

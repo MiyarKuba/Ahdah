@@ -1,4 +1,15 @@
 \set ON_ERROR_STOP on
+\if :{?expected_database}
+\else
+\echo 'STOP: provide expected_database'
+\quit 3
+\endif
+SELECT current_database() = :'expected_database' AS expected_database_ok \gset
+\if :expected_database_ok
+\else
+\echo 'STOP: connected database does not match expected_database'
+\quit 3
+\endif
 \echo 'ENFORCEMENT ACTIVATION — SEPARATE ALL-COMPANY CUTOVER APPROVAL REQUIRED'
 \if :{?activation_approved}
 \else
@@ -29,7 +40,6 @@ LOCK TABLE ahdah.projects,ahdah.advances,ahdah.user_advance_balances,
  IN SHARE ROW EXCLUSIVE MODE;
 DO $activation$
 BEGIN
- IF current_database()<>'ahdah_db' THEN RAISE EXCEPTION 'Wrong database'; END IF;
  IF EXISTS(SELECT 1 FROM ahdah.projects p LEFT JOIN ahdah.project_financial_controls c ON c.company_id=p.company_id AND c.project_id=p.project_id WHERE c.project_id IS NULL) THEN RAISE EXCEPTION 'Missing legacy control'; END IF;
  IF EXISTS(SELECT 1 FROM ahdah.projects p JOIN ahdah.project_financial_controls c ON c.company_id=p.company_id AND c.project_id=p.project_id WHERE p.status='FinanciallyClosed' AND c.active_closure_id IS NULL) THEN RAISE EXCEPTION 'Uncertified legacy Closed status requires reviewed remediation'; END IF;
  IF EXISTS(SELECT 1 FROM ahdah.user_advance_balances b WHERE

@@ -1,4 +1,15 @@
 \set ON_ERROR_STOP on
+\if :{?expected_database}
+\else
+\echo 'STOP: provide expected_database'
+\quit 3
+\endif
+SELECT current_database() = :'expected_database' AS expected_database_ok \gset
+\if :expected_database_ok
+\else
+\echo 'STOP: connected database does not match expected_database'
+\quit 3
+\endif
 \echo 'AUTHORIZED CUTOVER USE ONLY — BUSINESS-ROW RECONCILIATION — NOT RUN DURING PREPARATION'
 \if :{?authorized_cutover}
 \else

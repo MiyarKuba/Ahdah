@@ -1,5 +1,7 @@
 # Settlement DDL preparation artifacts
 
+**Staging validation update (2026-09-20): SETTLEMENT PHYSICAL DDL VALIDATED FOR APPLICATION DEVELOPMENT.** All executable SQL entry points require `-v expected_database=<exact connected database name>`; preflight also requires an explicit caller-selected `expected_catalog_fingerprint`. Source baseline: `d697e4fbc6699faed6076d576a814d38`; proved schema-restored baseline: `b649a5ab846cc272287afd0217f33bfd`; all 450 differences were representation-only. Fail-atomic installation, catalog, runtime privilege, custody, packet, Opening/Designate and exact rollback checks pass. Production rollout, enforcement activation and financial closure remain unauthorized; see [the validation record](../../docs/SETTLEMENT_STAGING_DDL_VALIDATION.md).
+
 **2026-09-17 — PREPARATION ONLY. NOTHING HERE HAS BEEN APPLIED.** Policy baseline `f962d6119281906b5144b80fe1ffdac7e4525d9e`; reviewed physical design `a8df2e8d48c110959c172a1f35835ee973b495aa`. See [design authority](../../docs/SETTLEMENT_SCHEMA_CUTOVER_DESIGN.md) and [DDL review](../../docs/SETTLEMENT_DDL_REVIEW.md).
 
 ## Inventory and execution dependencies
@@ -25,7 +27,7 @@
 | 92_cutover_precheck.sql | LEGACY CUTOVER | Authorized one-company baseline inventory by currency/status; never executed during preparation. |
 | 93_cutover_rehearsal.sql | Fixture-only structural rehearsal | Empty dedicated database name, synthetic rows, rollback; full command-level fixtures in REHEARSAL.md. |
 | 94_activate_enforcement.sql | CORE CONTROL / CUSTODY | Separately authorized all-company cutover checkpoint, reviewed openings and upgraded writers; enables existing-table triggers only. |
-| 99_rollback_pre_cutover.sql | Pre-cutover rollback | Empty new tables, no denomination backfill, enforcement still disabled, no dependent writers; fails otherwise. |
+| 99_rollback_pre_cutover.sql | Pre-cutover rollback | Requires exact database, approval, runtime role and captured pre-install schema-USAGE state; empty new tables, no denomination backfill, enforcement disabled, no dependent writers; fails otherwise. |
 
 DDL preparation covers every reviewed object. Operational enablement is phased: custody, policy/evidence, owner/effect/credit workflows and certification need not launch on one day. Modules are a dependency decomposition, **not independently deployable fragments** with incomplete FKs. The supplied driver installs the complete structural set atomically; a different phased DDL deployment must receive a dependency-complete execution plan first. T01 must exist before writers are upgraded; T02–T05 establish attribution; T06–T13 certification; T14–T18 evidence/policy; T19–T24 owner/effects/intent; T25–T26 cutover.
 
@@ -63,13 +65,15 @@ Immutable triggers protect snapshots/categories/events/certificates/reopenings/a
 
 ## Runtime privileges and residual authority
 
-Runtime_role must already exist, be non-superuser/nonowner, and not inherit ownership of new tables. 10 revokes all new-table privileges from PUBLIC and that role, then grants SELECT only. It revokes PUBLIC/runtime execution on the eleven new trigger functions, never changes the two baseline functions, and requires existing schema USAGE. No role/password/secret is created or printed. Trigger functions use SECURITY INVOKER and fixed search_path; no SECURITY DEFINER escape hatch is supplied. 90 rejects inherited write/TRIGGER/TRUNCATE rights or ownership on new tables.
+Runtime_role must already exist, be non-superuser/nonowner, and not inherit ownership of new tables. 10 grants the minimum schema USAGE, revokes schema CREATE, revokes all new-table privileges from PUBLIC and that role, then grants SELECT only. It revokes PUBLIC/runtime execution on the eleven new trigger functions and never changes the two baseline functions. No role/password/secret is created or printed. Trigger functions use SECURITY INVOKER and fixed search_path; no SECURITY DEFINER escape hatch is supplied. 90 rejects inherited write/TRIGGER/TRUNCATE rights or ownership on new tables.
+
+All eleven settlement PL/pgSQL functions compile with `#variable_conflict error`. The custody-authority function uses descriptive local names and SQL aliases so PostgreSQL refuses future variable/column ambiguity instead of silently selecting a meaning.
 
 Owners/superusers and members able to SET ROLE to an owner can bypass ordinary privilege enforcement; use separate nonlogin ownership/deployment administration and audited maintenance. A runtime account that already owns baseline tables remains a residual bypass risk; changing existing ownership/whole-schema grants is outside the five reviewed alterations. Resolve before closure, never claim a REVOKE overcomes ownership. Existing baseline writers are not enrolled by this SQL. No schema-installation flag acts as a security boundary.
 
 ## Rollback
 
-**POST-CUTOVER ROLLBACK IS NOT DROP TABLE.** 99 is deliberately stricter than merely no certificates: it requires all 26 new tables empty, all three new currency columns null, the three existing-table enforcement triggers still disabled, and an externally attested no-writer-dependency boundary. It locks the full set before checking. It drops only named new triggers/FKs/columns/tables/functions, no CASCADE; an unexpected dependency aborts. Original tables, functions, indexes, sequences, roles, ledgers and grants are preserved. If policy/review/opening rows already exist, this automated rollback refuses and requires a reviewed preservation/recovery plan. After any posted financial history, use forward correction or a coordinated full restore with post-boundary transaction accounting.
+**POST-CUTOVER ROLLBACK IS NOT DROP TABLE.** 99 is deliberately stricter than merely no certificates: it requires all 26 new tables empty, all three new currency columns null, the three existing-table enforcement triggers still disabled, and an externally attested no-writer-dependency boundary. Capture whether the runtime role has schema USAGE before installation and pass `runtime_role` plus `runtime_schema_usage_preexisting=true|false`; rollback restores exactly that one installer-managed schema privilege without changing unrelated grants. It locks the full set before checking and drops only named new triggers/FKs/columns/tables/functions, no CASCADE; an unexpected dependency aborts. If policy/review/opening rows already exist, this automated rollback refuses and requires a reviewed preservation/recovery plan. After any posted financial history, use forward correction or a coordinated full restore with post-boundary transaction accounting.
 
 ## Validation limits and next review
 

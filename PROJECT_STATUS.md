@@ -1,15 +1,19 @@
 # Project status
 
+## Staging validation gate — 2026-09-20
+
+**SETTLEMENT PHYSICAL DDL VALIDATED FOR APPLICATION DEVELOPMENT.** All six isolated PostgreSQL 18 core areas pass on branch `test/settlement-staging-ddl`: catalog, runtime read-only privileges, custody conservation, packet sealing, live/legacy Opening plus Manager-authorized Designate, and exact pre-cutover rollback. The custody function uses descriptive locals/aliases and all 11 settlement functions compile with variable-conflict errors enabled. Rollback requires the captured pre-install schema-USAGE state and restored the isolated runtime signature exactly. See [the validation record](docs/SETTLEMENT_STAGING_DDL_VALIDATION.md). The existing `ahdah_db` service was not mutated and enforcement was not activated. This milestone does not authorize production rollout or financial closure.
+
 ## Current phase
 
-**Settlement DDL, verification and cutover-rehearsal artifacts prepared — review pending, execution not approved.** Policy v1 meaning is unchanged. No settlement command or financial closure capability has been enabled.
+**Settlement DDL, verification and structural staging rehearsal complete for application development.** Policy v1 meaning is unchanged. No settlement command or financial closure capability has been enabled.
 
 ## Baselines and branch
 
 - Date: 2026-09-17; workspace: `C:/dev/Ahdah`.
 - Policy: `f962d6119281906b5144b80fe1ffdac7e4525d9e`.
 - Reviewed schema design: `a8df2e8d48c110959c172a1f35835ee973b495aa`.
-- Branch: `design/settlement-ddl-artifacts`, created directly from the reviewed design commit.
+- Reviewed design branch: `design/settlement-ddl-artifacts`; validated DDL branch: `test/settlement-staging-ddl`, based on commit `a482cba2bd1f83fcbd3217b2638d27237af2903a`.
 - Existing history preserved. `frontend/ahdah_app/devtools_options.yaml` remains unread, untouched and untracked.
 
 ## Delivered artifacts

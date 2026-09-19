@@ -1,5 +1,7 @@
 # Settlement DDL review
 
+**Staging validation update, 2026-09-20: SETTLEMENT PHYSICAL DDL VALIDATED FOR APPLICATION DEVELOPMENT.** The included-file runner defect was corrected and a late module-10 SQL failure proved full rollback with psql exit 3. Clean install, catalog, runtime privilege, custody-conservation, packet-sealing, live/legacy Opening, Designate authority, and exact pre-cutover rollback checks pass. The Designate variable/alias collision was removed mechanically; all 11 functions compile with `#variable_conflict error`, and the rollback now restores the caller-recorded pre-install schema-USAGE state. This does not authorize production rollout or financial closure. See [the staging validation record](SETTLEMENT_STAGING_DDL_VALIDATION.md).
+
 **2026-09-17 — DDL preparation only; execution is not approved.** Policy v1: `f962d6119281906b5144b80fe1ffdac7e4525d9e`. Physical design: `a8df2e8d48c110959c172a1f35835ee973b495aa`. [Artifact entry point](../database/settlement/README.md), [design](SETTLEMENT_SCHEMA_CUTOVER_DESIGN.md), [policy authority](SETTLEMENT_POLICY_DECISIONS.md).
 
 ## Review outcome and counts
@@ -47,13 +49,13 @@ Legacy sequence: preserve declarations, source/boundary versions/digests and pro
 
 ## Staging execution prerequisites
 
-- [ ] Verify clarified Opening source paths, unassigned-only effects, separate Manager Designate and scoped Correction rejection/acceptance cases.
+- [x] Verify clarified live/legacy Opening source paths, unassigned-only effects, separate Manager Designate, wrong project/action/role rejection, and minimal Release/Reallocate paths. Scoped Correction application cases remain part of later writer implementation.
 - [ ] Review every SQL file and its approved baseline reference; authorize staging execution separately.
-- [ ] Prove backup/restore and isolate deployment ownership from runtime role; runtime cannot own/inherit ownership, disable triggers or truncate history.
-- [ ] Confirm 00 preflight against staging clone metadata; if fingerprint differs, classify drift and stop affected installation.
-- [ ] Confirm installation transaction order 01–10, timeout/lock impact and absence of automatic cutover/fixture execution.
+- [x] Prove backup/restore and isolate deployment ownership from runtime role; runtime cannot own/inherit ownership, disable triggers or truncate history.
+- [x] Confirm 00 preflight against staging clone metadata; all 450 restored-definition differences were classified representation-only and both exact-name preflights passed.
+- [x] Confirm installation transaction order 01–10, timeout/lock impact and absence of automatic cutover/fixture execution. Late failure rolled back fully; clean install completed in 1,165 ms.
 - [ ] Plan company preparation phases and global enforcement activation checkpoint; no per-company activation state exists in the approved schema.
-- [ ] Confirm runtime installation grants are read-only and closure remains disabled.
+- [x] Confirm runtime installation grants are read-only and closure remains disabled. SELECT passed; DML, TRUNCATE, protected-function execution and trigger disabling were denied. Enforcement activation was not run.
 
 ## DDL checklist
 
