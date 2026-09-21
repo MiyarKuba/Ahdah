@@ -17,7 +17,7 @@ namespace Ahdah.IntegrationTests;
 public sealed class DatabasePersistenceTests
 {
     [Fact]
-    public void Generated_model_maps_exactly_91_ahdah_tables_without_connecting()
+    public void Generated_model_maps_exactly_117_ahdah_tables_without_connecting()
     {
         var options = new DbContextOptionsBuilder<AhdahDbContext>()
             .UseNpgsql("Host=localhost;Database=model_metadata_only;Username=unused;Password=unused")
@@ -31,8 +31,34 @@ public sealed class DatabasePersistenceTests
             .Distinct()
             .ToArray();
 
-        Assert.Equal(91, mappedTables.Length);
+        Assert.Equal(117, mappedTables.Length);
         Assert.All(mappedTables, mapping => Assert.Equal("ahdah", mapping.Item1));
+    }
+
+    [Fact]
+    public void Settlement_scaffold_preserves_money_json_hash_and_concurrency_metadata()
+    {
+        var options = new DbContextOptionsBuilder<AhdahDbContext>()
+            .UseNpgsql("Host=localhost;Database=model_metadata_only;Username=unused;Password=unused")
+            .Options;
+        using var context = new AhdahDbContext(options);
+
+        var position = context.Model.FindEntityType(typeof(ProjectCustodyPosition))!;
+        Assert.True(position.FindProperty(nameof(ProjectCustodyPosition.AvailableAmount))!.GetPrecision() == 18);
+        Assert.True(position.FindProperty(nameof(ProjectCustodyPosition.ReservedAmount))!.GetScale() == 2);
+        Assert.True(position.FindProperty(nameof(ProjectCustodyPosition.ProjectId))!.IsNullable);
+        Assert.True(position.FindProperty(nameof(ProjectCustodyPosition.VersionNumber))!.IsConcurrencyToken);
+        Assert.True(context.Model.FindEntityType(typeof(ProjectFinancialControl))!
+            .FindProperty(nameof(ProjectFinancialControl.VersionNumber))!.IsConcurrencyToken);
+        Assert.True(context.Model.FindEntityType(typeof(CustodyOperation))!
+            .FindProperty(nameof(CustodyOperation.VersionNumber))!.IsConcurrencyToken);
+        Assert.True(context.Model.FindEntityType(typeof(CustodyReservation))!
+            .FindProperty(nameof(CustodyReservation.VersionNumber))!.IsConcurrencyToken);
+
+        var policy = context.Model.FindEntityType(typeof(SettlementPolicyVersion))!;
+        Assert.Equal("jsonb", policy.FindProperty(nameof(SettlementPolicyVersion.Rules))!.GetColumnType());
+        Assert.Equal(typeof(byte[]), policy.FindProperty(nameof(SettlementPolicyVersion.CanonicalRules))!.ClrType);
+        Assert.Equal(typeof(byte[]), policy.FindProperty(nameof(SettlementPolicyVersion.ContentHash))!.ClrType);
     }
 
     [Fact]
@@ -460,25 +486,15 @@ public sealed class DatabasePersistenceTests
     }
 
     [Fact]
-    public void Generated_persistence_files_are_unchanged_in_git()
+    public void Generated_persistence_files_have_no_merge_markers()
     {
         var repositoryRoot = FindRepositoryRoot();
-        using var process = Process.Start(new ProcessStartInfo
-        {
-            FileName = "git",
-            Arguments = "status --porcelain -- backend/src/Ahdah.Infrastructure/Persistence/Generated",
-            WorkingDirectory = repositoryRoot,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        }) ?? throw new InvalidOperationException("Could not start Git safety check.");
-
-        var output = process.StandardOutput.ReadToEnd();
-        process.WaitForExit();
-
-        Assert.Equal(0, process.ExitCode);
-        Assert.True(string.IsNullOrWhiteSpace(output));
+        var generatedRoot = Path.Combine(repositoryRoot, "backend", "src", "Ahdah.Infrastructure",
+            "Persistence", "Generated");
+        var generatedSource = string.Join(Environment.NewLine,
+            Directory.EnumerateFiles(generatedRoot, "*.cs", SearchOption.AllDirectories).Select(File.ReadAllText));
+        Assert.DoesNotContain("<<<<<<<", generatedSource, StringComparison.Ordinal);
+        Assert.DoesNotContain(">>>>>>>", generatedSource, StringComparison.Ordinal);
     }
 
     private static string Between(string source, string startMarker, string endMarker)

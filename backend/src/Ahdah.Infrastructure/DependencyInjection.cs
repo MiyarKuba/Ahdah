@@ -3,6 +3,7 @@ using Ahdah.Application.Abstractions.Security;
 using Ahdah.Application.Access.Services;
 using Ahdah.Application.Advances.Services;
 using Ahdah.Application.CompanyMembers.Services;
+using Ahdah.Application.Custody;
 using Ahdah.Application.Expenses.Services;
 using Ahdah.Application.Identity.Services;
 using Ahdah.Application.Projects.Services;
@@ -12,6 +13,8 @@ using Ahdah.Infrastructure.Access.JoinRequests;
 using Ahdah.Infrastructure.Authentication;
 using Ahdah.Infrastructure.Advances;
 using Ahdah.Infrastructure.CompanyMembers;
+using Ahdah.Infrastructure.Custody;
+using Ahdah.Infrastructure.FinancialControl;
 using Ahdah.Infrastructure.Expenses;
 using Ahdah.Infrastructure.Identity;
 using Ahdah.Infrastructure.Projects;
@@ -54,6 +57,8 @@ public static class DependencyInjection
     {
         services.AddScoped<ICompanyMemberService, CompanyMemberService>();
         services.AddScoped<IProjectService, ProjectService>();
+        services.AddScoped<ProjectFinancialGate>();
+        services.AddScoped<ICustodyService, CustodyService>();
         services.AddScoped<Ahdah.Application.Settlements.IProjectSettlementService,
             Ahdah.Infrastructure.Settlements.ProjectSettlementService>();
 

@@ -75,5 +75,7 @@ public partial class SupplierDebtWriteOff
 
     public virtual AppUser? AppUserNavigation { get; set; }
 
+    public virtual FinancialResolutionEffect? FinancialResolutionEffect { get; set; }
+
     public virtual SupplierDebt SupplierDebt { get; set; } = null!;
 }

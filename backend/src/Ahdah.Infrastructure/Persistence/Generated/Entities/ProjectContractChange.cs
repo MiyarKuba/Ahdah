@@ -47,6 +47,8 @@ public partial class ProjectContractChange
 
     public DateTime UpdatedAt { get; set; }
 
+    public string? CurrencyCode { get; set; }
+
     public virtual AppUser? AppUser { get; set; }
 
     public virtual AppUser? AppUser1 { get; set; }

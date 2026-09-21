@@ -25,6 +25,9 @@ public static class AhdahAuthorizationPolicies
     public const string AdvanceDistributor = "AdvanceDistributor";
     public const string AdvanceParticipant = "AdvanceParticipant";
     public const string AdvanceBalanceViewer = "AdvanceBalanceViewer";
+    public const string CustodyViewer = "CustodyViewer";
+    public const string CustodyPreparer = "CustodyPreparer";
+    public const string CustodyApprover = "CustodyApprover";
     public const string ExpenseViewer = "ExpenseViewer";
     public const string ExpenseCreator = "ExpenseCreator";
     public const string ExpenseReviewer = "ExpenseReviewer";

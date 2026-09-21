@@ -195,6 +195,18 @@ public sealed class ProjectService(
                 CreatedByUserId = caller.UserId
             };
             dbContext.Projects.Add(project);
+            var nowUtc = timeProvider.GetUtcNow().UtcDateTime;
+            dbContext.ProjectFinancialControls.Add(new ProjectFinancialControl
+            {
+                CompanyId = caller.CompanyId,
+                Project = project,
+                FinancialRevision = 1,
+                FinancialState = "Open",
+                LastMaterialChangeAt = nowUtc,
+                NextCycleNumber = 1,
+                AttributionStatus = "PendingReview",
+                VersionNumber = 1
+            });
 
             if (supervisor is not null)
             {

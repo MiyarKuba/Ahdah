@@ -1,12 +1,22 @@
 # Project status
 
+## Financial control and custody backend — 2026-09-21
+
+The verified PostgreSQL settlement schema has been scaffolded Database-First from `127.0.0.1:55432/ahdah_settlement_staging` on `feat/financial-control-custody`. The generated model now maps 117 `ahdah` tables, including T01-T26 and the reviewed currency columns. Handwritten partial configuration marks mutable T01, T02, T03, and T05 `version_number` properties as concurrency tokens; PostgreSQL remains authoritative for deferred triggers, immutable history, expression indexes, and `UNIQUE NULLS NOT DISTINCT` behavior.
+
+New projects create T01 in their project transaction with revision 1, state `Open`, cycle 1, and attribution `PendingReview`. `ProjectFinancialGate` provides tenant-scoped reads, PostgreSQL UUID-ordered `FOR UPDATE` locks, the `FinanciallyClosed` guard, and one revision/version/time update per logical project command. Missing legacy T01 fails closed and is not synthesized.
+
+AdvanceDelivery confirmation now creates one unassigned T02 position, a Posted T03 Opening, and its immutable T04 receipt from the authoritative `BalanceCreated` entry in the same transaction. The custody API exposes tenant-safe balance and project reads plus Accountant/Deputy Designate request and Manager approval. Posting Designate locks T01, balance, and positions in canonical order; validates the original idempotent request and active Policy v1 binding; records Manager T12 evidence; posts paired conserving T04 effects; and increments the destination project revision once. Replays do not create effects or revisions. InternalTransfer and BalanceReturn fail closed when either affected holder already has T02 custody until designation-preserving writer integration is implemented.
+
+Real PostgreSQL tests use disposable `ahdah_custody_app_test`, cloned from the validated final rehearsal schema because the older staging clone still held the pre-fix PL/pgSQL alias body. They cover atomic project/T01 creation, live Opening and replay, Designate roles/approval/replay/rollback, reads, exact conservation, missing T01, the closed-state guard, transfer/return compatibility, and concurrent oversubscription. Release, Reallocate, Correction, universal writer integration, settlement approval, closure, reopening, and global enforcement remain disabled/deferred. Flutter and production `ahdah_db` are unchanged.
+
 ## Staging validation gate — 2026-09-20
 
 **SETTLEMENT PHYSICAL DDL VALIDATED FOR APPLICATION DEVELOPMENT.** All six isolated PostgreSQL 18 core areas pass on branch `test/settlement-staging-ddl`: catalog, runtime read-only privileges, custody conservation, packet sealing, live/legacy Opening plus Manager-authorized Designate, and exact pre-cutover rollback. The custody function uses descriptive locals/aliases and all 11 settlement functions compile with variable-conflict errors enabled. Rollback requires the captured pre-install schema-USAGE state and restored the isolated runtime signature exactly. See [the validation record](docs/SETTLEMENT_STAGING_DDL_VALIDATION.md). The existing `ahdah_db` service was not mutated and enforcement was not activated. This milestone does not authorize production rollout or financial closure.
 
 ## Current phase
 
-**Settlement DDL, verification and structural staging rehearsal complete for application development.** Policy v1 meaning is unchanged. No settlement command or financial closure capability has been enabled.
+**Project financial control and custody attribution backend foundation implemented over the verified DDL.** Policy v1 meaning is unchanged. No settlement approval or financial closure capability has been enabled.
 
 ## Baselines and branch
 
@@ -23,13 +33,13 @@
 - [DDL review](docs/SETTLEMENT_DDL_REVIEW.md), [index workload register](database/settlement/INDEX_REVIEW.md), [24 fixture specifications](database/settlement/REHEARSAL.md) and [seven two-session race schedules](database/settlement/RACES.md).
 - Schema installation, legacy population, invariant verification, enforcement activation and operational enablement are separate. New runtime tables remain read-only after installation. All applicable entries in the 48-writer inventory still require upgrades before closure.
 
-## Catalog and static verification
+## Earlier DDL-design catalog and static verification
 
 - Recaptured catalog metadata in READ ONLY/ROLLBACK: PostgreSQL 18.4, ahdah_db/ahdah, 91 tables. No differences found in the 49 recorded relevant table signatures/keys/FKs/triggers.
 - Metadata-only preflight executed successfully. It checks 7,966 metadata signature rows using fingerprint `d697e4fbc6699faed6076d576a814d38`, version/schema/functions/table count and proposed object-name conflicts. No customer/business rows or sequence values queried; no credentials printed or committed.
 - Local pglast 8.4 SQL/native PL/pgSQL parsing completed without syntax errors. Its high-level trigger-AST JSON decoder has a reproducible wrapper error; native parser syntax acceptance is recorded separately from execution/binding validation.
 - Static dependency, tenant FK column/unique-key coverage, identifier length, duplicate names, artifact inventories and documentation checks performed. Working/staged diff checks and final intended-file scope are verified before commit.
-- No DDL, schema/data mutation, privilege change, fixture execution, invariant/business-row query, migration, EF scaffold, C#, Dart, ARB or generated-model change. No application builds/tests run. No safe disposable database was created or assumed; 24 fixtures and seven races are not execution passes.
+- At that earlier DDL-design milestone, no DDL, schema/data mutation, privilege change, fixture execution, invariant/business-row query, migration, EF scaffold, C#, Dart, ARB, or generated-model change was made. No application builds/tests ran, and no safe disposable database was created or assumed; its 24 fixtures and seven races were specifications rather than execution passes. The current implementation and PostgreSQL execution results are recorded above.
 
 ## Resolved clarification and residual risks
 
@@ -39,4 +49,4 @@ Trigger behavior, database binding, privileges, packet sealing concurrency and a
 
 ## Exact next task
 
-Review [SETTLEMENT_DDL_REVIEW.md](docs/SETTLEMENT_DDL_REVIEW.md) and the SQL artifacts. Verify the clarified source paths and operation scopes. After separate explicit staging-execution authorization, verify backup/restore and role separation, rerun metadata preflight, execute only the approved installation on the named isolated staging target, compare catalog/deparsed definitions and run authorized structural probes. Do not enable closure, populate real cutover data, scaffold EF or implement commands without their separately approved scope. Production execution remains separately gated.
+Upgrade the remaining project-affecting financial writers to the shared T01 gate and financial-revision protocol, starting with expenses, claims/reimbursements, supplier debt/invoices, and their payment/allocation paths. Do not begin settlement approval or financial closure until universal writer coverage is complete.

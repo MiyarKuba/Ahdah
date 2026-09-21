@@ -75,5 +75,7 @@ public partial class PersonalClaimWriteOff
 
     public virtual AppUser? AppUserNavigation { get; set; }
 
+    public virtual FinancialResolutionEffect? FinancialResolutionEffect { get; set; }
+
     public virtual PersonalClaim PersonalClaim { get; set; } = null!;
 }

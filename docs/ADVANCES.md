@@ -1,5 +1,13 @@
 # Advances foundation — backend Phase 1
 
+## Custody attribution integration (2026-09-21)
+
+AdvanceDelivery confirmation remains the only live Opening source. When confirmation creates the recipient's authoritative `user_advance_balances` row and `BalanceCreated` ledger entry, the same transaction creates exactly one unassigned T02 position, a Posted T03 `Opening`, and one immutable T04 receipt linked to that ledger entry and transfer. It does not designate a project, create T12 authority, or advance a project revision. The existing confirmation idempotency record also identifies the Opening, so same-key replay creates no duplicate position, operation, or effect.
+
+Custody reads are available at `GET /api/v1/advance-balances/{balanceId}/custody`; project-oriented positions are available at `GET /api/v1/projects/{projectId}/custody`. Values stay in their authoritative advance currency and are never aggregated across currencies.
+
+InternalTransfer and BalanceReturn have not yet been upgraded to preserve unassigned/project slices and reservations. Their confirmation path therefore fails with a state conflict if a source or recipient balance already has any T02 position. This prevents a legacy balance update from silently diverging from custody. The behavior is temporary, covered by PostgreSQL integration tests, and must remain until those writers post the matching T03-T05 effects.
+
 ## Scope and database findings
 
 Phase 1 uses the existing PostgreSQL 18 `ahdah` schema without a migration or generated-model edit. Read-only catalog inspection confirmed these primary records:

@@ -147,6 +147,21 @@ public static class AuthenticationDependencyInjection
                         IdentityConstants.ManagerRole,
                         AccessConstants.DeputyRole,
                         AccessConstants.AccountantRole))
+            .AddPolicy(AhdahAuthorizationPolicies.CustodyViewer,
+                policy => policy
+                    .RequireAuthenticatedUser()
+                    .RequireClaim(AhdahClaimTypes.CompanyId)
+                    .RequireRole(IdentityConstants.ManagerRole, AccessConstants.DeputyRole, AccessConstants.AccountantRole))
+            .AddPolicy(AhdahAuthorizationPolicies.CustodyPreparer,
+                policy => policy
+                    .RequireAuthenticatedUser()
+                    .RequireClaim(AhdahClaimTypes.CompanyId)
+                    .RequireRole(AccessConstants.DeputyRole, AccessConstants.AccountantRole))
+            .AddPolicy(AhdahAuthorizationPolicies.CustodyApprover,
+                policy => policy
+                    .RequireAuthenticatedUser()
+                    .RequireClaim(AhdahClaimTypes.CompanyId)
+                    .RequireRole(IdentityConstants.ManagerRole))
             .AddPolicy(AhdahAuthorizationPolicies.ExpenseViewer,
                 policy => policy
                     .RequireAuthenticatedUser()

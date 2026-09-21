@@ -115,7 +115,7 @@ public partial class ReportDelivery
 
     public virtual AppUser? AppUserNavigation { get; set; }
 
-    public virtual BackgroundJob? BackgroundJob { get; set; }
+    public virtual BackgroundJob BackgroundJob { get; set; } = null!;
 
     public virtual ICollection<ReportDeliveryAttempt> ReportDeliveryAttempts { get; set; } = new List<ReportDeliveryAttempt>();
 

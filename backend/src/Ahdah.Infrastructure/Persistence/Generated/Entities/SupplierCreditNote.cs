@@ -77,7 +77,11 @@ public partial class SupplierCreditNote
 
     public virtual AppUser? AppUserNavigation { get; set; }
 
+    public virtual FinancialResolutionEffect? FinancialResolutionEffect { get; set; }
+
     public virtual Supplier Supplier { get; set; } = null!;
+
+    public virtual ICollection<SupplierCreditIntent> SupplierCreditIntents { get; set; } = new List<SupplierCreditIntent>();
 
     public virtual ICollection<SupplierCreditNoteAllocation> SupplierCreditNoteAllocations { get; set; } = new List<SupplierCreditNoteAllocation>();
 }

@@ -151,6 +151,18 @@ public partial class AppUser
 
     public virtual ICollection<CompanySetting> CompanySettingAppUsers { get; set; } = new List<CompanySetting>();
 
+    public virtual ICollection<CompanySettlementPolicyBinding> CompanySettlementPolicyBindings { get; set; } = new List<CompanySettlementPolicyBinding>();
+
+    public virtual ICollection<CustodyMovementEntry> CustodyMovementEntries { get; set; } = new List<CustodyMovementEntry>();
+
+    public virtual ICollection<CustodyOperation> CustodyOperationAppUserNavigations { get; set; } = new List<CustodyOperation>();
+
+    public virtual ICollection<CustodyOperation> CustodyOperationAppUsers { get; set; } = new List<CustodyOperation>();
+
+    public virtual ICollection<DocumentCustodyEvent> DocumentCustodyEvents { get; set; } = new List<DocumentCustodyEvent>();
+
+    public virtual ICollection<DocumentPolicyException> DocumentPolicyExceptions { get; set; } = new List<DocumentPolicyException>();
+
     public virtual ICollection<ExpenseAdvanceAllocation> ExpenseAdvanceAllocations { get; set; } = new List<ExpenseAdvanceAllocation>();
 
     public virtual ICollection<Expense> ExpenseAppUser1s { get; set; } = new List<Expense>();
@@ -212,6 +224,12 @@ public partial class AppUser
     public virtual JoinRequest? JoinRequestAppUserNavigation { get; set; }
 
     public virtual ICollection<JoinRequest> JoinRequestAppUsers { get; set; } = new List<JoinRequest>();
+
+    public virtual ICollection<LegacyAttributionReview> LegacyAttributionReviewAppUser1s { get; set; } = new List<LegacyAttributionReview>();
+
+    public virtual ICollection<LegacyAttributionReview> LegacyAttributionReviewAppUserNavigations { get; set; } = new List<LegacyAttributionReview>();
+
+    public virtual ICollection<LegacyAttributionReview> LegacyAttributionReviewAppUsers { get; set; } = new List<LegacyAttributionReview>();
 
     public virtual ICollection<ManagerContribution> ManagerContributionAppUser1s { get; set; } = new List<ManagerContribution>();
 
@@ -335,11 +353,23 @@ public partial class AppUser
 
     public virtual ICollection<Project> ProjectAppUsers { get; set; } = new List<Project>();
 
+    public virtual ICollection<ProjectAuthorizationDecision> ProjectAuthorizationDecisionAppUser1s { get; set; } = new List<ProjectAuthorizationDecision>();
+
+    public virtual ICollection<ProjectAuthorizationDecision> ProjectAuthorizationDecisionAppUser2s { get; set; } = new List<ProjectAuthorizationDecision>();
+
+    public virtual ICollection<ProjectAuthorizationDecision> ProjectAuthorizationDecisionAppUserNavigations { get; set; } = new List<ProjectAuthorizationDecision>();
+
+    public virtual ICollection<ProjectAuthorizationDecision> ProjectAuthorizationDecisionAppUsers { get; set; } = new List<ProjectAuthorizationDecision>();
+
+    public virtual ICollection<ProjectClosureCertificate> ProjectClosureCertificates { get; set; } = new List<ProjectClosureCertificate>();
+
     public virtual ICollection<ProjectContractChange> ProjectContractChangeAppUser1s { get; set; } = new List<ProjectContractChange>();
 
     public virtual ICollection<ProjectContractChange> ProjectContractChangeAppUserNavigations { get; set; } = new List<ProjectContractChange>();
 
     public virtual ICollection<ProjectContractChange> ProjectContractChangeAppUsers { get; set; } = new List<ProjectContractChange>();
+
+    public virtual ICollection<ProjectOperationalEvent> ProjectOperationalEvents { get; set; } = new List<ProjectOperationalEvent>();
 
     public virtual ICollection<ProjectOwnerPayment> ProjectOwnerPaymentAppUser1s { get; set; } = new List<ProjectOwnerPayment>();
 
@@ -349,7 +379,25 @@ public partial class AppUser
 
     public virtual ICollection<ProjectOwnerPayment> ProjectOwnerPaymentAppUsers { get; set; } = new List<ProjectOwnerPayment>();
 
+    public virtual ICollection<ProjectOwnerReconciliation> ProjectOwnerReconciliationAppUserNavigations { get; set; } = new List<ProjectOwnerReconciliation>();
+
+    public virtual ICollection<ProjectOwnerReconciliation> ProjectOwnerReconciliationAppUsers { get; set; } = new List<ProjectOwnerReconciliation>();
+
+    public virtual ICollection<ProjectOwnerRetentionItem> ProjectOwnerRetentionItems { get; set; } = new List<ProjectOwnerRetentionItem>();
+
     public virtual ICollection<ProjectOwner> ProjectOwners { get; set; } = new List<ProjectOwner>();
+
+    public virtual ICollection<ProjectReopening> ProjectReopenings { get; set; } = new List<ProjectReopening>();
+
+    public virtual ICollection<ProjectSettlement> ProjectSettlementAppUser1s { get; set; } = new List<ProjectSettlement>();
+
+    public virtual ICollection<ProjectSettlement> ProjectSettlementAppUserNavigations { get; set; } = new List<ProjectSettlement>();
+
+    public virtual ICollection<ProjectSettlement> ProjectSettlementAppUsers { get; set; } = new List<ProjectSettlement>();
+
+    public virtual ICollection<ProjectSettlementEvent> ProjectSettlementEvents { get; set; } = new List<ProjectSettlementEvent>();
+
+    public virtual ICollection<ProjectSettlementSnapshot> ProjectSettlementSnapshots { get; set; } = new List<ProjectSettlementSnapshot>();
 
     public virtual ICollection<ProjectSupervisor> ProjectSupervisorAppUser1s { get; set; } = new List<ProjectSupervisor>();
 
@@ -475,9 +523,17 @@ public partial class AppUser
 
     public virtual ICollection<ScheduledJobDefinition> ScheduledJobDefinitionAppUsers { get; set; } = new List<ScheduledJobDefinition>();
 
+    public virtual ICollection<SettlementPolicyVersion> SettlementPolicyVersions { get; set; } = new List<SettlementPolicyVersion>();
+
     public virtual ICollection<Supplier> SupplierAppUserNavigations { get; set; } = new List<Supplier>();
 
     public virtual ICollection<Supplier> SupplierAppUsers { get; set; } = new List<Supplier>();
+
+    public virtual ICollection<SupplierCreditIntent> SupplierCreditIntentAppUserNavigations { get; set; } = new List<SupplierCreditIntent>();
+
+    public virtual ICollection<SupplierCreditIntent> SupplierCreditIntentAppUsers { get; set; } = new List<SupplierCreditIntent>();
+
+    public virtual ICollection<SupplierCreditIntentApplication> SupplierCreditIntentApplications { get; set; } = new List<SupplierCreditIntentApplication>();
 
     public virtual ICollection<SupplierCreditNoteAllocation> SupplierCreditNoteAllocations { get; set; } = new List<SupplierCreditNoteAllocation>();
 
@@ -570,4 +626,6 @@ public partial class AppUser
     public virtual ICollection<UserAdvanceBalance> UserAdvanceBalanceAppUsers { get; set; } = new List<UserAdvanceBalance>();
 
     public virtual ICollection<UserDevice> UserDevices { get; set; } = new List<UserDevice>();
+
+    public virtual ICollection<VerifiedEvidenceObject> VerifiedEvidenceObjects { get; set; } = new List<VerifiedEvidenceObject>();
 }

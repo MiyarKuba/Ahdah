@@ -48,6 +48,18 @@ public partial class AhdahDbContext : DbContext
 
     public virtual DbSet<CompanySetting> CompanySettings { get; set; }
 
+    public virtual DbSet<CompanySettlementPolicyBinding> CompanySettlementPolicyBindings { get; set; }
+
+    public virtual DbSet<CustodyMovementEntry> CustodyMovementEntries { get; set; }
+
+    public virtual DbSet<CustodyOperation> CustodyOperations { get; set; }
+
+    public virtual DbSet<CustodyReservation> CustodyReservations { get; set; }
+
+    public virtual DbSet<DocumentCustodyEvent> DocumentCustodyEvents { get; set; }
+
+    public virtual DbSet<DocumentPolicyException> DocumentPolicyExceptions { get; set; }
+
     public virtual DbSet<Expense> Expenses { get; set; }
 
     public virtual DbSet<ExpenseAdvanceAllocation> ExpenseAdvanceAllocations { get; set; }
@@ -64,6 +76,8 @@ public partial class AhdahDbContext : DbContext
 
     public virtual DbSet<ExpenseReturnItem> ExpenseReturnItems { get; set; }
 
+    public virtual DbSet<FinancialResolutionEffect> FinancialResolutionEffects { get; set; }
+
     public virtual DbSet<FundingSource> FundingSources { get; set; }
 
     public virtual DbSet<FundingSourceLedgerEntry> FundingSourceLedgerEntries { get; set; }
@@ -75,6 +89,10 @@ public partial class AhdahDbContext : DbContext
     public virtual DbSet<Invitation> Invitations { get; set; }
 
     public virtual DbSet<JoinRequest> JoinRequests { get; set; }
+
+    public virtual DbSet<LegacyAttributionReview> LegacyAttributionReviews { get; set; }
+
+    public virtual DbSet<LegacyAttributionReviewProject> LegacyAttributionReviewProjects { get; set; }
 
     public virtual DbSet<ManagerContribution> ManagerContributions { get; set; }
 
@@ -116,11 +134,37 @@ public partial class AhdahDbContext : DbContext
 
     public virtual DbSet<Project> Projects { get; set; }
 
+    public virtual DbSet<ProjectAuthorizationDecision> ProjectAuthorizationDecisions { get; set; }
+
+    public virtual DbSet<ProjectClosureCertificate> ProjectClosureCertificates { get; set; }
+
     public virtual DbSet<ProjectContractChange> ProjectContractChanges { get; set; }
+
+    public virtual DbSet<ProjectCustodyPosition> ProjectCustodyPositions { get; set; }
+
+    public virtual DbSet<ProjectFinancialControl> ProjectFinancialControls { get; set; }
+
+    public virtual DbSet<ProjectOperationalEvent> ProjectOperationalEvents { get; set; }
 
     public virtual DbSet<ProjectOwner> ProjectOwners { get; set; }
 
     public virtual DbSet<ProjectOwnerPayment> ProjectOwnerPayments { get; set; }
+
+    public virtual DbSet<ProjectOwnerReconciliation> ProjectOwnerReconciliations { get; set; }
+
+    public virtual DbSet<ProjectOwnerReconciliationPosition> ProjectOwnerReconciliationPositions { get; set; }
+
+    public virtual DbSet<ProjectOwnerRetentionItem> ProjectOwnerRetentionItems { get; set; }
+
+    public virtual DbSet<ProjectReopening> ProjectReopenings { get; set; }
+
+    public virtual DbSet<ProjectSettlement> ProjectSettlements { get; set; }
+
+    public virtual DbSet<ProjectSettlementEvent> ProjectSettlementEvents { get; set; }
+
+    public virtual DbSet<ProjectSettlementSnapshot> ProjectSettlementSnapshots { get; set; }
+
+    public virtual DbSet<ProjectSettlementSnapshotCategory> ProjectSettlementSnapshotCategories { get; set; }
 
     public virtual DbSet<ProjectSupervisor> ProjectSupervisors { get; set; }
 
@@ -162,7 +206,13 @@ public partial class AhdahDbContext : DbContext
 
     public virtual DbSet<ScheduledJobRun> ScheduledJobRuns { get; set; }
 
+    public virtual DbSet<SettlementPolicyVersion> SettlementPolicyVersions { get; set; }
+
     public virtual DbSet<Supplier> Suppliers { get; set; }
+
+    public virtual DbSet<SupplierCreditIntent> SupplierCreditIntents { get; set; }
+
+    public virtual DbSet<SupplierCreditIntentApplication> SupplierCreditIntentApplications { get; set; }
 
     public virtual DbSet<SupplierCreditNote> SupplierCreditNotes { get; set; }
 
@@ -194,10 +244,10 @@ public partial class AhdahDbContext : DbContext
 
     public virtual DbSet<UserDevice> UserDevices { get; set; }
 
+    public virtual DbSet<VerifiedEvidenceObject> VerifiedEvidenceObjects { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasPostgresExtension("pgcrypto");
-
         modelBuilder.Entity<Advance>(entity =>
         {
             entity.HasKey(e => e.AdvanceId).HasName("advances_pkey");
@@ -212,7 +262,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.IssueDate }, "ix_advances_issue_date");
 
-            entity.HasIndex(e => new { e.CompanyId, e.SettlementDueDate }, "ix_advances_settlement_due_date").HasFilter("((settlement_due_date IS NOT NULL) AND ((status)::text <> ALL ((ARRAY['Closed'::character varying, 'Cancelled'::character varying, 'Reversed'::character varying])::text[])))");
+            entity.HasIndex(e => new { e.CompanyId, e.SettlementDueDate }, "ix_advances_settlement_due_date").HasFilter("((settlement_due_date IS NOT NULL) AND ((status)::text <> ALL (ARRAY[('Closed'::character varying)::text, ('Cancelled'::character varying)::text, ('Reversed'::character varying)::text])))");
 
             entity.HasIndex(e => new { e.CompanyId, e.Status }, "ix_advances_status");
 
@@ -331,7 +381,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.AdvanceId }, "ux_advance_closures_one_active")
                 .IsUnique()
-                .HasFilter("((status)::text = ANY ((ARRAY['Draft'::character varying, 'PendingApproval'::character varying, 'Approved'::character varying])::text[]))");
+                .HasFilter("((status)::text = ANY (ARRAY[('Draft'::character varying)::text, ('PendingApproval'::character varying)::text, ('Approved'::character varying)::text]))");
 
             entity.Property(e => e.AdvanceClosureId)
                 .HasDefaultValueSql("gen_random_uuid()")
@@ -653,7 +703,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.UserAdvanceBalanceId }, "ux_advance_settlements_one_active")
                 .IsUnique()
-                .HasFilter("((status)::text = ANY ((ARRAY['Draft'::character varying, 'PendingReview'::character varying, 'CorrectionRequired'::character varying, 'Approved'::character varying])::text[]))");
+                .HasFilter("((status)::text = ANY (ARRAY[('Draft'::character varying)::text, ('PendingReview'::character varying)::text, ('CorrectionRequired'::character varying)::text, ('Approved'::character varying)::text]))");
 
             entity.Property(e => e.AdvanceSettlementId)
                 .HasDefaultValueSql("gen_random_uuid()")
@@ -1144,7 +1194,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.OccurredAt }, "ix_audit_logs_failures")
                 .IsDescending(false, true)
-                .HasFilter("((outcome)::text = ANY ((ARRAY['Failure'::character varying, 'Denied'::character varying])::text[]))");
+                .HasFilter("((outcome)::text = ANY (ARRAY[('Failure'::character varying)::text, ('Denied'::character varying)::text]))");
 
             entity.HasIndex(e => e.Metadata, "ix_audit_logs_metadata")
                 .HasMethod("gin")
@@ -1152,7 +1202,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.IpAddress, e.OccurredAt }, "ix_audit_logs_security_ip")
                 .IsDescending(false, false, true)
-                .HasFilter("(((event_category)::text = ANY ((ARRAY['Authentication'::character varying, 'Authorization'::character varying, 'Security'::character varying])::text[])) AND (ip_address IS NOT NULL))");
+                .HasFilter("(((event_category)::text = ANY (ARRAY[('Authentication'::character varying)::text, ('Authorization'::character varying)::text, ('Security'::character varying)::text])) AND (ip_address IS NOT NULL))");
 
             entity.HasIndex(e => new { e.CompanyId, e.SessionId, e.OccurredAt }, "ix_audit_logs_session")
                 .IsDescending(false, false, true)
@@ -1300,7 +1350,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.QueueName, e.Priority, e.AvailableAt, e.JobSequence }, "ix_background_jobs_ready")
                 .IsDescending(false, true, false, false)
-                .HasFilter("((status)::text = ANY ((ARRAY['Pending'::character varying, 'Scheduled'::character varying])::text[]))");
+                .HasFilter("((status)::text = ANY (ARRAY[('Pending'::character varying)::text, ('Scheduled'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.ResourceType, e.ResourceId }, "ix_background_jobs_resource").HasFilter("(resource_id IS NOT NULL)");
 
@@ -1447,7 +1497,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.FailureCategory, e.CompletedAt }, "ix_background_job_attempts_failures")
                 .IsDescending(false, false, true)
-                .HasFilter("((attempt_status)::text = ANY ((ARRAY['Failed'::character varying, 'Abandoned'::character varying])::text[]))");
+                .HasFilter("((attempt_status)::text = ANY (ARRAY[('Failed'::character varying)::text, ('Abandoned'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.BackgroundJobId, e.AttemptNumber }, "ix_background_job_attempts_job").IsDescending(false, false, true);
 
@@ -1935,7 +1985,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.IssuedAt }, "ix_number_allocations_issued")
                 .IsDescending(false, true)
-                .HasFilter("((allocation_status)::text = ANY ((ARRAY['Issued'::character varying, 'Voided'::character varying])::text[]))");
+                .HasFilter("((allocation_status)::text = ANY (ARRAY[('Issued'::character varying)::text, ('Voided'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.CompanyNumberSequenceId, e.PeriodKey, e.AllocatedValue }, "ix_number_allocations_sequence").IsDescending(false, false, false, true);
 
@@ -1951,7 +2001,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.CompanyNumberSequenceId, e.EntityType, e.EntityId }, "ux_number_allocations_entity")
                 .IsUnique()
-                .HasFilter("((entity_id IS NOT NULL) AND ((allocation_status)::text = ANY ((ARRAY['Issued'::character varying, 'Voided'::character varying])::text[])))");
+                .HasFilter("((entity_id IS NOT NULL) AND ((allocation_status)::text = ANY (ARRAY[('Issued'::character varying)::text, ('Voided'::character varying)::text])))");
 
             entity.HasIndex(e => new { e.CompanyId, e.ReservationToken }, "ux_number_allocations_reservation_token")
                 .IsUnique()
@@ -2417,6 +2467,556 @@ public partial class AhdahDbContext : DbContext
                 .HasForeignKey(d => new { d.CompanyId, d.UpdatedByUserId })
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_company_settings_updated_by");
+        });
+
+        modelBuilder.Entity<CompanySettlementPolicyBinding>(entity =>
+        {
+            entity.HasKey(e => e.CompanyId).HasName("pk_t15");
+
+            entity.ToTable("company_settlement_policy_bindings", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ActivatedByUserId }, "ix_t15_fk_activated_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ActivePolicyVersionId }, "ix_t15_fk_active_policy_version_id");
+
+            entity.Property(e => e.CompanyId)
+                .ValueGeneratedNever()
+                .HasColumnName("company_id");
+            entity.Property(e => e.ActivatedAt).HasColumnName("activated_at");
+            entity.Property(e => e.ActivatedByUserId).HasColumnName("activated_by_user_id");
+            entity.Property(e => e.ActivePolicyVersionId).HasColumnName("active_policy_version_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.VersionNumber)
+                .HasDefaultValue(1)
+                .HasColumnName("version_number");
+
+            entity.HasOne(d => d.Company).WithOne(p => p.CompanySettlementPolicyBinding)
+                .HasForeignKey<CompanySettlementPolicyBinding>(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t15_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.CompanySettlementPolicyBindings)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ActivatedByUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t15_activated_by_user_id");
+
+            entity.HasOne(d => d.SettlementPolicyVersion).WithMany(p => p.CompanySettlementPolicyBindings)
+                .HasPrincipalKey(p => new { p.CompanyId, p.SettlementPolicyVersionId })
+                .HasForeignKey(d => new { d.CompanyId, d.ActivePolicyVersionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t15_active_policy_version_id");
+        });
+
+        modelBuilder.Entity<CustodyMovementEntry>(entity =>
+        {
+            entity.HasKey(e => e.CustodyMovementEntryId).HasName("pk_t04");
+
+            entity.ToTable("custody_movement_entries", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ActorUserId }, "ix_t04_fk_actor_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.BalanceLedgerEntryId }, "ix_t04_fk_balance_ledger_entry_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ReversesEntryId }, "ix_t04_fk_reverses_entry_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectCustodyPositionId, e.OccurredAt }, "ix_t04_position_time");
+
+            entity.HasIndex(e => new { e.CompanyId, e.CustodyOperationId, e.EntryNumber }, "uq_t04_operation_entry").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.CustodyOperationId, e.ProjectCustodyPositionId }, "uq_t04_operation_position").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.CustodyMovementEntryId }, "uq_t04_tenant").IsUnique();
+
+            entity.Property(e => e.CustodyMovementEntryId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("custody_movement_entry_id");
+            entity.Property(e => e.ActorUserId).HasColumnName("actor_user_id");
+            entity.Property(e => e.AdjustmentOutAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("adjustment_out_amount");
+            entity.Property(e => e.BalanceLedgerEntryId).HasColumnName("balance_ledger_entry_id");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CustodyOperationId).HasColumnName("custody_operation_id");
+            entity.Property(e => e.DeltaAvailableAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("delta_available_amount");
+            entity.Property(e => e.DeltaReservedAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("delta_reserved_amount");
+            entity.Property(e => e.EntryNumber).HasColumnName("entry_number");
+            entity.Property(e => e.ExpensedAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("expensed_amount");
+            entity.Property(e => e.FinancialRevisionAfter).HasColumnName("financial_revision_after");
+            entity.Property(e => e.OccurredAt).HasColumnName("occurred_at");
+            entity.Property(e => e.PositionVersionAfter).HasColumnName("position_version_after");
+            entity.Property(e => e.PositionVersionBefore).HasColumnName("position_version_before");
+            entity.Property(e => e.ProjectCustodyPositionId).HasColumnName("project_custody_position_id");
+            entity.Property(e => e.ReceivedAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("received_amount");
+            entity.Property(e => e.RestoredAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("restored_amount");
+            entity.Property(e => e.ReturnedAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("returned_amount");
+            entity.Property(e => e.ReversesEntryId).HasColumnName("reverses_entry_id");
+            entity.Property(e => e.TransferredOutAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("transferred_out_amount");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.CustodyMovementEntries)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t04_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.CustodyMovementEntries)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ActorUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t04_actor_user_id");
+
+            entity.HasOne(d => d.BalanceLedgerEntry).WithMany(p => p.CustodyMovementEntries)
+                .HasPrincipalKey(p => new { p.CompanyId, p.BalanceLedgerEntryId })
+                .HasForeignKey(d => new { d.CompanyId, d.BalanceLedgerEntryId })
+                .HasConstraintName("fk_t04_balance_ledger_entry_id");
+
+            entity.HasOne(d => d.CustodyOperation).WithMany(p => p.CustodyMovementEntries)
+                .HasPrincipalKey(p => new { p.CompanyId, p.CustodyOperationId })
+                .HasForeignKey(d => new { d.CompanyId, d.CustodyOperationId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t04_custody_operation_id");
+
+            entity.HasOne(d => d.ProjectCustodyPosition).WithMany(p => p.CustodyMovementEntries)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectCustodyPositionId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectCustodyPositionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t04_project_custody_position_id");
+
+            entity.HasOne(d => d.CustodyMovementEntryNavigation).WithMany(p => p.InverseCustodyMovementEntryNavigation)
+                .HasPrincipalKey(p => new { p.CompanyId, p.CustodyMovementEntryId })
+                .HasForeignKey(d => new { d.CompanyId, d.ReversesEntryId })
+                .HasConstraintName("fk_t04_reverses_entry_id");
+        });
+
+        modelBuilder.Entity<CustodyOperation>(entity =>
+        {
+            entity.HasKey(e => e.CustodyOperationId).HasName("pk_t03");
+
+            entity.ToTable("custody_operations", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ApprovedByUserId }, "ix_t03_fk_approved_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.AuthorizationDecisionId }, "ix_t03_fk_authorization_decision_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ExpenseId }, "ix_t03_fk_expense_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ExpenseReturnId }, "ix_t03_fk_expense_return_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.LegacyAttributionReviewId }, "ix_t03_fk_legacy_attribution_review_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.MoneyTransferId }, "ix_t03_fk_money_transfer_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.RequestedByUserId }, "ix_t03_fk_requested_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SourceOperationId }, "ix_t03_fk_source_operation_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.AdvanceSettlementResolutionId }, "ix_t03_resolution_source");
+
+            entity.HasIndex(e => new { e.CompanyId, e.IdempotencyRecordId, e.OperationType }, "uq_t03_idempotency").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.CustodyOperationId }, "uq_t03_tenant").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.LegacyAttributionReviewId }, "ux_t03_legacy_opening")
+                .IsUnique()
+                .HasFilter("(((operation_type)::text = 'Opening'::text) AND ((status)::text = 'Posted'::text) AND (legacy_attribution_review_id IS NOT NULL))");
+
+            entity.HasIndex(e => new { e.CompanyId, e.MoneyTransferId }, "ux_t03_live_opening")
+                .IsUnique()
+                .HasFilter("(((operation_type)::text = 'Opening'::text) AND ((status)::text = 'Posted'::text) AND (money_transfer_id IS NOT NULL))");
+
+            entity.Property(e => e.CustodyOperationId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("custody_operation_id");
+            entity.Property(e => e.AdvanceSettlementResolutionId).HasColumnName("advance_settlement_resolution_id");
+            entity.Property(e => e.ApprovedAt).HasColumnName("approved_at");
+            entity.Property(e => e.ApprovedByUserId).HasColumnName("approved_by_user_id");
+            entity.Property(e => e.AuthorizationDecisionId).HasColumnName("authorization_decision_id");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.ExpenseId).HasColumnName("expense_id");
+            entity.Property(e => e.ExpenseReturnId).HasColumnName("expense_return_id");
+            entity.Property(e => e.IdempotencyRecordId).HasColumnName("idempotency_record_id");
+            entity.Property(e => e.LegacyAttributionReviewId).HasColumnName("legacy_attribution_review_id");
+            entity.Property(e => e.MoneyTransferId).HasColumnName("money_transfer_id");
+            entity.Property(e => e.OperationType)
+                .HasMaxLength(40)
+                .HasColumnName("operation_type");
+            entity.Property(e => e.Reason)
+                .HasMaxLength(1000)
+                .HasColumnName("reason");
+            entity.Property(e => e.RequestedAt).HasColumnName("requested_at");
+            entity.Property(e => e.RequestedByUserId).HasColumnName("requested_by_user_id");
+            entity.Property(e => e.SourceOperationId).HasColumnName("source_operation_id");
+            entity.Property(e => e.Status)
+                .HasMaxLength(40)
+                .HasColumnName("status");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.VersionNumber)
+                .HasDefaultValue(1)
+                .HasColumnName("version_number");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.CustodyOperations)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t03_company_id");
+
+            entity.HasOne(d => d.AdvanceSettlementResolution).WithMany(p => p.CustodyOperations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.AdvanceSettlementResolutionId })
+                .HasForeignKey(d => new { d.CompanyId, d.AdvanceSettlementResolutionId })
+                .HasConstraintName("fk_t03_advance_settlement_resolution_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.CustodyOperationAppUsers)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ApprovedByUserId })
+                .HasConstraintName("fk_t03_approved_by_user_id");
+
+            entity.HasOne(d => d.ProjectAuthorizationDecision).WithMany(p => p.CustodyOperations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectAuthorizationDecisionId })
+                .HasForeignKey(d => new { d.CompanyId, d.AuthorizationDecisionId })
+                .HasConstraintName("fk_t03_authorization_decision_id");
+
+            entity.HasOne(d => d.Expense).WithMany(p => p.CustodyOperations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ExpenseId })
+                .HasForeignKey(d => new { d.CompanyId, d.ExpenseId })
+                .HasConstraintName("fk_t03_expense_id");
+
+            entity.HasOne(d => d.ExpenseReturn).WithMany(p => p.CustodyOperations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ExpenseReturnId })
+                .HasForeignKey(d => new { d.CompanyId, d.ExpenseReturnId })
+                .HasConstraintName("fk_t03_expense_return_id");
+
+            entity.HasOne(d => d.IdempotencyRecord).WithMany(p => p.CustodyOperations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.IdempotencyRecordId })
+                .HasForeignKey(d => new { d.CompanyId, d.IdempotencyRecordId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t03_idempotency_record_id");
+
+            entity.HasOne(d => d.LegacyAttributionReview).WithOne(p => p.CustodyOperation)
+                .HasPrincipalKey<LegacyAttributionReview>(p => new { p.CompanyId, p.LegacyAttributionReviewId })
+                .HasForeignKey<CustodyOperation>(d => new { d.CompanyId, d.LegacyAttributionReviewId })
+                .HasConstraintName("fk_t03_legacy_attribution_review_id");
+
+            entity.HasOne(d => d.MoneyTransfer).WithOne(p => p.CustodyOperation)
+                .HasPrincipalKey<MoneyTransfer>(p => new { p.CompanyId, p.MoneyTransferId })
+                .HasForeignKey<CustodyOperation>(d => new { d.CompanyId, d.MoneyTransferId })
+                .HasConstraintName("fk_t03_money_transfer_id");
+
+            entity.HasOne(d => d.AppUserNavigation).WithMany(p => p.CustodyOperationAppUserNavigations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.RequestedByUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t03_requested_by_user_id");
+
+            entity.HasOne(d => d.CustodyOperationNavigation).WithMany(p => p.InverseCustodyOperationNavigation)
+                .HasPrincipalKey(p => new { p.CompanyId, p.CustodyOperationId })
+                .HasForeignKey(d => new { d.CompanyId, d.SourceOperationId })
+                .HasConstraintName("fk_t03_source_operation_id");
+        });
+
+        modelBuilder.Entity<CustodyReservation>(entity =>
+        {
+            entity.HasKey(e => e.CustodyReservationId).HasName("pk_t05");
+
+            entity.ToTable("custody_reservations", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.CustodyOperationId }, "ix_t05_fk_custody_operation_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ExpenseAdvanceAllocationId }, "ix_t05_fk_expense_advance_allocation_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ResolvedByOperationId }, "ix_t05_fk_resolved_by_operation_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.TransferAdvanceAllocationId }, "ix_t05_fk_transfer_advance_allocation_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectCustodyPositionId, e.Status }, "ix_t05_position_status");
+
+            entity.HasIndex(e => new { e.CompanyId, e.CustodyReservationId }, "uq_t05_tenant").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectCustodyPositionId, e.ExpenseAdvanceAllocationId }, "ux_t05_expense_allocation")
+                .IsUnique()
+                .HasFilter("(expense_advance_allocation_id IS NOT NULL)");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectCustodyPositionId, e.TransferAdvanceAllocationId }, "ux_t05_transfer_allocation")
+                .IsUnique()
+                .HasFilter("(transfer_advance_allocation_id IS NOT NULL)");
+
+            entity.Property(e => e.CustodyReservationId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("custody_reservation_id");
+            entity.Property(e => e.Amount)
+                .HasPrecision(18, 2)
+                .HasColumnName("amount");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CustodyOperationId).HasColumnName("custody_operation_id");
+            entity.Property(e => e.ExpenseAdvanceAllocationId).HasColumnName("expense_advance_allocation_id");
+            entity.Property(e => e.ProjectCustodyPositionId).HasColumnName("project_custody_position_id");
+            entity.Property(e => e.ResolvedByOperationId).HasColumnName("resolved_by_operation_id");
+            entity.Property(e => e.Status)
+                .HasMaxLength(40)
+                .HasColumnName("status");
+            entity.Property(e => e.TransferAdvanceAllocationId).HasColumnName("transfer_advance_allocation_id");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.VersionNumber)
+                .HasDefaultValue(1)
+                .HasColumnName("version_number");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.CustodyReservations)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t05_company_id");
+
+            entity.HasOne(d => d.CustodyOperation).WithMany(p => p.CustodyReservationCustodyOperations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.CustodyOperationId })
+                .HasForeignKey(d => new { d.CompanyId, d.CustodyOperationId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t05_custody_operation_id");
+
+            entity.HasOne(d => d.ExpenseAdvanceAllocation).WithMany(p => p.CustodyReservations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ExpenseAdvanceAllocationId })
+                .HasForeignKey(d => new { d.CompanyId, d.ExpenseAdvanceAllocationId })
+                .HasConstraintName("fk_t05_expense_advance_allocation_id");
+
+            entity.HasOne(d => d.ProjectCustodyPosition).WithMany(p => p.CustodyReservations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectCustodyPositionId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectCustodyPositionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t05_project_custody_position_id");
+
+            entity.HasOne(d => d.CustodyOperationNavigation).WithMany(p => p.CustodyReservationCustodyOperationNavigations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.CustodyOperationId })
+                .HasForeignKey(d => new { d.CompanyId, d.ResolvedByOperationId })
+                .HasConstraintName("fk_t05_resolved_by_operation_id");
+
+            entity.HasOne(d => d.TransferAdvanceAllocation).WithMany(p => p.CustodyReservations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.TransferAdvanceAllocationId })
+                .HasForeignKey(d => new { d.CompanyId, d.TransferAdvanceAllocationId })
+                .HasConstraintName("fk_t05_transfer_advance_allocation_id");
+        });
+
+        modelBuilder.Entity<DocumentCustodyEvent>(entity =>
+        {
+            entity.HasKey(e => e.DocumentCustodyEventId).HasName("pk_t16");
+
+            entity.ToTable("document_custody_events", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.EvidenceId, e.OccurredAt }, "ix_t16_evidence_time");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ActorUserId }, "ix_t16_fk_actor_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.AuthorizationDecisionId }, "ix_t16_fk_authorization_decision_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.EvidenceId }, "ix_t16_fk_evidence_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ExpenseDocumentId }, "ix_t16_fk_expense_document_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PolicyVersionId }, "ix_t16_fk_policy_version_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.PreviousEventId }, "ix_t16_fk_previous_event_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.DocumentCustodyEventId }, "uq_t16_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.DocumentCustodyEventId }, "uq_t16_tenant").IsUnique();
+
+            entity.Property(e => e.DocumentCustodyEventId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("document_custody_event_id");
+            entity.Property(e => e.ActorRole)
+                .HasMaxLength(40)
+                .HasColumnName("actor_role");
+            entity.Property(e => e.ActorUserId).HasColumnName("actor_user_id");
+            entity.Property(e => e.AuthorizationDecisionId).HasColumnName("authorization_decision_id");
+            entity.Property(e => e.CategoryCode)
+                .HasMaxLength(80)
+                .HasColumnName("category_code");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.EventType)
+                .HasMaxLength(40)
+                .HasColumnName("event_type");
+            entity.Property(e => e.EvidenceId).HasColumnName("evidence_id");
+            entity.Property(e => e.ExpenseDocumentId).HasColumnName("expense_document_id");
+            entity.Property(e => e.OccurredAt).HasColumnName("occurred_at");
+            entity.Property(e => e.PolicyVersionId).HasColumnName("policy_version_id");
+            entity.Property(e => e.PreviousEventId).HasColumnName("previous_event_id");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.Reason)
+                .HasMaxLength(1000)
+                .HasColumnName("reason");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.DocumentCustodyEvents)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t16_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.DocumentCustodyEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ActorUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t16_actor_user_id");
+
+            entity.HasOne(d => d.VerifiedEvidenceObject).WithMany(p => p.DocumentCustodyEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.VerifiedEvidenceObjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.EvidenceId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t16_evidence_id");
+
+            entity.HasOne(d => d.ExpenseDocument).WithMany(p => p.DocumentCustodyEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ExpenseDocumentId })
+                .HasForeignKey(d => new { d.CompanyId, d.ExpenseDocumentId })
+                .HasConstraintName("fk_t16_expense_document_id");
+
+            entity.HasOne(d => d.SettlementPolicyVersion).WithMany(p => p.DocumentCustodyEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.SettlementPolicyVersionId })
+                .HasForeignKey(d => new { d.CompanyId, d.PolicyVersionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t16_policy_version_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.DocumentCustodyEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t16_project_id");
+
+            entity.HasOne(d => d.ProjectAuthorizationDecision).WithMany(p => p.DocumentCustodyEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectAuthorizationDecisionId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.AuthorizationDecisionId })
+                .HasConstraintName("fk_t16_authorization_decision_id");
+
+            entity.HasOne(d => d.DocumentCustodyEventNavigation).WithMany(p => p.InverseDocumentCustodyEventNavigation)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.DocumentCustodyEventId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.PreviousEventId })
+                .HasConstraintName("fk_t16_previous_event_id");
+        });
+
+        modelBuilder.Entity<DocumentPolicyException>(entity =>
+        {
+            entity.HasKey(e => e.DocumentPolicyExceptionId).HasName("pk_t17");
+
+            entity.ToTable("document_policy_exceptions", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ApprovedByUserId }, "ix_t17_fk_approved_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.AuthorizationDecisionId }, "ix_t17_fk_authorization_decision_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.EvidenceId }, "ix_t17_fk_evidence_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ExpenseDocumentId }, "ix_t17_fk_expense_document_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PolicyVersionId }, "ix_t17_fk_policy_version_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.SupersedesExceptionId }, "ix_t17_fk_supersedes_exception_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.DocumentPolicyExceptionId }, "uq_t17_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.DocumentPolicyExceptionId }, "uq_t17_tenant").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.SupersedesExceptionId }, "ux_t17_supersedes")
+                .IsUnique()
+                .HasFilter("(supersedes_exception_id IS NOT NULL)");
+
+            entity.Property(e => e.DocumentPolicyExceptionId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("document_policy_exception_id");
+            entity.Property(e => e.ActorRole)
+                .HasMaxLength(40)
+                .HasColumnName("actor_role");
+            entity.Property(e => e.ApprovedAt).HasColumnName("approved_at");
+            entity.Property(e => e.ApprovedByUserId).HasColumnName("approved_by_user_id");
+            entity.Property(e => e.AuthorizationDecisionId).HasColumnName("authorization_decision_id");
+            entity.Property(e => e.CategoryCode)
+                .HasMaxLength(80)
+                .HasColumnName("category_code");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.EvidenceId).HasColumnName("evidence_id");
+            entity.Property(e => e.ExpenseDocumentId).HasColumnName("expense_document_id");
+            entity.Property(e => e.PolicyVersionId).HasColumnName("policy_version_id");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.Reason)
+                .HasMaxLength(1000)
+                .HasColumnName("reason");
+            entity.Property(e => e.RequirementCode)
+                .HasMaxLength(40)
+                .HasColumnName("requirement_code");
+            entity.Property(e => e.SupersedesExceptionId).HasColumnName("supersedes_exception_id");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.DocumentPolicyExceptions)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t17_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.DocumentPolicyExceptions)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ApprovedByUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t17_approved_by_user_id");
+
+            entity.HasOne(d => d.VerifiedEvidenceObject).WithMany(p => p.DocumentPolicyExceptions)
+                .HasPrincipalKey(p => new { p.CompanyId, p.VerifiedEvidenceObjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.EvidenceId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t17_evidence_id");
+
+            entity.HasOne(d => d.ExpenseDocument).WithMany(p => p.DocumentPolicyExceptions)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ExpenseDocumentId })
+                .HasForeignKey(d => new { d.CompanyId, d.ExpenseDocumentId })
+                .HasConstraintName("fk_t17_expense_document_id");
+
+            entity.HasOne(d => d.SettlementPolicyVersion).WithMany(p => p.DocumentPolicyExceptions)
+                .HasPrincipalKey(p => new { p.CompanyId, p.SettlementPolicyVersionId })
+                .HasForeignKey(d => new { d.CompanyId, d.PolicyVersionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t17_policy_version_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.DocumentPolicyExceptions)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t17_project_id");
+
+            entity.HasOne(d => d.ProjectAuthorizationDecision).WithMany(p => p.DocumentPolicyExceptions)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectAuthorizationDecisionId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.AuthorizationDecisionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t17_authorization_decision_id");
+
+            entity.HasOne(d => d.DocumentPolicyExceptionNavigation).WithMany(p => p.InverseDocumentPolicyExceptionNavigation)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.DocumentPolicyExceptionId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.SupersedesExceptionId })
+                .HasConstraintName("fk_t17_supersedes_exception_id");
         });
 
         modelBuilder.Entity<Expense>(entity =>
@@ -3188,13 +3788,193 @@ public partial class AhdahDbContext : DbContext
                 .HasConstraintName("fk_expense_return_items_return");
         });
 
+        modelBuilder.Entity<FinancialResolutionEffect>(entity =>
+        {
+            entity.HasKey(e => e.FinancialResolutionEffectId).HasName("pk_t22");
+
+            entity.ToTable("financial_resolution_effects", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.AdvanceSettlementResolutionId }, "ix_t22_fk_advance_settlement_resolution_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.AuthorizationDecisionId }, "ix_t22_fk_authorization_decision_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.CustodyMovementEntryId }, "ix_t22_fk_custody_movement_entry_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.EvidenceId }, "ix_t22_fk_evidence_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ExpenseReturnId }, "ix_t22_fk_expense_return_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.FundingSourceLedgerEntryId }, "ix_t22_fk_funding_source_ledger_entry_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PersonalClaimAdjustmentId }, "ix_t22_fk_personal_claim_adjustment_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PersonalClaimWriteOffId }, "ix_t22_fk_personal_claim_write_off_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ReversesEffectId }, "ix_t22_fk_reverses_effect_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SupplierCreditNoteId }, "ix_t22_fk_supplier_credit_note_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SupplierDebtWriteOffId }, "ix_t22_fk_supplier_debt_write_off_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SupplierRefundId }, "ix_t22_fk_supplier_refund_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.EconomicEffectKey }, "uq_t22_economic_key").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.FinancialResolutionEffectId }, "uq_t22_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.FinancialResolutionEffectId }, "uq_t22_tenant").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.AdvanceSettlementResolutionId, e.EffectNumber }, "ux_t22_advance_settlement_resolution_id")
+                .IsUnique()
+                .HasFilter("(advance_settlement_resolution_id IS NOT NULL)");
+
+            entity.HasIndex(e => new { e.CompanyId, e.CustodyMovementEntryId }, "ux_t22_custody_movement_entry_id")
+                .IsUnique()
+                .HasFilter("(custody_movement_entry_id IS NOT NULL)");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ExpenseReturnId, e.EffectNumber }, "ux_t22_expense_return_id")
+                .IsUnique()
+                .HasFilter("(expense_return_id IS NOT NULL)");
+
+            entity.HasIndex(e => new { e.CompanyId, e.FundingSourceLedgerEntryId }, "ux_t22_funding_source_ledger_entry_id")
+                .IsUnique()
+                .HasFilter("(funding_source_ledger_entry_id IS NOT NULL)");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PersonalClaimAdjustmentId }, "ux_t22_personal_claim_adjustment_id")
+                .IsUnique()
+                .HasFilter("(personal_claim_adjustment_id IS NOT NULL)");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PersonalClaimWriteOffId }, "ux_t22_personal_claim_write_off_id")
+                .IsUnique()
+                .HasFilter("(personal_claim_write_off_id IS NOT NULL)");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SupplierCreditNoteId }, "ux_t22_supplier_credit_note_id")
+                .IsUnique()
+                .HasFilter("(supplier_credit_note_id IS NOT NULL)");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SupplierDebtWriteOffId }, "ux_t22_supplier_debt_write_off_id")
+                .IsUnique()
+                .HasFilter("(supplier_debt_write_off_id IS NOT NULL)");
+
+            entity.Property(e => e.FinancialResolutionEffectId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("financial_resolution_effect_id");
+            entity.Property(e => e.AdvanceSettlementResolutionId).HasColumnName("advance_settlement_resolution_id");
+            entity.Property(e => e.Amount)
+                .HasPrecision(18, 2)
+                .HasColumnName("amount");
+            entity.Property(e => e.AuthorizationDecisionId).HasColumnName("authorization_decision_id");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CurrencyCode)
+                .HasMaxLength(3)
+                .HasColumnName("currency_code");
+            entity.Property(e => e.CustodyMovementEntryId).HasColumnName("custody_movement_entry_id");
+            entity.Property(e => e.Direction)
+                .HasMaxLength(40)
+                .HasColumnName("direction");
+            entity.Property(e => e.EconomicEffectKey).HasColumnName("economic_effect_key");
+            entity.Property(e => e.EffectNumber).HasColumnName("effect_number");
+            entity.Property(e => e.EffectType)
+                .HasMaxLength(40)
+                .HasColumnName("effect_type");
+            entity.Property(e => e.EvidenceId).HasColumnName("evidence_id");
+            entity.Property(e => e.ExpenseReturnId).HasColumnName("expense_return_id");
+            entity.Property(e => e.FundingSourceLedgerEntryId).HasColumnName("funding_source_ledger_entry_id");
+            entity.Property(e => e.PersonalClaimAdjustmentId).HasColumnName("personal_claim_adjustment_id");
+            entity.Property(e => e.PersonalClaimWriteOffId).HasColumnName("personal_claim_write_off_id");
+            entity.Property(e => e.Polarity)
+                .HasMaxLength(40)
+                .HasColumnName("polarity");
+            entity.Property(e => e.PostedAt).HasColumnName("posted_at");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.ReversesEffectId).HasColumnName("reverses_effect_id");
+            entity.Property(e => e.SupplierCreditNoteId).HasColumnName("supplier_credit_note_id");
+            entity.Property(e => e.SupplierDebtWriteOffId).HasColumnName("supplier_debt_write_off_id");
+            entity.Property(e => e.SupplierRefundId).HasColumnName("supplier_refund_id");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.FinancialResolutionEffects)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t22_company_id");
+
+            entity.HasOne(d => d.AdvanceSettlementResolution).WithMany(p => p.FinancialResolutionEffects)
+                .HasPrincipalKey(p => new { p.CompanyId, p.AdvanceSettlementResolutionId })
+                .HasForeignKey(d => new { d.CompanyId, d.AdvanceSettlementResolutionId })
+                .HasConstraintName("fk_t22_advance_settlement_resolution_id");
+
+            entity.HasOne(d => d.CustodyMovementEntry).WithOne(p => p.FinancialResolutionEffect)
+                .HasPrincipalKey<CustodyMovementEntry>(p => new { p.CompanyId, p.CustodyMovementEntryId })
+                .HasForeignKey<FinancialResolutionEffect>(d => new { d.CompanyId, d.CustodyMovementEntryId })
+                .HasConstraintName("fk_t22_custody_movement_entry_id");
+
+            entity.HasOne(d => d.VerifiedEvidenceObject).WithMany(p => p.FinancialResolutionEffects)
+                .HasPrincipalKey(p => new { p.CompanyId, p.VerifiedEvidenceObjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.EvidenceId })
+                .HasConstraintName("fk_t22_evidence_id");
+
+            entity.HasOne(d => d.ExpenseReturn).WithMany(p => p.FinancialResolutionEffects)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ExpenseReturnId })
+                .HasForeignKey(d => new { d.CompanyId, d.ExpenseReturnId })
+                .HasConstraintName("fk_t22_expense_return_id");
+
+            entity.HasOne(d => d.FundingSourceLedgerEntry).WithOne(p => p.FinancialResolutionEffect)
+                .HasPrincipalKey<FundingSourceLedgerEntry>(p => new { p.CompanyId, p.FundingSourceLedgerEntryId })
+                .HasForeignKey<FinancialResolutionEffect>(d => new { d.CompanyId, d.FundingSourceLedgerEntryId })
+                .HasConstraintName("fk_t22_funding_source_ledger_entry_id");
+
+            entity.HasOne(d => d.PersonalClaimAdjustment).WithOne(p => p.FinancialResolutionEffect)
+                .HasPrincipalKey<PersonalClaimAdjustment>(p => new { p.CompanyId, p.PersonalClaimAdjustmentId })
+                .HasForeignKey<FinancialResolutionEffect>(d => new { d.CompanyId, d.PersonalClaimAdjustmentId })
+                .HasConstraintName("fk_t22_personal_claim_adjustment_id");
+
+            entity.HasOne(d => d.PersonalClaimWriteOff).WithOne(p => p.FinancialResolutionEffect)
+                .HasPrincipalKey<PersonalClaimWriteOff>(p => new { p.CompanyId, p.PersonalClaimWriteOffId })
+                .HasForeignKey<FinancialResolutionEffect>(d => new { d.CompanyId, d.PersonalClaimWriteOffId })
+                .HasConstraintName("fk_t22_personal_claim_write_off_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.FinancialResolutionEffects)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t22_project_id");
+
+            entity.HasOne(d => d.SupplierCreditNote).WithOne(p => p.FinancialResolutionEffect)
+                .HasPrincipalKey<SupplierCreditNote>(p => new { p.CompanyId, p.SupplierCreditNoteId })
+                .HasForeignKey<FinancialResolutionEffect>(d => new { d.CompanyId, d.SupplierCreditNoteId })
+                .HasConstraintName("fk_t22_supplier_credit_note_id");
+
+            entity.HasOne(d => d.SupplierDebtWriteOff).WithOne(p => p.FinancialResolutionEffect)
+                .HasPrincipalKey<SupplierDebtWriteOff>(p => new { p.CompanyId, p.SupplierDebtWriteOffId })
+                .HasForeignKey<FinancialResolutionEffect>(d => new { d.CompanyId, d.SupplierDebtWriteOffId })
+                .HasConstraintName("fk_t22_supplier_debt_write_off_id");
+
+            entity.HasOne(d => d.SupplierRefund).WithMany(p => p.FinancialResolutionEffects)
+                .HasPrincipalKey(p => new { p.CompanyId, p.SupplierRefundId })
+                .HasForeignKey(d => new { d.CompanyId, d.SupplierRefundId })
+                .HasConstraintName("fk_t22_supplier_refund_id");
+
+            entity.HasOne(d => d.ProjectAuthorizationDecision).WithMany(p => p.FinancialResolutionEffects)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectAuthorizationDecisionId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.AuthorizationDecisionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t22_authorization_decision_id");
+
+            entity.HasOne(d => d.FinancialResolutionEffectNavigation).WithMany(p => p.InverseFinancialResolutionEffectNavigation)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.FinancialResolutionEffectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.ReversesEffectId })
+                .HasConstraintName("fk_t22_reverses_effect_id");
+        });
+
         modelBuilder.Entity<FundingSource>(entity =>
         {
             entity.HasKey(e => e.FundingSourceId).HasName("funding_sources_pkey");
 
             entity.ToTable("funding_sources", "ahdah");
 
-            entity.HasIndex(e => new { e.CompanyId, e.AvailableAmount }, "ix_funding_sources_available").HasFilter("((status)::text = ANY ((ARRAY['Available'::character varying, 'PartiallyUsed'::character varying])::text[]))");
+            entity.HasIndex(e => new { e.CompanyId, e.AvailableAmount }, "ix_funding_sources_available").HasFilter("((status)::text = ANY (ARRAY[('Available'::character varying)::text, ('PartiallyUsed'::character varying)::text]))");
 
             entity.HasIndex(e => e.CompanyId, "ix_funding_sources_company");
 
@@ -3468,7 +4248,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.CorrelationId }, "ix_idem_correlation");
 
-            entity.HasIndex(e => e.ExpiresAt, "ix_idem_expiry").HasFilter("((status)::text = ANY ((ARRAY['Completed'::character varying, 'Failed'::character varying, 'Cancelled'::character varying, 'Expired'::character varying])::text[]))");
+            entity.HasIndex(e => e.ExpiresAt, "ix_idem_expiry").HasFilter("((status)::text = ANY (ARRAY[('Completed'::character varying)::text, ('Failed'::character varying)::text, ('Cancelled'::character varying)::text, ('Expired'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.RequestFingerprintHash }, "ix_idem_fingerprint");
 
@@ -3723,6 +4503,149 @@ public partial class AhdahDbContext : DbContext
                 .HasForeignKey<JoinRequest>(d => new { d.CompanyId, d.UserId })
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_join_requests_user");
+        });
+
+        modelBuilder.Entity<LegacyAttributionReview>(entity =>
+        {
+            entity.HasKey(e => e.LegacyAttributionReviewId).HasName("pk_t25");
+
+            entity.ToTable("legacy_attribution_reviews", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ApprovedByUserId }, "ix_t25_fk_approved_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.DeclaredByUserId }, "ix_t25_fk_declared_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.EvidenceId }, "ix_t25_fk_evidence_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ReviewedByUserId }, "ix_t25_fk_reviewed_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SupersedesReviewId }, "ix_t25_fk_supersedes_review_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.BoundaryKey, e.SourceType, e.SourceId }, "uq_t25_source").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.LegacyAttributionReviewId }, "uq_t25_tenant").IsUnique();
+
+            entity.Property(e => e.LegacyAttributionReviewId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("legacy_attribution_review_id");
+            entity.Property(e => e.ApprovedAt).HasColumnName("approved_at");
+            entity.Property(e => e.ApprovedByUserId).HasColumnName("approved_by_user_id");
+            entity.Property(e => e.BoundaryKey).HasColumnName("boundary_key");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.DeclaredAt).HasColumnName("declared_at");
+            entity.Property(e => e.DeclaredByUserId).HasColumnName("declared_by_user_id");
+            entity.Property(e => e.DeclaredDetails)
+                .HasColumnType("jsonb")
+                .HasColumnName("declared_details");
+            entity.Property(e => e.EvidenceId).HasColumnName("evidence_id");
+            entity.Property(e => e.Reason)
+                .HasMaxLength(1000)
+                .HasColumnName("reason");
+            entity.Property(e => e.ReviewedAt).HasColumnName("reviewed_at");
+            entity.Property(e => e.ReviewedByUserId).HasColumnName("reviewed_by_user_id");
+            entity.Property(e => e.SourceDigest).HasColumnName("source_digest");
+            entity.Property(e => e.SourceId).HasColumnName("source_id");
+            entity.Property(e => e.SourceType)
+                .HasMaxLength(40)
+                .HasColumnName("source_type");
+            entity.Property(e => e.SourceVersion).HasColumnName("source_version");
+            entity.Property(e => e.Status)
+                .HasMaxLength(40)
+                .HasColumnName("status");
+            entity.Property(e => e.SupersedesReviewId).HasColumnName("supersedes_review_id");
+            entity.Property(e => e.UncertaintyScope)
+                .HasMaxLength(40)
+                .HasColumnName("uncertainty_scope");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.VersionNumber)
+                .HasDefaultValue(1)
+                .HasColumnName("version_number");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.LegacyAttributionReviews)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t25_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.LegacyAttributionReviewAppUsers)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ApprovedByUserId })
+                .HasConstraintName("fk_t25_approved_by_user_id");
+
+            entity.HasOne(d => d.AppUserNavigation).WithMany(p => p.LegacyAttributionReviewAppUserNavigations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.DeclaredByUserId })
+                .HasConstraintName("fk_t25_declared_by_user_id");
+
+            entity.HasOne(d => d.VerifiedEvidenceObject).WithMany(p => p.LegacyAttributionReviews)
+                .HasPrincipalKey(p => new { p.CompanyId, p.VerifiedEvidenceObjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.EvidenceId })
+                .HasConstraintName("fk_t25_evidence_id");
+
+            entity.HasOne(d => d.AppUser1).WithMany(p => p.LegacyAttributionReviewAppUser1s)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ReviewedByUserId })
+                .HasConstraintName("fk_t25_reviewed_by_user_id");
+
+            entity.HasOne(d => d.LegacyAttributionReviewNavigation).WithMany(p => p.InverseLegacyAttributionReviewNavigation)
+                .HasPrincipalKey(p => new { p.CompanyId, p.LegacyAttributionReviewId })
+                .HasForeignKey(d => new { d.CompanyId, d.SupersedesReviewId })
+                .HasConstraintName("fk_t25_supersedes_review_id");
+        });
+
+        modelBuilder.Entity<LegacyAttributionReviewProject>(entity =>
+        {
+            entity.HasKey(e => e.LegacyAttributionReviewProjectId).HasName("pk_t26");
+
+            entity.ToTable("legacy_attribution_review_projects", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ImpactCode }, "ix_t26_impact");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.LegacyAttributionReviewProjectId }, "uq_t26_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.LegacyAttributionReviewId, e.ProjectId }, "uq_t26_review_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.LegacyAttributionReviewProjectId }, "uq_t26_tenant").IsUnique();
+
+            entity.Property(e => e.LegacyAttributionReviewProjectId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("legacy_attribution_review_project_id");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.ImpactCode)
+                .HasMaxLength(40)
+                .HasColumnName("impact_code");
+            entity.Property(e => e.LegacyAttributionReviewId).HasColumnName("legacy_attribution_review_id");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.VersionNumber)
+                .HasDefaultValue(1)
+                .HasColumnName("version_number");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.LegacyAttributionReviewProjects)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t26_company_id");
+
+            entity.HasOne(d => d.LegacyAttributionReview).WithMany(p => p.LegacyAttributionReviewProjects)
+                .HasPrincipalKey(p => new { p.CompanyId, p.LegacyAttributionReviewId })
+                .HasForeignKey(d => new { d.CompanyId, d.LegacyAttributionReviewId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t26_legacy_attribution_review_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.LegacyAttributionReviewProjects)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t26_project_id");
         });
 
         modelBuilder.Entity<ManagerContribution>(entity =>
@@ -3989,7 +4912,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.Priority, e.PublishedAt }, "ix_notifications_priority")
                 .IsDescending(false, false, true)
-                .HasFilter("(((status)::text = 'Published'::text) AND ((priority)::text = ANY ((ARRAY['High'::character varying, 'Critical'::character varying])::text[])))");
+                .HasFilter("(((status)::text = 'Published'::text) AND ((priority)::text = ANY (ARRAY[('High'::character varying)::text, ('Critical'::character varying)::text])))");
 
             entity.HasIndex(e => new { e.CompanyId, e.RecipientUserId, e.ArchivedAt }, "ix_notifications_recipient_archived")
                 .IsDescending(false, false, true)
@@ -4183,7 +5106,7 @@ public partial class AhdahDbContext : DbContext
                 .HasMaxLength(200)
                 .HasColumnName("idempotency_key");
             entity.Property(e => e.IsFinal)
-                .HasComputedColumnSql("\nCASE\n    WHEN ((delivery_status)::text = ANY ((ARRAY['Delivered'::character varying, 'Skipped'::character varying, 'Cancelled'::character varying])::text[])) THEN true\n    WHEN (((delivery_status)::text = 'Failed'::text) AND (attempt_count >= max_attempts)) THEN true\n    ELSE false\nEND", true)
+                .HasComputedColumnSql("\nCASE\n    WHEN ((delivery_status)::text = ANY (ARRAY[('Delivered'::character varying)::text, ('Skipped'::character varying)::text, ('Cancelled'::character varying)::text])) THEN true\n    WHEN (((delivery_status)::text = 'Failed'::text) AND (attempt_count >= max_attempts)) THEN true\n    ELSE false\nEND", true)
                 .HasColumnName("is_final");
             entity.Property(e => e.LastAttemptAt).HasColumnName("last_attempt_at");
             entity.Property(e => e.LastFailedAt).HasColumnName("last_failed_at");
@@ -4775,7 +5698,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.FailureCategory, e.CompletedAt }, "ix_outbox_attempts_failures")
                 .IsDescending(false, false, true)
-                .HasFilter("((attempt_status)::text = ANY ((ARRAY['Failed'::character varying, 'Abandoned'::character varying])::text[]))");
+                .HasFilter("((attempt_status)::text = ANY (ARRAY[('Failed'::character varying)::text, ('Abandoned'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.OutboxMessageId, e.AttemptNumber }, "ix_outbox_attempts_message").IsDescending(false, false, true);
 
@@ -4945,6 +5868,9 @@ public partial class AhdahDbContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("created_at");
+            entity.Property(e => e.CurrencyCode)
+                .HasMaxLength(3)
+                .HasColumnName("currency_code");
             entity.Property(e => e.Notes)
                 .HasMaxLength(1000)
                 .HasColumnName("notes");
@@ -5100,9 +6026,9 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.ClaimantUserId, e.Status }, "ix_personal_claims_claimant_status");
 
-            entity.HasIndex(e => new { e.CompanyId, e.DueDate }, "ix_personal_claims_due_date").HasFilter("((due_date IS NOT NULL) AND ((status)::text = ANY ((ARRAY['Open'::character varying, 'PartiallySettled'::character varying])::text[])))");
+            entity.HasIndex(e => new { e.CompanyId, e.DueDate }, "ix_personal_claims_due_date").HasFilter("((due_date IS NOT NULL) AND ((status)::text = ANY (ARRAY[('Open'::character varying)::text, ('PartiallySettled'::character varying)::text])))");
 
-            entity.HasIndex(e => new { e.CompanyId, e.ClaimantUserId, e.OutstandingAmount }, "ix_personal_claims_outstanding").HasFilter("((status)::text = ANY ((ARRAY['Open'::character varying, 'PartiallySettled'::character varying])::text[]))");
+            entity.HasIndex(e => new { e.CompanyId, e.ClaimantUserId, e.OutstandingAmount }, "ix_personal_claims_outstanding").HasFilter("((status)::text = ANY (ARRAY[('Open'::character varying)::text, ('PartiallySettled'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.ProjectId }, "ix_personal_claims_project").HasFilter("(project_id IS NOT NULL)");
 
@@ -5885,6 +6811,9 @@ public partial class AhdahDbContext : DbContext
             entity.Property(e => e.ContactPhoneNumber)
                 .HasMaxLength(20)
                 .HasColumnName("contact_phone_number");
+            entity.Property(e => e.ContractCurrencyCode)
+                .HasMaxLength(3)
+                .HasColumnName("contract_currency_code");
             entity.Property(e => e.ContractDate).HasColumnName("contract_date");
             entity.Property(e => e.ContractValue)
                 .HasPrecision(18, 2)
@@ -5949,6 +6878,234 @@ public partial class AhdahDbContext : DbContext
                 .HasConstraintName("fk_projects_owner");
         });
 
+        modelBuilder.Entity<ProjectAuthorizationDecision>(entity =>
+        {
+            entity.HasKey(e => e.ProjectAuthorizationDecisionId).HasName("pk_t12");
+
+            entity.ToTable("project_authorization_decisions", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ActorUserId }, "ix_t12_fk_actor_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.BeneficiaryUserId }, "ix_t12_fk_beneficiary_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.EvidenceId }, "ix_t12_fk_evidence_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PolicyVersionId }, "ix_t12_fk_policy_version_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PreparerUserId }, "ix_t12_fk_preparer_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SubmitterUserId }, "ix_t12_fk_submitter_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectAuthorizationDecisionId }, "uq_t12_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectAuthorizationDecisionId }, "uq_t12_tenant").IsUnique();
+
+            entity.Property(e => e.ProjectAuthorizationDecisionId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("project_authorization_decision_id");
+            entity.Property(e => e.ActionCode)
+                .HasMaxLength(40)
+                .HasColumnName("action_code");
+            entity.Property(e => e.ActorRole)
+                .HasMaxLength(40)
+                .HasColumnName("actor_role");
+            entity.Property(e => e.ActorUserId).HasColumnName("actor_user_id");
+            entity.Property(e => e.BeneficiaryUserId).HasColumnName("beneficiary_user_id");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.ConflictDetected).HasColumnName("conflict_detected");
+            entity.Property(e => e.ConflictReason)
+                .HasMaxLength(1000)
+                .HasColumnName("conflict_reason");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.DecidedAt).HasColumnName("decided_at");
+            entity.Property(e => e.Decision)
+                .HasMaxLength(40)
+                .HasColumnName("decision");
+            entity.Property(e => e.DelegationReference).HasColumnName("delegation_reference");
+            entity.Property(e => e.Details)
+                .HasColumnType("jsonb")
+                .HasColumnName("details");
+            entity.Property(e => e.EvidenceId).HasColumnName("evidence_id");
+            entity.Property(e => e.PolicyVersionId).HasColumnName("policy_version_id");
+            entity.Property(e => e.PreparerUserId).HasColumnName("preparer_user_id");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.RequestHash).HasColumnName("request_hash");
+            entity.Property(e => e.SubmitterUserId).HasColumnName("submitter_user_id");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.ProjectAuthorizationDecisions)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t12_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.ProjectAuthorizationDecisionAppUsers)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ActorUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t12_actor_user_id");
+
+            entity.HasOne(d => d.AppUserNavigation).WithMany(p => p.ProjectAuthorizationDecisionAppUserNavigations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.BeneficiaryUserId })
+                .HasConstraintName("fk_t12_beneficiary_user_id");
+
+            entity.HasOne(d => d.VerifiedEvidenceObject).WithMany(p => p.ProjectAuthorizationDecisions)
+                .HasPrincipalKey(p => new { p.CompanyId, p.VerifiedEvidenceObjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.EvidenceId })
+                .HasConstraintName("fk_t12_evidence_id");
+
+            entity.HasOne(d => d.SettlementPolicyVersion).WithMany(p => p.ProjectAuthorizationDecisions)
+                .HasPrincipalKey(p => new { p.CompanyId, p.SettlementPolicyVersionId })
+                .HasForeignKey(d => new { d.CompanyId, d.PolicyVersionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t12_policy_version_id");
+
+            entity.HasOne(d => d.AppUser1).WithMany(p => p.ProjectAuthorizationDecisionAppUser1s)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.PreparerUserId })
+                .HasConstraintName("fk_t12_preparer_user_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ProjectAuthorizationDecisions)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t12_project_id");
+
+            entity.HasOne(d => d.AppUser2).WithMany(p => p.ProjectAuthorizationDecisionAppUser2s)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.SubmitterUserId })
+                .HasConstraintName("fk_t12_submitter_user_id");
+        });
+
+        modelBuilder.Entity<ProjectClosureCertificate>(entity =>
+        {
+            entity.HasKey(e => e.ProjectClosureCertificateId).HasName("pk_t10");
+
+            entity.ToTable("project_closure_certificates", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectSettlementId, e.ApprovedSnapshotId }, "ix_t10_cycle_approved_snapshot_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectSettlementId, e.ClosureSnapshotId }, "ix_t10_cycle_closure_snapshot_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ApprovedSnapshotId }, "ix_t10_fk_approved_snapshot_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.AuthorizationDecisionId }, "ix_t10_fk_authorization_decision_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ClosedByUserId }, "ix_t10_fk_closed_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ClosureSnapshotId }, "ix_t10_fk_closure_snapshot_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PolicyVersionId }, "ix_t10_fk_policy_version_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectSettlementId }, "ix_t10_fk_project_settlement_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectClosureCertificateId }, "uq_t10_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.IdempotencyRecordId }, "uq_t10_replay").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectClosureCertificateId }, "uq_t10_tenant").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ClosureVersion }, "uq_t10_version").IsUnique();
+
+            entity.Property(e => e.ProjectClosureCertificateId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("project_closure_certificate_id");
+            entity.Property(e => e.ActorRole)
+                .HasMaxLength(40)
+                .HasColumnName("actor_role");
+            entity.Property(e => e.ApprovedSnapshotHash).HasColumnName("approved_snapshot_hash");
+            entity.Property(e => e.ApprovedSnapshotId).HasColumnName("approved_snapshot_id");
+            entity.Property(e => e.AuthorizationDecisionId).HasColumnName("authorization_decision_id");
+            entity.Property(e => e.ClosedAt).HasColumnName("closed_at");
+            entity.Property(e => e.ClosedByUserId).HasColumnName("closed_by_user_id");
+            entity.Property(e => e.ClosureBasis)
+                .HasMaxLength(40)
+                .HasColumnName("closure_basis");
+            entity.Property(e => e.ClosureSnapshotHash).HasColumnName("closure_snapshot_hash");
+            entity.Property(e => e.ClosureSnapshotId).HasColumnName("closure_snapshot_id");
+            entity.Property(e => e.ClosureVersion).HasColumnName("closure_version");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.FinancialRevision).HasColumnName("financial_revision");
+            entity.Property(e => e.IdempotencyRecordId).HasColumnName("idempotency_record_id");
+            entity.Property(e => e.PolicyVersionId).HasColumnName("policy_version_id");
+            entity.Property(e => e.PostCloseProjectVersion).HasColumnName("post_close_project_version");
+            entity.Property(e => e.PreCloseProjectVersion).HasColumnName("pre_close_project_version");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.ProjectSettlementId).HasColumnName("project_settlement_id");
+            entity.Property(e => e.Reason)
+                .HasMaxLength(1000)
+                .HasColumnName("reason");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.ProjectClosureCertificates)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t10_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.ProjectClosureCertificates)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ClosedByUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t10_closed_by_user_id");
+
+            entity.HasOne(d => d.IdempotencyRecord).WithOne(p => p.ProjectClosureCertificate)
+                .HasPrincipalKey<IdempotencyRecord>(p => new { p.CompanyId, p.IdempotencyRecordId })
+                .HasForeignKey<ProjectClosureCertificate>(d => new { d.CompanyId, d.IdempotencyRecordId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t10_idempotency_record_id");
+
+            entity.HasOne(d => d.SettlementPolicyVersion).WithMany(p => p.ProjectClosureCertificates)
+                .HasPrincipalKey(p => new { p.CompanyId, p.SettlementPolicyVersionId })
+                .HasForeignKey(d => new { d.CompanyId, d.PolicyVersionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t10_policy_version_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ProjectClosureCertificates)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t10_project_id");
+
+            entity.HasOne(d => d.ProjectSettlementSnapshot).WithMany(p => p.ProjectClosureCertificateProjectSettlementSnapshots)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectSettlementSnapshotId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.ApprovedSnapshotId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t10_approved_snapshot_id");
+
+            entity.HasOne(d => d.ProjectAuthorizationDecision).WithMany(p => p.ProjectClosureCertificates)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectAuthorizationDecisionId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.AuthorizationDecisionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t10_authorization_decision_id");
+
+            entity.HasOne(d => d.ProjectSettlementSnapshotNavigation).WithMany(p => p.ProjectClosureCertificateProjectSettlementSnapshotNavigations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectSettlementSnapshotId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.ClosureSnapshotId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t10_closure_snapshot_id");
+
+            entity.HasOne(d => d.ProjectSettlement).WithMany(p => p.ProjectClosureCertificates)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectSettlementId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.ProjectSettlementId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t10_project_settlement_id");
+
+            entity.HasOne(d => d.ProjectSettlementSnapshot1).WithMany(p => p.ProjectClosureCertificateProjectSettlementSnapshot1s)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectSettlementId, p.ProjectSettlementSnapshotId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.ProjectSettlementId, d.ApprovedSnapshotId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t10_cycle_approved_snapshot_id");
+
+            entity.HasOne(d => d.ProjectSettlementSnapshot2).WithMany(p => p.ProjectClosureCertificateProjectSettlementSnapshot2s)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectSettlementId, p.ProjectSettlementSnapshotId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.ProjectSettlementId, d.ClosureSnapshotId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t10_cycle_closure_snapshot_id");
+        });
+
         modelBuilder.Entity<ProjectContractChange>(entity =>
         {
             entity.HasKey(e => e.ProjectContractChangeId).HasName("project_contract_changes_pkey");
@@ -5987,6 +7144,9 @@ public partial class AhdahDbContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("created_at");
+            entity.Property(e => e.CurrencyCode)
+                .HasMaxLength(3)
+                .HasColumnName("currency_code");
             entity.Property(e => e.EffectiveDate).HasColumnName("effective_date");
             entity.Property(e => e.NewContractValue)
                 .HasPrecision(18, 2)
@@ -6041,6 +7201,204 @@ public partial class AhdahDbContext : DbContext
                 .HasForeignKey(d => new { d.CompanyId, d.ReviewedByUserId })
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_project_contract_changes_reviewed_by");
+        });
+
+        modelBuilder.Entity<ProjectCustodyPosition>(entity =>
+        {
+            entity.HasKey(e => e.ProjectCustodyPositionId).HasName("pk_t02");
+
+            entity.ToTable("project_custody_positions", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.UserAdvanceBalanceId }, "ix_t02_project_balance");
+
+            entity.HasIndex(e => new { e.CompanyId, e.UserAdvanceBalanceId, e.ProjectId }, "uq_t02_balance_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectCustodyPositionId }, "uq_t02_tenant").IsUnique();
+
+            entity.Property(e => e.ProjectCustodyPositionId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("project_custody_position_id");
+            entity.Property(e => e.AvailableAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("available_amount");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.ReservedAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("reserved_amount");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.UserAdvanceBalanceId).HasColumnName("user_advance_balance_id");
+            entity.Property(e => e.VersionNumber)
+                .HasDefaultValue(1)
+                .HasColumnName("version_number");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.ProjectCustodyPositions)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t02_company_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ProjectCustodyPositions)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .HasConstraintName("fk_t02_project_id");
+
+            entity.HasOne(d => d.UserAdvanceBalance).WithMany(p => p.ProjectCustodyPositions)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserAdvanceBalanceId })
+                .HasForeignKey(d => new { d.CompanyId, d.UserAdvanceBalanceId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t02_user_advance_balance_id");
+        });
+
+        modelBuilder.Entity<ProjectFinancialControl>(entity =>
+        {
+            entity.HasKey(e => new { e.CompanyId, e.ProjectId }).HasName("pk_t01");
+
+            entity.ToTable("project_financial_controls", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ActiveClosureId }, "ix_t01_fk_active_closure_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ActiveSettlementId }, "ix_t01_fk_active_settlement_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.FinancialState }, "ix_t01_state");
+
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.ActiveClosureId).HasColumnName("active_closure_id");
+            entity.Property(e => e.ActiveSettlementId).HasColumnName("active_settlement_id");
+            entity.Property(e => e.AttributionStatus)
+                .HasMaxLength(40)
+                .HasColumnName("attribution_status");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.FinancialRevision)
+                .HasDefaultValue(1L)
+                .HasColumnName("financial_revision");
+            entity.Property(e => e.FinancialState)
+                .HasMaxLength(40)
+                .HasColumnName("financial_state");
+            entity.Property(e => e.LastMaterialChangeAt).HasColumnName("last_material_change_at");
+            entity.Property(e => e.NextCycleNumber)
+                .HasDefaultValue(1)
+                .HasColumnName("next_cycle_number");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.VersionNumber)
+                .HasDefaultValue(1)
+                .HasColumnName("version_number");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.ProjectFinancialControls)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t01_company_id");
+
+            entity.HasOne(d => d.Project).WithOne(p => p.ProjectFinancialControl)
+                .HasPrincipalKey<Project>(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey<ProjectFinancialControl>(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t01_project_id");
+
+            entity.HasOne(d => d.ProjectClosureCertificate).WithMany(p => p.ProjectFinancialControls)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectClosureCertificateId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.ActiveClosureId })
+                .HasConstraintName("fk_t01_active_closure_id");
+
+            entity.HasOne(d => d.ProjectSettlement).WithMany(p => p.ProjectFinancialControls)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectSettlementId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.ActiveSettlementId })
+                .HasConstraintName("fk_t01_active_settlement_id");
+        });
+
+        modelBuilder.Entity<ProjectOperationalEvent>(entity =>
+        {
+            entity.HasKey(e => e.ProjectOperationalEventId).HasName("pk_t13");
+
+            entity.ToTable("project_operational_events", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.AcknowledgmentEventId }, "ix_t13_fk_acknowledgment_event_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ActorUserId }, "ix_t13_fk_actor_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.AuthorizationDecisionId }, "ix_t13_fk_authorization_decision_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.EvidenceId }, "ix_t13_fk_evidence_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectOperationalEventId }, "uq_t13_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.IdempotencyRecordId, e.EventType }, "uq_t13_replay").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectOperationalEventId }, "uq_t13_tenant").IsUnique();
+
+            entity.Property(e => e.ProjectOperationalEventId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("project_operational_event_id");
+            entity.Property(e => e.AcknowledgmentEventId).HasColumnName("acknowledgment_event_id");
+            entity.Property(e => e.ActorRole)
+                .HasMaxLength(40)
+                .HasColumnName("actor_role");
+            entity.Property(e => e.ActorUserId).HasColumnName("actor_user_id");
+            entity.Property(e => e.AuthorizationDecisionId).HasColumnName("authorization_decision_id");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.EventType)
+                .HasMaxLength(40)
+                .HasColumnName("event_type");
+            entity.Property(e => e.EvidenceId).HasColumnName("evidence_id");
+            entity.Property(e => e.IdempotencyRecordId).HasColumnName("idempotency_record_id");
+            entity.Property(e => e.OccurredAt).HasColumnName("occurred_at");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.ProjectVersionAfter).HasColumnName("project_version_after");
+            entity.Property(e => e.ProjectVersionBefore).HasColumnName("project_version_before");
+            entity.Property(e => e.Reason)
+                .HasMaxLength(1000)
+                .HasColumnName("reason");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.ProjectOperationalEvents)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t13_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.ProjectOperationalEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ActorUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t13_actor_user_id");
+
+            entity.HasOne(d => d.VerifiedEvidenceObject).WithMany(p => p.ProjectOperationalEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.VerifiedEvidenceObjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.EvidenceId })
+                .HasConstraintName("fk_t13_evidence_id");
+
+            entity.HasOne(d => d.IdempotencyRecord).WithMany(p => p.ProjectOperationalEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.IdempotencyRecordId })
+                .HasForeignKey(d => new { d.CompanyId, d.IdempotencyRecordId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t13_idempotency_record_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ProjectOperationalEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t13_project_id");
+
+            entity.HasOne(d => d.ProjectOperationalEventNavigation).WithMany(p => p.InverseProjectOperationalEventNavigation)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectOperationalEventId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.AcknowledgmentEventId })
+                .HasConstraintName("fk_t13_acknowledgment_event_id");
+
+            entity.HasOne(d => d.ProjectAuthorizationDecision).WithMany(p => p.ProjectOperationalEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectAuthorizationDecisionId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.AuthorizationDecisionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t13_authorization_decision_id");
         });
 
         modelBuilder.Entity<ProjectOwner>(entity =>
@@ -6202,6 +7560,723 @@ public partial class AhdahDbContext : DbContext
                 .HasForeignKey(d => new { d.CompanyId, d.VerifiedByUserId })
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_project_owner_payments_verified_by");
+        });
+
+        modelBuilder.Entity<ProjectOwnerReconciliation>(entity =>
+        {
+            entity.HasKey(e => e.ProjectOwnerReconciliationId).HasName("pk_t19");
+
+            entity.ToTable("project_owner_reconciliations", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ApprovedByUserId }, "ix_t19_fk_approved_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.EvidenceId }, "ix_t19_fk_evidence_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PolicyVersionId }, "ix_t19_fk_policy_version_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PreparedByUserId }, "ix_t19_fk_prepared_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.SupersedesId }, "ix_t19_fk_supersedes_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.Status }, "ix_t19_workflow");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ReconciliationNumber }, "uq_t19_number").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectOwnerReconciliationId }, "uq_t19_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectOwnerReconciliationId }, "uq_t19_tenant").IsUnique();
+
+            entity.Property(e => e.ProjectOwnerReconciliationId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("project_owner_reconciliation_id");
+            entity.Property(e => e.ApprovedAt).HasColumnName("approved_at");
+            entity.Property(e => e.ApprovedByUserId).HasColumnName("approved_by_user_id");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.EvidenceId).HasColumnName("evidence_id");
+            entity.Property(e => e.FinancialRevision).HasColumnName("financial_revision");
+            entity.Property(e => e.PolicyVersionId).HasColumnName("policy_version_id");
+            entity.Property(e => e.PreparedAt).HasColumnName("prepared_at");
+            entity.Property(e => e.PreparedByUserId).HasColumnName("prepared_by_user_id");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.ReconciliationNumber).HasColumnName("reconciliation_number");
+            entity.Property(e => e.Status)
+                .HasMaxLength(40)
+                .HasColumnName("status");
+            entity.Property(e => e.SupersedesId).HasColumnName("supersedes_id");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.VersionNumber)
+                .HasDefaultValue(1)
+                .HasColumnName("version_number");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.ProjectOwnerReconciliations)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t19_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.ProjectOwnerReconciliationAppUsers)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ApprovedByUserId })
+                .HasConstraintName("fk_t19_approved_by_user_id");
+
+            entity.HasOne(d => d.VerifiedEvidenceObject).WithMany(p => p.ProjectOwnerReconciliations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.VerifiedEvidenceObjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.EvidenceId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t19_evidence_id");
+
+            entity.HasOne(d => d.SettlementPolicyVersion).WithMany(p => p.ProjectOwnerReconciliations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.SettlementPolicyVersionId })
+                .HasForeignKey(d => new { d.CompanyId, d.PolicyVersionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t19_policy_version_id");
+
+            entity.HasOne(d => d.AppUserNavigation).WithMany(p => p.ProjectOwnerReconciliationAppUserNavigations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.PreparedByUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t19_prepared_by_user_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ProjectOwnerReconciliations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t19_project_id");
+
+            entity.HasOne(d => d.ProjectOwnerReconciliationNavigation).WithMany(p => p.InverseProjectOwnerReconciliationNavigation)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectOwnerReconciliationId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.SupersedesId })
+                .HasConstraintName("fk_t19_supersedes_id");
+        });
+
+        modelBuilder.Entity<ProjectOwnerReconciliationPosition>(entity =>
+        {
+            entity.HasKey(e => e.ProjectOwnerReconciliationPositionId).HasName("pk_t20");
+
+            entity.ToTable("project_owner_reconciliation_positions", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.OwnerReconciliationId }, "ix_t20_fk_owner_reconciliation_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.OwnerReconciliationId, e.CurrencyCode }, "uq_t20_currency").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectOwnerReconciliationPositionId }, "uq_t20_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectOwnerReconciliationPositionId }, "uq_t20_tenant").IsUnique();
+
+            entity.Property(e => e.ProjectOwnerReconciliationPositionId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("project_owner_reconciliation_position_id");
+            entity.Property(e => e.ApprovedChangeAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("approved_change_amount");
+            entity.Property(e => e.ClassificationStatus)
+                .HasMaxLength(40)
+                .HasColumnName("classification_status");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.ContractAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("contract_amount");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CurrencyCode)
+                .HasMaxLength(3)
+                .HasColumnName("currency_code");
+            entity.Property(e => e.DisputedAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("disputed_amount");
+            entity.Property(e => e.ImmediatePayableAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("immediate_payable_amount");
+            entity.Property(e => e.ImmediateReceivableAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("immediate_receivable_amount");
+            entity.Property(e => e.OwnerReconciliationId).HasColumnName("owner_reconciliation_id");
+            entity.Property(e => e.PaymentsReceivedAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("payments_received_amount");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.RefundsAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("refunds_amount");
+            entity.Property(e => e.RetentionAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("retention_amount");
+            entity.Property(e => e.SourceDetails)
+                .HasColumnType("jsonb")
+                .HasColumnName("source_details");
+            entity.Property(e => e.UnclassifiedDifferenceAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("unclassified_difference_amount");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.VersionNumber)
+                .HasDefaultValue(1)
+                .HasColumnName("version_number");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.ProjectOwnerReconciliationPositions)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t20_company_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ProjectOwnerReconciliationPositions)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t20_project_id");
+
+            entity.HasOne(d => d.ProjectOwnerReconciliation).WithMany(p => p.ProjectOwnerReconciliationPositions)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectOwnerReconciliationId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.OwnerReconciliationId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t20_owner_reconciliation_id");
+        });
+
+        modelBuilder.Entity<ProjectOwnerRetentionItem>(entity =>
+        {
+            entity.HasKey(e => e.ProjectOwnerRetentionItemId).HasName("pk_t21");
+
+            entity.ToTable("project_owner_retention_items", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ApprovedByUserId }, "ix_t21_fk_approved_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.EvidenceId }, "ix_t21_fk_evidence_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.OwnerPositionId }, "ix_t21_fk_owner_position_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectOwnerRetentionItemId }, "uq_t21_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectOwnerRetentionItemId }, "uq_t21_tenant").IsUnique();
+
+            entity.Property(e => e.ProjectOwnerRetentionItemId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("project_owner_retention_item_id");
+            entity.Property(e => e.Amount)
+                .HasPrecision(18, 2)
+                .HasColumnName("amount");
+            entity.Property(e => e.ApprovedAt).HasColumnName("approved_at");
+            entity.Property(e => e.ApprovedByUserId).HasColumnName("approved_by_user_id");
+            entity.Property(e => e.Classification)
+                .HasMaxLength(40)
+                .HasColumnName("classification");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.ContractualBasis)
+                .HasMaxLength(1000)
+                .HasColumnName("contractual_basis");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.DueDate).HasColumnName("due_date");
+            entity.Property(e => e.EntitlementStatus)
+                .HasMaxLength(40)
+                .HasColumnName("entitlement_status");
+            entity.Property(e => e.EvidenceId).HasColumnName("evidence_id");
+            entity.Property(e => e.OwnerPositionId).HasColumnName("owner_position_id");
+            entity.Property(e => e.Percentage)
+                .HasPrecision(9, 6)
+                .HasColumnName("percentage");
+            entity.Property(e => e.PercentageBaseAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("percentage_base_amount");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.ReleaseCondition)
+                .HasMaxLength(1000)
+                .HasColumnName("release_condition");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.VersionNumber)
+                .HasDefaultValue(1)
+                .HasColumnName("version_number");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.ProjectOwnerRetentionItems)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t21_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.ProjectOwnerRetentionItems)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ApprovedByUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t21_approved_by_user_id");
+
+            entity.HasOne(d => d.VerifiedEvidenceObject).WithMany(p => p.ProjectOwnerRetentionItems)
+                .HasPrincipalKey(p => new { p.CompanyId, p.VerifiedEvidenceObjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.EvidenceId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t21_evidence_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ProjectOwnerRetentionItems)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t21_project_id");
+
+            entity.HasOne(d => d.ProjectOwnerReconciliationPosition).WithMany(p => p.ProjectOwnerRetentionItems)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectOwnerReconciliationPositionId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.OwnerPositionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t21_owner_position_id");
+        });
+
+        modelBuilder.Entity<ProjectReopening>(entity =>
+        {
+            entity.HasKey(e => e.ProjectReopeningId).HasName("pk_t11");
+
+            entity.ToTable("project_reopenings", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ActorUserId }, "ix_t11_fk_actor_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.AuditLogId }, "ix_t11_fk_audit_log_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.AuthorizationDecisionId }, "ix_t11_fk_authorization_decision_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.NewSettlementId }, "ix_t11_fk_new_settlement_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.PreviousClosureId }, "ix_t11_fk_previous_closure_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.IdempotencyRecordId }, "uq_t11_idempotency_record_id").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.NewSettlementId }, "uq_t11_new_settlement_id").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.PreviousClosureId }, "uq_t11_previous_closure_id").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectReopeningId }, "uq_t11_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectReopeningId }, "uq_t11_tenant").IsUnique();
+
+            entity.Property(e => e.ProjectReopeningId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("project_reopening_id");
+            entity.Property(e => e.ActorRole)
+                .HasMaxLength(40)
+                .HasColumnName("actor_role");
+            entity.Property(e => e.ActorUserId).HasColumnName("actor_user_id");
+            entity.Property(e => e.AuditLogId).HasColumnName("audit_log_id");
+            entity.Property(e => e.AuthorizationDecisionId).HasColumnName("authorization_decision_id");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.IdempotencyRecordId).HasColumnName("idempotency_record_id");
+            entity.Property(e => e.NewSettlementId).HasColumnName("new_settlement_id");
+            entity.Property(e => e.PostProjectVersion).HasColumnName("post_project_version");
+            entity.Property(e => e.PreProjectVersion).HasColumnName("pre_project_version");
+            entity.Property(e => e.PreviousClosureId).HasColumnName("previous_closure_id");
+            entity.Property(e => e.PriorFinancialState)
+                .HasMaxLength(40)
+                .HasColumnName("prior_financial_state");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.Reason)
+                .HasMaxLength(1000)
+                .HasColumnName("reason");
+            entity.Property(e => e.ReopenedAt).HasColumnName("reopened_at");
+            entity.Property(e => e.ResultingFinancialState)
+                .HasMaxLength(40)
+                .HasColumnName("resulting_financial_state");
+            entity.Property(e => e.RevisionAfter).HasColumnName("revision_after");
+            entity.Property(e => e.RevisionBefore).HasColumnName("revision_before");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.ProjectReopenings)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t11_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.ProjectReopenings)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ActorUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t11_actor_user_id");
+
+            entity.HasOne(d => d.AuditLog).WithMany(p => p.ProjectReopenings)
+                .HasPrincipalKey(p => new { p.CompanyId, p.AuditLogId })
+                .HasForeignKey(d => new { d.CompanyId, d.AuditLogId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t11_audit_log_id");
+
+            entity.HasOne(d => d.IdempotencyRecord).WithOne(p => p.ProjectReopening)
+                .HasPrincipalKey<IdempotencyRecord>(p => new { p.CompanyId, p.IdempotencyRecordId })
+                .HasForeignKey<ProjectReopening>(d => new { d.CompanyId, d.IdempotencyRecordId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t11_idempotency_record_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ProjectReopenings)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t11_project_id");
+
+            entity.HasOne(d => d.ProjectAuthorizationDecision).WithMany(p => p.ProjectReopenings)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectAuthorizationDecisionId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.AuthorizationDecisionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t11_authorization_decision_id");
+
+            entity.HasOne(d => d.ProjectSettlement).WithMany(p => p.ProjectReopenings)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectSettlementId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.NewSettlementId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t11_new_settlement_id");
+
+            entity.HasOne(d => d.ProjectClosureCertificate).WithMany(p => p.ProjectReopenings)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectClosureCertificateId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.PreviousClosureId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t11_previous_closure_id");
+        });
+
+        modelBuilder.Entity<ProjectSettlement>(entity =>
+        {
+            entity.HasKey(e => e.ProjectSettlementId).HasName("pk_t06");
+
+            entity.ToTable("project_settlements", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ApprovedByUserId }, "ix_t06_fk_approved_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PolicyVersionId }, "ix_t06_fk_policy_version_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PreparedByUserId }, "ix_t06_fk_prepared_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.PreviousSettlementId }, "ix_t06_fk_previous_settlement_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.SnapshotId }, "ix_t06_fk_snapshot_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SubmittedByUserId }, "ix_t06_fk_submitted_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.Status }, "ix_t06_workflow");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.CycleNumber }, "uq_t06_cycle").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectSettlementId }, "uq_t06_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectSettlementId }, "uq_t06_tenant").IsUnique();
+
+            entity.Property(e => e.ProjectSettlementId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("project_settlement_id");
+            entity.Property(e => e.ApprovedAt).HasColumnName("approved_at");
+            entity.Property(e => e.ApprovedByUserId).HasColumnName("approved_by_user_id");
+            entity.Property(e => e.CapturedFinancialRevision).HasColumnName("captured_financial_revision");
+            entity.Property(e => e.CapturedProjectVersion).HasColumnName("captured_project_version");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CycleNumber).HasColumnName("cycle_number");
+            entity.Property(e => e.EvaluatedAt).HasColumnName("evaluated_at");
+            entity.Property(e => e.EvaluatorVersion)
+                .HasMaxLength(80)
+                .HasColumnName("evaluator_version");
+            entity.Property(e => e.Notes)
+                .HasMaxLength(1000)
+                .HasColumnName("notes");
+            entity.Property(e => e.OperationalBasis)
+                .HasMaxLength(40)
+                .HasColumnName("operational_basis");
+            entity.Property(e => e.PolicyVersionId).HasColumnName("policy_version_id");
+            entity.Property(e => e.PreparedByUserId).HasColumnName("prepared_by_user_id");
+            entity.Property(e => e.PreviousSettlementId).HasColumnName("previous_settlement_id");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.SnapshotHash).HasColumnName("snapshot_hash");
+            entity.Property(e => e.SnapshotId).HasColumnName("snapshot_id");
+            entity.Property(e => e.SnapshotSchemaVersion).HasColumnName("snapshot_schema_version");
+            entity.Property(e => e.Status)
+                .HasMaxLength(40)
+                .HasColumnName("status");
+            entity.Property(e => e.SubmittedAt).HasColumnName("submitted_at");
+            entity.Property(e => e.SubmittedByUserId).HasColumnName("submitted_by_user_id");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.VersionNumber)
+                .HasDefaultValue(1)
+                .HasColumnName("version_number");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.ProjectSettlements)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t06_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.ProjectSettlementAppUsers)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ApprovedByUserId })
+                .HasConstraintName("fk_t06_approved_by_user_id");
+
+            entity.HasOne(d => d.SettlementPolicyVersion).WithMany(p => p.ProjectSettlements)
+                .HasPrincipalKey(p => new { p.CompanyId, p.SettlementPolicyVersionId })
+                .HasForeignKey(d => new { d.CompanyId, d.PolicyVersionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t06_policy_version_id");
+
+            entity.HasOne(d => d.AppUserNavigation).WithMany(p => p.ProjectSettlementAppUserNavigations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.PreparedByUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t06_prepared_by_user_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ProjectSettlements)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t06_project_id");
+
+            entity.HasOne(d => d.AppUser1).WithMany(p => p.ProjectSettlementAppUser1s)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.SubmittedByUserId })
+                .HasConstraintName("fk_t06_submitted_by_user_id");
+
+            entity.HasOne(d => d.ProjectSettlementNavigation).WithMany(p => p.InverseProjectSettlementNavigation)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectSettlementId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.PreviousSettlementId })
+                .HasConstraintName("fk_t06_previous_settlement_id");
+
+            entity.HasOne(d => d.ProjectSettlementSnapshot).WithMany(p => p.ProjectSettlements)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectSettlementSnapshotId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.SnapshotId })
+                .HasConstraintName("fk_t06_snapshot_id");
+        });
+
+        modelBuilder.Entity<ProjectSettlementEvent>(entity =>
+        {
+            entity.HasKey(e => e.ProjectSettlementEventId).HasName("pk_t09");
+
+            entity.ToTable("project_settlement_events", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ActorUserId }, "ix_t09_fk_actor_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.AuthorizationDecisionId }, "ix_t09_fk_authorization_decision_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.SettlementId }, "ix_t09_fk_settlement_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.SnapshotId }, "ix_t09_fk_snapshot_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SettlementId, e.EventNumber }, "uq_t09_number").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectSettlementEventId }, "uq_t09_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.IdempotencyRecordId, e.EventType, e.SettlementId }, "uq_t09_replay").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectSettlementEventId }, "uq_t09_tenant").IsUnique();
+
+            entity.Property(e => e.ProjectSettlementEventId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("project_settlement_event_id");
+            entity.Property(e => e.ActorRole)
+                .HasMaxLength(40)
+                .HasColumnName("actor_role");
+            entity.Property(e => e.ActorUserId).HasColumnName("actor_user_id");
+            entity.Property(e => e.AuthorizationDecisionId).HasColumnName("authorization_decision_id");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.EventNumber).HasColumnName("event_number");
+            entity.Property(e => e.EventType)
+                .HasMaxLength(40)
+                .HasColumnName("event_type");
+            entity.Property(e => e.FinancialRevision).HasColumnName("financial_revision");
+            entity.Property(e => e.IdempotencyRecordId).HasColumnName("idempotency_record_id");
+            entity.Property(e => e.OccurredAt).HasColumnName("occurred_at");
+            entity.Property(e => e.Payload)
+                .HasColumnType("jsonb")
+                .HasColumnName("payload");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.Reason)
+                .HasMaxLength(1000)
+                .HasColumnName("reason");
+            entity.Property(e => e.RecordVersionAfter).HasColumnName("record_version_after");
+            entity.Property(e => e.RecordVersionBefore).HasColumnName("record_version_before");
+            entity.Property(e => e.SettlementId).HasColumnName("settlement_id");
+            entity.Property(e => e.SnapshotId).HasColumnName("snapshot_id");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.ProjectSettlementEvents)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t09_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.ProjectSettlementEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ActorUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t09_actor_user_id");
+
+            entity.HasOne(d => d.IdempotencyRecord).WithMany(p => p.ProjectSettlementEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.IdempotencyRecordId })
+                .HasForeignKey(d => new { d.CompanyId, d.IdempotencyRecordId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t09_idempotency_record_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ProjectSettlementEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t09_project_id");
+
+            entity.HasOne(d => d.ProjectAuthorizationDecision).WithMany(p => p.ProjectSettlementEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectAuthorizationDecisionId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.AuthorizationDecisionId })
+                .HasConstraintName("fk_t09_authorization_decision_id");
+
+            entity.HasOne(d => d.ProjectSettlement).WithMany(p => p.ProjectSettlementEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectSettlementId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.SettlementId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t09_settlement_id");
+
+            entity.HasOne(d => d.ProjectSettlementSnapshot).WithMany(p => p.ProjectSettlementEvents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectSettlementSnapshotId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.SnapshotId })
+                .HasConstraintName("fk_t09_snapshot_id");
+        });
+
+        modelBuilder.Entity<ProjectSettlementSnapshot>(entity =>
+        {
+            entity.HasKey(e => e.ProjectSettlementSnapshotId).HasName("pk_t07");
+
+            entity.ToTable("project_settlement_snapshots", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.EvaluatedByUserId }, "ix_t07_fk_evaluated_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PolicyVersionId }, "ix_t07_fk_policy_version_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.FinancialRevision }, "ix_t07_revision");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectSettlementId, e.ProjectSettlementSnapshotId }, "uq_t07_cycle_reference").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectSettlementId, e.SnapshotNumber }, "uq_t07_number").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectSettlementSnapshotId }, "uq_t07_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectSettlementSnapshotId }, "uq_t07_tenant").IsUnique();
+
+            entity.Property(e => e.ProjectSettlementSnapshotId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("project_settlement_snapshot_id");
+            entity.Property(e => e.BlockerCount).HasColumnName("blocker_count");
+            entity.Property(e => e.CanonicalPayload).HasColumnName("canonical_payload");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.EvaluatedAt).HasColumnName("evaluated_at");
+            entity.Property(e => e.EvaluatedByUserId).HasColumnName("evaluated_by_user_id");
+            entity.Property(e => e.EvaluatorVersion)
+                .HasMaxLength(80)
+                .HasColumnName("evaluator_version");
+            entity.Property(e => e.FinancialRevision).HasColumnName("financial_revision");
+            entity.Property(e => e.HashAlgorithm)
+                .HasMaxLength(80)
+                .HasColumnName("hash_algorithm");
+            entity.Property(e => e.MandatoryGapCount).HasColumnName("mandatory_gap_count");
+            entity.Property(e => e.Payload)
+                .HasColumnType("jsonb")
+                .HasColumnName("payload");
+            entity.Property(e => e.PolicyVersionId).HasColumnName("policy_version_id");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.ProjectSettlementId).HasColumnName("project_settlement_id");
+            entity.Property(e => e.ProjectVersion).HasColumnName("project_version");
+            entity.Property(e => e.Purpose)
+                .HasMaxLength(40)
+                .HasColumnName("purpose");
+            entity.Property(e => e.SchemaVersion).HasColumnName("schema_version");
+            entity.Property(e => e.SnapshotHash).HasColumnName("snapshot_hash");
+            entity.Property(e => e.SnapshotNumber).HasColumnName("snapshot_number");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.ProjectSettlementSnapshots)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t07_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.ProjectSettlementSnapshots)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.EvaluatedByUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t07_evaluated_by_user_id");
+
+            entity.HasOne(d => d.SettlementPolicyVersion).WithMany(p => p.ProjectSettlementSnapshots)
+                .HasPrincipalKey(p => new { p.CompanyId, p.SettlementPolicyVersionId })
+                .HasForeignKey(d => new { d.CompanyId, d.PolicyVersionId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t07_policy_version_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ProjectSettlementSnapshots)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t07_project_id");
+
+            entity.HasOne(d => d.ProjectSettlement).WithMany(p => p.ProjectSettlementSnapshots)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectSettlementId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.ProjectSettlementId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t07_project_settlement_id");
+        });
+
+        modelBuilder.Entity<ProjectSettlementSnapshotCategory>(entity =>
+        {
+            entity.HasKey(e => e.ProjectSettlementSnapshotCategoryId).HasName("pk_t08");
+
+            entity.ToTable("project_settlement_snapshot_categories", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.SnapshotId }, "ix_t08_fk_snapshot_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SnapshotId, e.CategoryCode, e.CurrencyCode, e.AmountMeaning }, "uq_t08_category_amount").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId, e.ProjectSettlementSnapshotCategoryId }, "uq_t08_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectSettlementSnapshotCategoryId }, "uq_t08_tenant").IsUnique();
+
+            entity.Property(e => e.ProjectSettlementSnapshotCategoryId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("project_settlement_snapshot_category_id");
+            entity.Property(e => e.AmountMeaning)
+                .HasMaxLength(40)
+                .HasColumnName("amount_meaning");
+            entity.Property(e => e.BlockerCount).HasColumnName("blocker_count");
+            entity.Property(e => e.CategoryCode)
+                .HasMaxLength(80)
+                .HasColumnName("category_code");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.CurrencyCode)
+                .HasMaxLength(3)
+                .HasColumnName("currency_code");
+            entity.Property(e => e.Details)
+                .HasColumnType("jsonb")
+                .HasColumnName("details");
+            entity.Property(e => e.EvaluationStatus)
+                .HasMaxLength(40)
+                .HasColumnName("evaluation_status");
+            entity.Property(e => e.ExactAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("exact_amount");
+            entity.Property(e => e.GapCount).HasColumnName("gap_count");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.SnapshotId).HasColumnName("snapshot_id");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.ProjectSettlementSnapshotCategories)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t08_company_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ProjectSettlementSnapshotCategories)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t08_project_id");
+
+            entity.HasOne(d => d.ProjectSettlementSnapshot).WithMany(p => p.ProjectSettlementSnapshotCategories)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId, p.ProjectSettlementSnapshotId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId, d.SnapshotId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t08_snapshot_id");
         });
 
         modelBuilder.Entity<ProjectSupervisor>(entity =>
@@ -6651,7 +8726,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.Priority, e.AvailableAt, e.DeliverySequence }, "ix_report_deliveries_ready")
                 .IsDescending(true, false, false)
-                .HasFilter("((status)::text = ANY ((ARRAY['Pending'::character varying, 'Queued'::character varying])::text[]))");
+                .HasFilter("((status)::text = ANY (ARRAY[('Pending'::character varying)::text, ('Queued'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.RecipientUserId, e.CreatedAt }, "ix_report_deliveries_recipient")
                 .IsDescending(false, false, true)
@@ -6872,7 +8947,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.FailureCategory, e.CompletedAt }, "ix_report_delivery_attempts_failures")
                 .IsDescending(false, false, true)
-                .HasFilter("((attempt_status)::text = ANY ((ARRAY['Failed'::character varying, 'Abandoned'::character varying])::text[]))");
+                .HasFilter("((attempt_status)::text = ANY (ARRAY[('Failed'::character varying)::text, ('Abandoned'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.ProviderName, e.CompletedAt }, "ix_report_delivery_attempts_provider").IsDescending(false, false, true);
 
@@ -7049,7 +9124,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.ProcessingResult, e.ReceivedAt }, "ix_report_delivery_events_rejected")
                 .IsDescending(false, false, true)
-                .HasFilter("((processing_result)::text = ANY ((ARRAY['Rejected'::character varying, 'Ignored'::character varying, 'Duplicate'::character varying])::text[]))");
+                .HasFilter("((processing_result)::text = ANY (ARRAY[('Rejected'::character varying)::text, ('Ignored'::character varying)::text, ('Duplicate'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.EventType, e.OccurredAt }, "ix_report_delivery_events_type").IsDescending(false, false, true);
 
@@ -7208,7 +9283,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.Sha256HashSnapshot }, "ix_report_delivery_files_hash");
 
-            entity.HasIndex(e => e.TemporaryUrlExpiresAt, "ix_report_delivery_files_link_expiry").HasFilter("(((delivery_file_usage)::text = 'DownloadLink'::text) AND ((status)::text = ANY ((ARRAY['Prepared'::character varying, 'Delivered'::character varying])::text[])))");
+            entity.HasIndex(e => e.TemporaryUrlExpiresAt, "ix_report_delivery_files_link_expiry").HasFilter("(((delivery_file_usage)::text = 'DownloadLink'::text) AND ((status)::text = ANY (ARRAY[('Prepared'::character varying)::text, ('Delivered'::character varying)::text])))");
 
             entity.HasIndex(e => new { e.CompanyId, e.ReportRunId, e.ReportRunFileId }, "ix_report_delivery_files_run");
 
@@ -7216,7 +9291,7 @@ public partial class AhdahDbContext : DbContext
                 .IsDescending(false, false, true)
                 .HasFilter("((status)::text = 'Skipped'::text)");
 
-            entity.HasIndex(e => e.SourceFileExpiresAtSnapshot, "ix_report_delivery_files_source_expiry").HasFilter("((status)::text = ANY ((ARRAY['Pending'::character varying, 'Prepared'::character varying, 'Delivered'::character varying])::text[]))");
+            entity.HasIndex(e => e.SourceFileExpiresAtSnapshot, "ix_report_delivery_files_source_expiry").HasFilter("((status)::text = ANY (ARRAY[('Pending'::character varying)::text, ('Prepared'::character varying)::text, ('Delivered'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.Status, e.CreatedAt }, "ix_report_delivery_files_status").IsDescending(false, false, true);
 
@@ -7873,13 +9948,13 @@ public partial class AhdahDbContext : DbContext
                 .IsDescending(false, false, true)
                 .HasFilter("((status)::text = 'Failed'::text)");
 
-            entity.HasIndex(e => e.OutputExpiresAt, "ix_report_runs_output_expiry").HasFilter("((status)::text = ANY ((ARRAY['Succeeded'::character varying, 'PartiallySucceeded'::character varying])::text[]))");
+            entity.HasIndex(e => e.OutputExpiresAt, "ix_report_runs_output_expiry").HasFilter("((status)::text = ANY (ARRAY[('Succeeded'::character varying)::text, ('PartiallySucceeded'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.ReportDefinitionId, e.ParameterHash, e.CreatedAt }, "ix_report_runs_parameter_hash").IsDescending(false, false, false, true);
 
             entity.HasIndex(e => new { e.Priority, e.CreatedAt, e.RunSequence }, "ix_report_runs_queue")
                 .IsDescending(true, false, false)
-                .HasFilter("((status)::text = ANY ((ARRAY['Pending'::character varying, 'Queued'::character varying])::text[]))");
+                .HasFilter("((status)::text = ANY (ARRAY[('Pending'::character varying)::text, ('Queued'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.RequestedByUserId, e.CreatedAt }, "ix_report_runs_requester")
                 .IsDescending(false, false, true)
@@ -8520,11 +10595,11 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.ReportScheduleId, e.RecipientRoleCode }, "ux_report_schedule_recipients_role")
                 .IsUnique()
-                .HasFilter("(((recipient_type)::text = 'Role'::text) AND ((status)::text = ANY ((ARRAY['Active'::character varying, 'Disabled'::character varying])::text[])))");
+                .HasFilter("(((recipient_type)::text = 'Role'::text) AND ((status)::text = ANY (ARRAY[('Active'::character varying)::text, ('Disabled'::character varying)::text])))");
 
             entity.HasIndex(e => new { e.CompanyId, e.ReportScheduleId, e.RecipientUserId }, "ux_report_schedule_recipients_user")
                 .IsUnique()
-                .HasFilter("(((recipient_type)::text = 'User'::text) AND ((status)::text = ANY ((ARRAY['Active'::character varying, 'Disabled'::character varying])::text[])))");
+                .HasFilter("(((recipient_type)::text = 'User'::text) AND ((status)::text = ANY (ARRAY[('Active'::character varying)::text, ('Disabled'::character varying)::text])))");
 
             entity.Property(e => e.ReportScheduleRecipientId)
                 .HasDefaultValueSql("gen_random_uuid()")
@@ -8697,7 +10772,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.ReportDefinitionId, e.Visibility, e.UpdatedAt }, "ix_saved_report_views_shared")
                 .IsDescending(false, false, false, true)
-                .HasFilter("(((status)::text = 'Active'::text) AND ((visibility)::text = ANY ((ARRAY['Shared'::character varying, 'Company'::character varying])::text[])))");
+                .HasFilter("(((status)::text = 'Active'::text) AND ((visibility)::text = ANY (ARRAY[('Shared'::character varying)::text, ('Company'::character varying)::text])))");
 
             entity.HasIndex(e => new { e.CompanyId, e.SavedReportViewId }, "uq_saved_report_views_company_view").IsUnique();
 
@@ -9618,7 +11693,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.DecisionAt }, "ix_sched_runs_skipped")
                 .IsDescending(false, true)
-                .HasFilter("((run_decision)::text = ANY ((ARRAY['SkippedMisfire'::character varying, 'SkippedConcurrency'::character varying, 'SkippedRunLimit'::character varying, 'SkippedScheduleWindow'::character varying, 'SkippedInactive'::character varying])::text[]))");
+                .HasFilter("((run_decision)::text = ANY (ARRAY[('SkippedMisfire'::character varying)::text, ('SkippedConcurrency'::character varying)::text, ('SkippedRunLimit'::character varying)::text, ('SkippedScheduleWindow'::character varying)::text, ('SkippedInactive'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.ScheduledJobRunId }, "uq_sched_runs_company_run").IsUnique();
 
@@ -9699,6 +11774,60 @@ public partial class AhdahDbContext : DbContext
                 .HasForeignKey(d => new { d.CompanyId, d.ScheduledJobDefinitionId })
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_sched_runs_definition");
+        });
+
+        modelBuilder.Entity<SettlementPolicyVersion>(entity =>
+        {
+            entity.HasKey(e => e.SettlementPolicyVersionId).HasName("pk_t14");
+
+            entity.ToTable("settlement_policy_versions", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ApprovedByUserId }, "ix_t14_fk_approved_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PredecessorId }, "ix_t14_fk_predecessor_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SettlementPolicyVersionId }, "uq_t14_tenant").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.PolicyCode, e.MajorVersion, e.ConfigurationVersion }, "uq_t14_version").IsUnique();
+
+            entity.Property(e => e.SettlementPolicyVersionId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("settlement_policy_version_id");
+            entity.Property(e => e.ApprovedAt).HasColumnName("approved_at");
+            entity.Property(e => e.ApprovedByUserId).HasColumnName("approved_by_user_id");
+            entity.Property(e => e.CanonicalRules).HasColumnName("canonical_rules");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.ConfigurationVersion).HasColumnName("configuration_version");
+            entity.Property(e => e.ContentHash).HasColumnName("content_hash");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.EffectiveFrom).HasColumnName("effective_from");
+            entity.Property(e => e.MajorVersion).HasColumnName("major_version");
+            entity.Property(e => e.PolicyCode)
+                .HasMaxLength(40)
+                .HasColumnName("policy_code");
+            entity.Property(e => e.PolicyText).HasColumnName("policy_text");
+            entity.Property(e => e.PredecessorId).HasColumnName("predecessor_id");
+            entity.Property(e => e.Rules)
+                .HasColumnType("jsonb")
+                .HasColumnName("rules");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.SettlementPolicyVersions)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t14_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.SettlementPolicyVersions)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ApprovedByUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t14_approved_by_user_id");
+
+            entity.HasOne(d => d.SettlementPolicyVersionNavigation).WithMany(p => p.InverseSettlementPolicyVersionNavigation)
+                .HasPrincipalKey(p => new { p.CompanyId, p.SettlementPolicyVersionId })
+                .HasForeignKey(d => new { d.CompanyId, d.PredecessorId })
+                .HasConstraintName("fk_t14_predecessor_id");
         });
 
         modelBuilder.Entity<Supplier>(entity =>
@@ -9808,6 +11937,152 @@ public partial class AhdahDbContext : DbContext
                 .HasForeignKey(d => new { d.CompanyId, d.DeactivatedByUserId })
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_suppliers_deactivated_by");
+        });
+
+        modelBuilder.Entity<SupplierCreditIntent>(entity =>
+        {
+            entity.HasKey(e => e.SupplierCreditIntentId).HasName("pk_t23");
+
+            entity.ToTable("supplier_credit_intents", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ApprovedByUserId }, "ix_t23_fk_approved_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.PreparedByUserId }, "ix_t23_fk_prepared_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId }, "ix_t23_fk_project_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SupplierCreditNoteId, e.ProjectId }, "uq_t23_project").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.SupplierCreditIntentId }, "uq_t23_tenant").IsUnique();
+
+            entity.Property(e => e.SupplierCreditIntentId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("supplier_credit_intent_id");
+            entity.Property(e => e.ApprovedAt).HasColumnName("approved_at");
+            entity.Property(e => e.ApprovedByUserId).HasColumnName("approved_by_user_id");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.ConsumedAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("consumed_amount");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.IntendedAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("intended_amount");
+            entity.Property(e => e.IntentKind)
+                .HasMaxLength(40)
+                .HasColumnName("intent_kind");
+            entity.Property(e => e.PreparedByUserId).HasColumnName("prepared_by_user_id");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.Reason)
+                .HasMaxLength(1000)
+                .HasColumnName("reason");
+            entity.Property(e => e.ReleasedAmount)
+                .HasPrecision(18, 2)
+                .HasColumnName("released_amount");
+            entity.Property(e => e.Status)
+                .HasMaxLength(40)
+                .HasColumnName("status");
+            entity.Property(e => e.SupplierCreditNoteId).HasColumnName("supplier_credit_note_id");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.VersionNumber)
+                .HasDefaultValue(1)
+                .HasColumnName("version_number");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.SupplierCreditIntents)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t23_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.SupplierCreditIntentAppUsers)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.ApprovedByUserId })
+                .HasConstraintName("fk_t23_approved_by_user_id");
+
+            entity.HasOne(d => d.AppUserNavigation).WithMany(p => p.SupplierCreditIntentAppUserNavigations)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.PreparedByUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t23_prepared_by_user_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.SupplierCreditIntents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .HasConstraintName("fk_t23_project_id");
+
+            entity.HasOne(d => d.SupplierCreditNote).WithMany(p => p.SupplierCreditIntents)
+                .HasPrincipalKey(p => new { p.CompanyId, p.SupplierCreditNoteId })
+                .HasForeignKey(d => new { d.CompanyId, d.SupplierCreditNoteId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t23_supplier_credit_note_id");
+        });
+
+        modelBuilder.Entity<SupplierCreditIntentApplication>(entity =>
+        {
+            entity.HasKey(e => e.SupplierCreditIntentApplicationId).HasName("pk_t24");
+
+            entity.ToTable("supplier_credit_intent_applications", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.AppliedByUserId }, "ix_t24_fk_applied_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ReversesApplicationId }, "ix_t24_fk_reverses_application_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SupplierCreditIntentId }, "ix_t24_fk_supplier_credit_intent_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SupplierCreditNoteAllocationId, e.SupplierCreditIntentId }, "uq_t24_application").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.SupplierCreditIntentApplicationId }, "uq_t24_tenant").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.ReversesApplicationId }, "ux_t24_reversal")
+                .IsUnique()
+                .HasFilter("(reverses_application_id IS NOT NULL)");
+
+            entity.Property(e => e.SupplierCreditIntentApplicationId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("supplier_credit_intent_application_id");
+            entity.Property(e => e.Amount)
+                .HasPrecision(18, 2)
+                .HasColumnName("amount");
+            entity.Property(e => e.AppliedAt).HasColumnName("applied_at");
+            entity.Property(e => e.AppliedByUserId).HasColumnName("applied_by_user_id");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.ReversesApplicationId).HasColumnName("reverses_application_id");
+            entity.Property(e => e.SupplierCreditIntentId).HasColumnName("supplier_credit_intent_id");
+            entity.Property(e => e.SupplierCreditNoteAllocationId).HasColumnName("supplier_credit_note_allocation_id");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.SupplierCreditIntentApplications)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t24_company_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.SupplierCreditIntentApplications)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.AppliedByUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t24_applied_by_user_id");
+
+            entity.HasOne(d => d.SupplierCreditIntentApplicationNavigation).WithOne(p => p.InverseSupplierCreditIntentApplicationNavigation)
+                .HasPrincipalKey<SupplierCreditIntentApplication>(p => new { p.CompanyId, p.SupplierCreditIntentApplicationId })
+                .HasForeignKey<SupplierCreditIntentApplication>(d => new { d.CompanyId, d.ReversesApplicationId })
+                .HasConstraintName("fk_t24_reverses_application_id");
+
+            entity.HasOne(d => d.SupplierCreditIntent).WithMany(p => p.SupplierCreditIntentApplications)
+                .HasPrincipalKey(p => new { p.CompanyId, p.SupplierCreditIntentId })
+                .HasForeignKey(d => new { d.CompanyId, d.SupplierCreditIntentId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t24_supplier_credit_intent_id");
+
+            entity.HasOne(d => d.SupplierCreditNoteAllocation).WithMany(p => p.SupplierCreditIntentApplications)
+                .HasPrincipalKey(p => new { p.CompanyId, p.SupplierCreditNoteAllocationId })
+                .HasForeignKey(d => new { d.CompanyId, d.SupplierCreditNoteAllocationId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t24_supplier_credit_note_allocation_id");
         });
 
         modelBuilder.Entity<SupplierCreditNote>(entity =>
@@ -10004,9 +12279,9 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.DebtDate }, "ix_supplier_debts_debt_date");
 
-            entity.HasIndex(e => new { e.CompanyId, e.DueDate }, "ix_supplier_debts_due_date").HasFilter("((status)::text = ANY ((ARRAY['Open'::character varying, 'PartiallySettled'::character varying])::text[]))");
+            entity.HasIndex(e => new { e.CompanyId, e.DueDate }, "ix_supplier_debts_due_date").HasFilter("((status)::text = ANY (ARRAY[('Open'::character varying)::text, ('PartiallySettled'::character varying)::text]))");
 
-            entity.HasIndex(e => new { e.CompanyId, e.SupplierId, e.OutstandingAmount }, "ix_supplier_debts_outstanding").HasFilter("((status)::text = ANY ((ARRAY['Open'::character varying, 'PartiallySettled'::character varying])::text[]))");
+            entity.HasIndex(e => new { e.CompanyId, e.SupplierId, e.OutstandingAmount }, "ix_supplier_debts_outstanding").HasFilter("((status)::text = ANY (ARRAY[('Open'::character varying)::text, ('PartiallySettled'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.ProjectId }, "ix_supplier_debts_project").HasFilter("(project_id IS NOT NULL)");
 
@@ -11082,7 +13357,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.MoneyTransferId }, "ux_transfer_correction_requests_one_active")
                 .IsUnique()
-                .HasFilter("((status)::text = ANY ((ARRAY['PendingReview'::character varying, 'Approved'::character varying])::text[]))");
+                .HasFilter("((status)::text = ANY (ARRAY[('PendingReview'::character varying)::text, ('Approved'::character varying)::text]))");
 
             entity.Property(e => e.TransferCorrectionRequestId)
                 .HasDefaultValueSql("gen_random_uuid()")
@@ -11167,7 +13442,7 @@ public partial class AhdahDbContext : DbContext
 
             entity.HasIndex(e => new { e.CompanyId, e.AdvanceId, e.Status }, "ix_user_advance_balances_advance_status");
 
-            entity.HasIndex(e => new { e.CompanyId, e.UserId, e.AvailableAmount }, "ix_user_advance_balances_available").HasFilter("((status)::text = ANY ((ARRAY['Active'::character varying, 'InSettlement'::character varying])::text[]))");
+            entity.HasIndex(e => new { e.CompanyId, e.UserId, e.AvailableAmount }, "ix_user_advance_balances_available").HasFilter("((status)::text = ANY (ARRAY[('Active'::character varying)::text, ('InSettlement'::character varying)::text]))");
 
             entity.HasIndex(e => new { e.CompanyId, e.UserId }, "ix_user_advance_balances_user");
 
@@ -11309,6 +13584,78 @@ public partial class AhdahDbContext : DbContext
                 .HasForeignKey(d => new { d.CompanyId, d.UserId })
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("fk_user_devices_user");
+        });
+
+        modelBuilder.Entity<VerifiedEvidenceObject>(entity =>
+        {
+            entity.HasKey(e => e.VerifiedEvidenceObjectId).HasName("pk_t18");
+
+            entity.ToTable("verified_evidence_objects", "ahdah");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ExpenseDocumentId }, "ix_t18_fk_expense_document_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.ProjectId }, "ix_t18_fk_project_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.SourceEvidenceId }, "ix_t18_fk_source_evidence_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.VerifiedByUserId }, "ix_t18_fk_verified_by_user_id");
+
+            entity.HasIndex(e => new { e.CompanyId, e.StorageObjectKey, e.StorageVersion, e.ProjectId }, "uq_t18_object").IsUnique();
+
+            entity.HasIndex(e => new { e.CompanyId, e.VerifiedEvidenceObjectId }, "uq_t18_tenant").IsUnique();
+
+            entity.Property(e => e.VerifiedEvidenceObjectId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("verified_evidence_object_id");
+            entity.Property(e => e.ByteLength).HasColumnName("byte_length");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.ExpenseDocumentId).HasColumnName("expense_document_id");
+            entity.Property(e => e.MediaType)
+                .HasMaxLength(150)
+                .HasColumnName("media_type");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.Sha256Hash).HasColumnName("sha256_hash");
+            entity.Property(e => e.SourceEvidenceId).HasColumnName("source_evidence_id");
+            entity.Property(e => e.StorageObjectKey)
+                .HasMaxLength(500)
+                .HasColumnName("storage_object_key");
+            entity.Property(e => e.StorageVersion)
+                .HasMaxLength(200)
+                .HasColumnName("storage_version");
+            entity.Property(e => e.VerificationMethod)
+                .HasMaxLength(40)
+                .HasColumnName("verification_method");
+            entity.Property(e => e.VerifiedAt).HasColumnName("verified_at");
+            entity.Property(e => e.VerifiedByUserId).HasColumnName("verified_by_user_id");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.VerifiedEvidenceObjects)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t18_company_id");
+
+            entity.HasOne(d => d.ExpenseDocument).WithMany(p => p.VerifiedEvidenceObjects)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ExpenseDocumentId })
+                .HasForeignKey(d => new { d.CompanyId, d.ExpenseDocumentId })
+                .HasConstraintName("fk_t18_expense_document_id");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.VerifiedEvidenceObjects)
+                .HasPrincipalKey(p => new { p.CompanyId, p.ProjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.ProjectId })
+                .HasConstraintName("fk_t18_project_id");
+
+            entity.HasOne(d => d.VerifiedEvidenceObjectNavigation).WithMany(p => p.InverseVerifiedEvidenceObjectNavigation)
+                .HasPrincipalKey(p => new { p.CompanyId, p.VerifiedEvidenceObjectId })
+                .HasForeignKey(d => new { d.CompanyId, d.SourceEvidenceId })
+                .HasConstraintName("fk_t18_source_evidence_id");
+
+            entity.HasOne(d => d.AppUser).WithMany(p => p.VerifiedEvidenceObjects)
+                .HasPrincipalKey(p => new { p.CompanyId, p.UserId })
+                .HasForeignKey(d => new { d.CompanyId, d.VerifiedByUserId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_t18_verified_by_user_id");
         });
 
         OnModelCreatingPartial(modelBuilder);

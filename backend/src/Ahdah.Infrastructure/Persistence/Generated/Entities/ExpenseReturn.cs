@@ -85,11 +85,15 @@ public partial class ExpenseReturn
 
     public virtual AppUser? AppUserNavigation { get; set; }
 
+    public virtual ICollection<CustodyOperation> CustodyOperations { get; set; } = new List<CustodyOperation>();
+
     public virtual Expense Expense { get; set; } = null!;
 
     public virtual ICollection<ExpenseReturnAdvanceAllocation> ExpenseReturnAdvanceAllocations { get; set; } = new List<ExpenseReturnAdvanceAllocation>();
 
     public virtual ICollection<ExpenseReturnItem> ExpenseReturnItems { get; set; } = new List<ExpenseReturnItem>();
+
+    public virtual ICollection<FinancialResolutionEffect> FinancialResolutionEffects { get; set; } = new List<FinancialResolutionEffect>();
 
     public virtual ICollection<SupplierRefund> SupplierRefunds { get; set; } = new List<SupplierRefund>();
 }

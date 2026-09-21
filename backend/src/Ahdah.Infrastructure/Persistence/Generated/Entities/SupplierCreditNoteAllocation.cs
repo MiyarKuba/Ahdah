@@ -27,6 +27,8 @@ public partial class SupplierCreditNoteAllocation
 
     public virtual AppUser AppUser { get; set; } = null!;
 
+    public virtual ICollection<SupplierCreditIntentApplication> SupplierCreditIntentApplications { get; set; } = new List<SupplierCreditIntentApplication>();
+
     public virtual SupplierCreditNote SupplierCreditNote { get; set; } = null!;
 
     public virtual SupplierDebt SupplierDebt { get; set; } = null!;

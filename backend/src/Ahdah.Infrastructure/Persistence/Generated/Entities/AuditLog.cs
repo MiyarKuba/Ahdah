@@ -81,4 +81,6 @@ public partial class AuditLog
     public virtual AppUser? AppUser { get; set; }
 
     public virtual Company Company { get; set; } = null!;
+
+    public virtual ICollection<ProjectReopening> ProjectReopenings { get; set; } = new List<ProjectReopening>();
 }

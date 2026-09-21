@@ -85,6 +85,8 @@ public partial class MoneyTransfer
 
     public virtual AppUser? AppUserNavigation { get; set; }
 
+    public virtual CustodyOperation? CustodyOperation { get; set; }
+
     public virtual ICollection<TransferAdvanceAllocation> TransferAdvanceAllocations { get; set; } = new List<TransferAdvanceAllocation>();
 
     public virtual TransferCorrectionRequest? TransferCorrectionRequest { get; set; }

@@ -78,5 +78,21 @@ public partial class AhdahDbContext
         modelBuilder.Entity<SupplierCreditNote>()
             .Property(note => note.VersionNumber)
             .IsConcurrencyToken();
+
+        modelBuilder.Entity<ProjectFinancialControl>()
+            .Property(control => control.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<ProjectCustodyPosition>()
+            .Property(position => position.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<CustodyOperation>()
+            .Property(operation => operation.VersionNumber)
+            .IsConcurrencyToken();
+
+        modelBuilder.Entity<CustodyReservation>()
+            .Property(reservation => reservation.VersionNumber)
+            .IsConcurrencyToken();
     }
 }

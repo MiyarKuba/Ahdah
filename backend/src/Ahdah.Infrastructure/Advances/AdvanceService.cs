@@ -862,6 +862,7 @@ public sealed class AdvanceService(
                 AdvanceConstants.AdvanceDeliveryTransferType => await ConfirmDeliveryAsync(
                     caller,
                     transfer,
+                    idempotency.Record!,
                     cancellationToken),
                 AdvanceConstants.InternalTransferType => await ConfirmAllocatedTransferAsync(
                     caller,
@@ -1210,6 +1211,7 @@ public sealed class AdvanceService(
     private async Task<bool> ConfirmDeliveryAsync(
         Caller caller,
         MoneyTransfer transfer,
+        IdempotencyRecord idempotencyRecord,
         CancellationToken cancellationToken)
     {
         if (transfer.AdvanceId is not { } advanceId)
@@ -1288,7 +1290,7 @@ public sealed class AdvanceService(
             receivedAmount: advance.AdvanceAmount,
             restoredAmount: 0m);
         dbContext.UserAdvanceBalances.Add(balance);
-        AddBalanceLedger(
+        var balanceLedgerEntry = AddBalanceLedger(
             balance,
             "BalanceCreated",
             advance.AdvanceAmount,
@@ -1302,6 +1304,54 @@ public sealed class AdvanceService(
             advanceId,
             "Initial advance balance created after confirmation.",
             referenceType: "Advance");
+
+        var openingPosition = new ProjectCustodyPosition
+        {
+            ProjectCustodyPositionId = Guid.NewGuid(),
+            CompanyId = caller.CompanyId,
+            UserAdvanceBalance = balance,
+            ProjectId = null,
+            AvailableAmount = advance.AdvanceAmount,
+            ReservedAmount = 0m,
+            VersionNumber = 2
+        };
+        var openingOperation = new CustodyOperation
+        {
+            CustodyOperationId = Guid.NewGuid(),
+            CompanyId = caller.CompanyId,
+            OperationType = "Opening",
+            Status = "Draft",
+            RequestedByUserId = caller.UserId,
+            RequestedAt = timeProvider.GetUtcNow().UtcDateTime,
+            Reason = "Advance delivery confirmed; custody opened from the authoritative balance receipt.",
+            IdempotencyRecordId = idempotencyRecord.IdempotencyRecordId,
+            MoneyTransferId = transfer.MoneyTransferId,
+            VersionNumber = 1
+        };
+        dbContext.ProjectCustodyPositions.Add(openingPosition);
+        dbContext.CustodyOperations.Add(openingOperation);
+        dbContext.CustodyMovementEntries.Add(new CustodyMovementEntry
+        {
+            CustodyMovementEntryId = Guid.NewGuid(),
+            CompanyId = caller.CompanyId,
+            CustodyOperation = openingOperation,
+            ProjectCustodyPosition = openingPosition,
+            EntryNumber = 1,
+            DeltaAvailableAmount = advance.AdvanceAmount,
+            DeltaReservedAmount = 0m,
+            ReceivedAmount = advance.AdvanceAmount,
+            BalanceLedgerEntry = balanceLedgerEntry,
+            OccurredAt = timeProvider.GetUtcNow().UtcDateTime,
+            ActorUserId = caller.UserId,
+            PositionVersionBefore = 1,
+            PositionVersionAfter = 2
+        });
+
+        // Insert the immutable effect while the header is mutable, then post it in the same transaction.
+        await dbContext.SaveChangesAsync(cancellationToken);
+        openingOperation.Status = "Posted";
+        openingOperation.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
+        openingOperation.VersionNumber++;
 
         var nowUtc = timeProvider.GetUtcNow().UtcDateTime;
         advance.Status = AdvanceConstants.OpenStatus;
@@ -1323,6 +1373,18 @@ public sealed class AdvanceService(
                 && candidate.MoneyTransferId == transfer.MoneyTransferId,
                 cancellationToken);
         if (allocation is null || allocation.AllocatedAmount != transfer.TransferAmount)
+        {
+            return false;
+        }
+
+        // Transfer/return preservation across project slices is a later writer-integration milestone.
+        // Fail closed once custody attribution exists so legacy writers cannot bypass T02/T05.
+        var attributedBalanceExists = await dbContext.ProjectCustodyPositions.AsNoTracking()
+            .AnyAsync(position => position.CompanyId == caller.CompanyId
+                && (position.UserAdvanceBalance.AdvanceId == allocation.AdvanceId)
+                && (position.UserAdvanceBalance.UserId == transfer.SenderUserId
+                    || position.UserAdvanceBalance.UserId == caller.UserId), cancellationToken);
+        if (attributedBalanceExists)
         {
             return false;
         }
@@ -1576,6 +1638,7 @@ public sealed class AdvanceService(
         var nowUtc = timeProvider.GetUtcNow().UtcDateTime;
         var record = new IdempotencyRecord
         {
+            IdempotencyRecordId = Guid.NewGuid(),
             CompanyId = caller.CompanyId,
             IdempotencyKey = idempotencyKey,
             OperationName = operationName,
@@ -1765,7 +1828,7 @@ public sealed class AdvanceService(
             VersionNumber = 1
         };
 
-    private void AddBalanceLedger(
+    private BalanceLedgerEntry AddBalanceLedger(
         UserAdvanceBalance balance,
         string entryType,
         decimal receivedDelta,
@@ -1780,8 +1843,9 @@ public sealed class AdvanceService(
         string description,
         string referenceType = "MoneyTransfer")
     {
-        dbContext.BalanceLedgerEntries.Add(new BalanceLedgerEntry
+        var entry = new BalanceLedgerEntry
         {
+            BalanceLedgerEntryId = Guid.NewGuid(),
             CompanyId = balance.CompanyId,
             UserAdvanceBalance = balance,
             BalanceVersionNumber = balance.VersionNumber,
@@ -1807,7 +1871,9 @@ public sealed class AdvanceService(
             CorrelationId = Guid.NewGuid(),
             Description = description,
             PerformedByUserId = performedByUserId
-        });
+        };
+        dbContext.BalanceLedgerEntries.Add(entry);
+        return entry;
     }
 
     private void AddFundingLedger(

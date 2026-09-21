@@ -47,5 +47,7 @@ public partial class FundingSourceLedgerEntry
 
     public virtual AppUser? AppUser { get; set; }
 
+    public virtual FinancialResolutionEffect? FinancialResolutionEffect { get; set; }
+
     public virtual FundingSource FundingSource { get; set; } = null!;
 }

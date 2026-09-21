@@ -56,4 +56,6 @@ public partial class UserAdvanceBalance
     public virtual ICollection<BalanceLedgerEntry> BalanceLedgerEntries { get; set; } = new List<BalanceLedgerEntry>();
 
     public virtual ICollection<ExpenseAdvanceAllocation> ExpenseAdvanceAllocations { get; set; } = new List<ExpenseAdvanceAllocation>();
+
+    public virtual ICollection<ProjectCustodyPosition> ProjectCustodyPositions { get; set; } = new List<ProjectCustodyPosition>();
 }

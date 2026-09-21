@@ -85,6 +85,10 @@ public partial class AdvanceSettlementResolution
 
     public virtual AppUser? AppUserNavigation { get; set; }
 
+    public virtual ICollection<CustodyOperation> CustodyOperations { get; set; } = new List<CustodyOperation>();
+
+    public virtual ICollection<FinancialResolutionEffect> FinancialResolutionEffects { get; set; } = new List<FinancialResolutionEffect>();
+
     public virtual FundingSource? FundingSource { get; set; }
 
     public virtual PersonalClaim? PersonalClaim { get; set; }

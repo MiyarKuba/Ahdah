@@ -77,6 +77,8 @@ public partial class SupplierRefund
 
     public virtual ExpenseReturn ExpenseReturn { get; set; } = null!;
 
+    public virtual ICollection<FinancialResolutionEffect> FinancialResolutionEffects { get; set; } = new List<FinancialResolutionEffect>();
+
     public virtual FundingSource FundingSource { get; set; } = null!;
 
     public virtual Supplier Supplier { get; set; } = null!;

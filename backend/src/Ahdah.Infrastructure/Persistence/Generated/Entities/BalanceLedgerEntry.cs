@@ -63,5 +63,7 @@ public partial class BalanceLedgerEntry
 
     public virtual AppUser AppUser { get; set; } = null!;
 
+    public virtual ICollection<CustodyMovementEntry> CustodyMovementEntries { get; set; } = new List<CustodyMovementEntry>();
+
     public virtual UserAdvanceBalance UserAdvanceBalance { get; set; } = null!;
 }

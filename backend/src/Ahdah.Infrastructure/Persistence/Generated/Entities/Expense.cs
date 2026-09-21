@@ -89,6 +89,8 @@ public partial class Expense
 
     public virtual AppUser AppUserNavigation { get; set; } = null!;
 
+    public virtual ICollection<CustodyOperation> CustodyOperations { get; set; } = new List<CustodyOperation>();
+
     public virtual ICollection<ExpenseAdvanceAllocation> ExpenseAdvanceAllocations { get; set; } = new List<ExpenseAdvanceAllocation>();
 
     public virtual ExpenseCategory ExpenseCategory { get; set; } = null!;

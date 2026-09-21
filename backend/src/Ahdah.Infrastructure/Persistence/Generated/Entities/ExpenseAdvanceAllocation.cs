@@ -25,6 +25,8 @@ public partial class ExpenseAdvanceAllocation
 
     public virtual AppUser AppUser { get; set; } = null!;
 
+    public virtual ICollection<CustodyReservation> CustodyReservations { get; set; } = new List<CustodyReservation>();
+
     public virtual Expense Expense { get; set; } = null!;
 
     public virtual ICollection<ExpenseReturnAdvanceAllocation> ExpenseReturnAdvanceAllocations { get; set; } = new List<ExpenseReturnAdvanceAllocation>();

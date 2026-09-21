@@ -171,6 +171,10 @@ These boundaries require validation against the existing schema and approved bus
 
 ## PostgreSQL and database-first integration
 
+The verified settlement scaffold expands the generated persistence model to 117 `ahdah` tables. T01-T26 generated files remain isolated under `Persistence/Generated`; handwritten configuration adds concurrency tokens for mutable T01/T02/T03/T05 projections without redefining PostgreSQL constraints. Deferred conservation and authority triggers, immutable histories, expression indexes, and nulls-not-distinct uniqueness remain database concerns.
+
+`ProjectFinancialGate` is the shared infrastructure coordinator for tenant-scoped financial control locks and revisions. Project creation owns the initial T01 insert. `CustodyService` owns T02-T05 queries and Designate construction; `AdvanceService` owns live Opening because it already owns AdvanceDelivery and `BalanceCreated`. The lock order is idempotency admission, T01 controls in PostgreSQL UUID order, advance balance, custody positions by ID, then operation/history rows. API controllers expose handwritten Application contracts only.
+
 The existing PostgreSQL 18 `ahdah_db` database, `ahdah` schema, and 91 mapped base tables are the source of truth. EF Core and Npgsql use a controlled Database-First workflow. Generated persistence models are isolated in `Ahdah.Infrastructure/Persistence/Generated`; they do not define the domain model. The connection string is supplied through configuration, using User Secrets locally and environment-based secret configuration in production. The application must not call `EnsureCreated`, apply migrations, or make destructive schema changes.
 
 Financial values use PostgreSQL `NUMERIC` and C# `decimal`. Financial ledger changes require explicit transactions and auditable behavior.

@@ -55,5 +55,11 @@ public partial class ExpenseDocument
 
     public virtual AppUser? AppUserNavigation { get; set; }
 
+    public virtual ICollection<DocumentCustodyEvent> DocumentCustodyEvents { get; set; } = new List<DocumentCustodyEvent>();
+
+    public virtual ICollection<DocumentPolicyException> DocumentPolicyExceptions { get; set; } = new List<DocumentPolicyException>();
+
     public virtual Expense Expense { get; set; } = null!;
+
+    public virtual ICollection<VerifiedEvidenceObject> VerifiedEvidenceObjects { get; set; } = new List<VerifiedEvidenceObject>();
 }

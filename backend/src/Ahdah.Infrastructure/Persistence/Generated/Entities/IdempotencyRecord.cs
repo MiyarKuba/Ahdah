@@ -78,4 +78,14 @@ public partial class IdempotencyRecord
     public virtual AppUser? AppUser { get; set; }
 
     public virtual Company Company { get; set; } = null!;
+
+    public virtual ICollection<CustodyOperation> CustodyOperations { get; set; } = new List<CustodyOperation>();
+
+    public virtual ProjectClosureCertificate? ProjectClosureCertificate { get; set; }
+
+    public virtual ICollection<ProjectOperationalEvent> ProjectOperationalEvents { get; set; } = new List<ProjectOperationalEvent>();
+
+    public virtual ProjectReopening? ProjectReopening { get; set; }
+
+    public virtual ICollection<ProjectSettlementEvent> ProjectSettlementEvents { get; set; } = new List<ProjectSettlementEvent>();
 }

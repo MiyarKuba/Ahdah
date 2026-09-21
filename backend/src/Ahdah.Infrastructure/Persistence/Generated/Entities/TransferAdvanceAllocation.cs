@@ -27,5 +27,7 @@ public partial class TransferAdvanceAllocation
 
     public virtual AppUser AppUser { get; set; } = null!;
 
+    public virtual ICollection<CustodyReservation> CustodyReservations { get; set; } = new List<CustodyReservation>();
+
     public virtual MoneyTransfer MoneyTransfer { get; set; } = null!;
 }
