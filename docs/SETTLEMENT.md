@@ -1,5 +1,13 @@
 # Settlement and closure foundation — Phase 1
 
+## Project financial write gate — Wave 1 (2026-09-21)
+
+The first existing-writer enrollment covers project expense creation and review, the expense-owned personal claim create/reject effects, supplier invoice/debt creation, supplier payment create/confirm/reject, and approved supplier-credit allocation. Each command discovers all affected projects before mutation, locks T01 controls in database UUID order in the command's own transaction, fails closed for missing T01 or `FinanciallyClosed`, revalidates financial lineage after root locks, and advances each affected project revision exactly once. Multi-project supplier commands query the project set as a batch and never increment inside allocation loops.
+
+Pending supplier payments still do not reduce debt outstanding, but their project allocations change readiness and therefore advance revision. Expense document upload remains pending metadata and is not a material revision; verification, revocation, exceptions, and paper custody remain deferred. The current API has no expense move/edit, claim payment/adjustment/write-off, or debt adjustment/write-off command, so no rule was invented for absent writers. `financial_revision` is the staleness authority that later settlement snapshots must bind to; `canSettle` remains conservative and cannot become true in this wave.
+
+Global enforcement, settlement approval, financial closure, reopening, and cycle activation remain disabled. Remaining enrollment includes returns/refunds, contract and owner operations, manager-contribution project effects, claim payments/resolutions, expense moves and corrections, supplier debt resolutions, remaining custody transfer/return paths, T23/T24 credit intent/effects, and certification-relevant evidence transitions.
+
 ## Financial-control and custody application foundation (2026-09-21)
 
 Database-First scaffolding from the verified isolated PostgreSQL 18 staging schema adds T01-T26 to the generated persistence layer and raises the mapped `ahdah` table count from 91 to 117. Generated money mappings use `decimal`/`NUMERIC(18,2)`; JSONB remains mapped as strings and canonical payloads/hashes as `byte[]`. The nullable T02 project relation, composite tenant FKs, partial indexes, and circular settlement/snapshot navigations were reviewed. EF does not express deferred trigger invariants, PostgreSQL expression indexes, or the `NULLS NOT DISTINCT` semantics of the unassigned-position unique key, so application repositories query sets explicitly and PostgreSQL remains the physical authority.

@@ -13,6 +13,7 @@ using Ahdah.Application.Suppliers;
 using Ahdah.Application.Suppliers.Contracts;
 using Ahdah.Application.Suppliers.Models;
 using Ahdah.Application.Suppliers.Services;
+using Ahdah.Infrastructure.FinancialControl;
 using Ahdah.Infrastructure.Persistence.Generated.Context;
 using Ahdah.Infrastructure.Persistence.Generated.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ namespace Ahdah.Infrastructure.Suppliers;
 public sealed class SupplierService(
     AhdahDbContext dbContext,
     ICurrentUserContext currentUserContext,
+    ProjectFinancialGate projectFinancialGate,
     TimeProvider timeProvider) : ISupplierService
 {
     public async Task<AccessResult<PagedResult<SupplierSummary>>> ListSuppliersAsync(
@@ -279,6 +281,10 @@ public sealed class SupplierService(
                 "/api/v1/supplier-invoices", request, cancellationToken);
             var replay = await Replay<SupplierInvoiceDetails>(attempt, transaction, cancellationToken);
             if (replay is not null) return replay;
+            var projectControls = await projectFinancialGate.LockOpenAsync(caller.CompanyId,
+                request.ProjectId is { } gatedProjectId ? [gatedProjectId] : [], cancellationToken);
+            if (projectControls is null)
+                return await Rollback<SupplierInvoiceDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
             var supplier = await LockSupplierAsync(caller.CompanyId, request.SupplierId, cancellationToken);
             if (supplier is null || !supplier.IsActive || supplier.TransactionMode == SupplierConstants.CashOnlyTransactionMode)
                 return await Rollback<SupplierInvoiceDetails>(transaction, AccessResultStatus.Invalid, cancellationToken);
@@ -337,6 +343,7 @@ public sealed class SupplierService(
                 expenseId, "Expense", caller.UserId, "Supplier debt created from supplier-credit expense.");
             AddAudit(caller, "SupplierDebt", debtId, 1, "SupplierInvoiceRecorded", "Create",
                 "Supplier-credit expense and debt recorded pending expense review.");
+            projectFinancialGate.AdvanceRevisions(projectControls);
             await dbContext.SaveChangesAsync(cancellationToken);
             await dbContext.Entry(debt).ReloadAsync(cancellationToken);
             var result = await InvoiceDetails(debt, cancellationToken);
@@ -450,6 +457,12 @@ public sealed class SupplierService(
                 "/api/v1/supplier-payments", request, cancellationToken);
             var replay = await Replay<SupplierPaymentDetails>(attempt, transaction, cancellationToken);
             if (replay is not null) return replay;
+            var projectIds = await ProjectIdsForDebts(caller.CompanyId,
+                request.DebtAllocations.Select(value => value.SupplierDebtId), cancellationToken);
+            var projectControls = await projectFinancialGate.LockOpenAsync(
+                caller.CompanyId, projectIds, cancellationToken);
+            if (projectControls is null)
+                return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
             var supplier = await LockSupplierAsync(caller.CompanyId, request.SupplierId, cancellationToken);
             if (supplier is null || !supplier.IsActive)
                 return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.NotFound, cancellationToken);
@@ -485,16 +498,20 @@ public sealed class SupplierService(
             };
             dbContext.SupplierPayments.Add(payment);
 
+            var lockedDebts = new List<SupplierDebt>();
             foreach (var allocationRequest in request.DebtAllocations.OrderBy(value => value.SupplierDebtId))
             {
                 var debt = await LockDebtAsync(caller.CompanyId, allocationRequest.SupplierDebtId, cancellationToken);
                 if (debt is null || debt.SupplierId != request.SupplierId || debt.CurrencyCode != request.CurrencyCode
                     || debt.Status is not (SupplierConstants.OpenDebtStatus or SupplierConstants.PartiallySettledDebtStatus)
+                    || debt.ProjectId is { } debtProjectId
+                        && projectControls.All(control => control.ProjectId != debtProjectId)
                     || !await ApprovedExpense(caller.CompanyId, debt.ExpenseId, cancellationToken))
                     return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.Invalid, cancellationToken);
                 var pending = await PendingDebtAllocations(caller.CompanyId, debt.SupplierDebtId, null, cancellationToken);
                 if ((debt.OutstandingAmount ?? 0m) - pending < allocationRequest.Amount)
                     return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
+                lockedDebts.Add(debt);
                 dbContext.SupplierPaymentDebtAllocations.Add(new SupplierPaymentDebtAllocation
                 {
                     SupplierPaymentDebtAllocationId = Guid.NewGuid(), CompanyId = caller.CompanyId,
@@ -504,6 +521,8 @@ public sealed class SupplierService(
                 });
                 if (!requiresApproval) ApplyPaymentToDebt(debt, allocationRequest.Amount, paymentId, caller.UserId);
             }
+            if (!ProjectSetMatches(projectControls, lockedDebts))
+                return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
 
             foreach (var allocationRequest in request.FundingAllocations.OrderBy(value => value.FundingSourceId))
             {
@@ -541,6 +560,7 @@ public sealed class SupplierService(
             AddAudit(caller, "SupplierPayment", paymentId, 1, "SupplierPaymentRecorded", "Create",
                 requiresApproval ? "Supplier payment recorded pending approval with funding reserved."
                     : "Supplier payment confirmed and allocated.");
+            projectFinancialGate.AdvanceRevisions(projectControls);
             await dbContext.SaveChangesAsync(cancellationToken);
             var result = await LoadPayment(caller.CompanyId, paymentId, cancellationToken);
             if (result is null) return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
@@ -582,6 +602,11 @@ public sealed class SupplierService(
                 new { paymentId, request.ExpectedVersion, request.RejectionReason }, cancellationToken);
             var replay = await Replay<SupplierPaymentDetails>(attempt, transaction, cancellationToken);
             if (replay is not null) return replay;
+            var projectIds = await ProjectIdsForPayment(caller.CompanyId, paymentId, cancellationToken);
+            var projectControls = await projectFinancialGate.LockOpenAsync(
+                caller.CompanyId, projectIds, cancellationToken);
+            if (projectControls is null)
+                return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
             var payment = await LockPayment(caller.CompanyId, paymentId, cancellationToken);
             if (payment is null) return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.NotFound, cancellationToken);
             if (payment.Status != SupplierConstants.PendingApprovalStatus || payment.VersionNumber != request.ExpectedVersion)
@@ -594,6 +619,31 @@ public sealed class SupplierService(
             if (confirm && !CanConfirm(payment.PaymentMethod, payment.ReferenceNumber, payment.ProofFileUrl,
                 settings, payment.PaymentAmount))
                 return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.Invalid, cancellationToken);
+            var debtAllocations = await dbContext.SupplierPaymentDebtAllocations.AsNoTracking().Where(value =>
+                value.CompanyId == caller.CompanyId && value.SupplierPaymentId == paymentId)
+                .OrderBy(value => value.SupplierDebtId).ToArrayAsync(cancellationToken);
+            var lockedDebts = new Dictionary<Guid, SupplierDebt>();
+            foreach (var allocation in debtAllocations)
+            {
+                var debt = await LockDebtAsync(caller.CompanyId, allocation.SupplierDebtId, cancellationToken);
+                if (debt is null || debt.SupplierId != payment.SupplierId || debt.CurrencyCode != payment.CurrencyCode
+                    || debt.ProjectId is { } debtProjectId
+                        && projectControls.All(control => control.ProjectId != debtProjectId))
+                    return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
+                if (confirm)
+                {
+                    if (!await ApprovedExpense(caller.CompanyId, debt.ExpenseId, cancellationToken))
+                        return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
+                    var otherPending = await PendingDebtAllocations(
+                        caller.CompanyId, debt.SupplierDebtId, paymentId, cancellationToken);
+                    if ((debt.OutstandingAmount ?? 0m) - otherPending < allocation.AllocatedAmount)
+                        return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
+                }
+                lockedDebts.Add(debt.SupplierDebtId, debt);
+            }
+            if (!ProjectSetMatches(projectControls, lockedDebts.Values))
+                return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
+
             var funding = await dbContext.SupplierPaymentFundingSources.AsNoTracking().Where(value =>
                 value.CompanyId == caller.CompanyId && value.SupplierPaymentId == paymentId)
                 .OrderBy(value => value.FundingSourceId).ToArrayAsync(cancellationToken);
@@ -615,19 +665,10 @@ public sealed class SupplierService(
             }
             if (confirm)
             {
-                var debts = await dbContext.SupplierPaymentDebtAllocations.AsNoTracking().Where(value =>
-                    value.CompanyId == caller.CompanyId && value.SupplierPaymentId == paymentId)
-                    .OrderBy(value => value.SupplierDebtId).ToArrayAsync(cancellationToken);
-                foreach (var allocation in debts)
+                foreach (var allocation in debtAllocations)
                 {
-                    var debt = await LockDebtAsync(caller.CompanyId, allocation.SupplierDebtId, cancellationToken);
-                    if (debt is null || debt.SupplierId != payment.SupplierId || debt.CurrencyCode != payment.CurrencyCode
-                        || !await ApprovedExpense(caller.CompanyId, debt.ExpenseId, cancellationToken))
-                        return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
-                    var otherPending = await PendingDebtAllocations(caller.CompanyId, debt.SupplierDebtId, paymentId, cancellationToken);
-                    if ((debt.OutstandingAmount ?? 0m) - otherPending < allocation.AllocatedAmount)
-                        return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
-                    ApplyPaymentToDebt(debt, allocation.AllocatedAmount, paymentId, caller.UserId);
+                    ApplyPaymentToDebt(
+                        lockedDebts[allocation.SupplierDebtId], allocation.AllocatedAmount, paymentId, caller.UserId);
                 }
                 payment.Status = SupplierConstants.ConfirmedStatus;
                 payment.ConfirmedByUserId = caller.UserId;
@@ -645,6 +686,7 @@ public sealed class SupplierService(
                 confirm ? "SupplierPaymentConfirmed" : "SupplierPaymentRejected",
                 confirm ? "Confirm" : "Reject", confirm ? "Supplier payment confirmed and allocated."
                     : "Supplier payment rejected; funding reservation released.");
+            projectFinancialGate.AdvanceRevisions(projectControls);
             await dbContext.SaveChangesAsync(cancellationToken);
             var result = await LoadPayment(caller.CompanyId, paymentId, cancellationToken);
             if (result is null) return await Rollback<SupplierPaymentDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
@@ -823,6 +865,12 @@ public sealed class SupplierService(
                 $"/api/v1/supplier-credit-notes/{creditNoteId}/allocations", new { creditNoteId, request }, cancellationToken);
             var replay = await Replay<SupplierCreditNoteDetails>(attempt, transaction, cancellationToken);
             if (replay is not null) return replay;
+            var projectIds = await ProjectIdsForDebts(caller.CompanyId,
+                request.Allocations.Select(value => value.SupplierDebtId), cancellationToken);
+            var projectControls = await projectFinancialGate.LockOpenAsync(
+                caller.CompanyId, projectIds, cancellationToken);
+            if (projectControls is null)
+                return await Rollback<SupplierCreditNoteDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
             var note = await LockCredit(caller.CompanyId, creditNoteId, cancellationToken);
             if (note is null) return await Rollback<SupplierCreditNoteDetails>(transaction, AccessResultStatus.NotFound, cancellationToken);
             if (note.Status != SupplierConstants.ApprovedStatus || note.VersionNumber != request.ExpectedVersion)
@@ -833,6 +881,7 @@ public sealed class SupplierService(
             var requested = request.Allocations.Sum(value => value.Amount);
             if (applied + requested > note.CreditNoteAmount)
                 return await Rollback<SupplierCreditNoteDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
+            var lockedDebts = new List<SupplierDebt>();
             foreach (var allocationRequest in request.Allocations.OrderBy(value => value.SupplierDebtId))
             {
                 if (await dbContext.SupplierCreditNoteAllocations.AsNoTracking().AnyAsync(value =>
@@ -842,11 +891,14 @@ public sealed class SupplierService(
                 var debt = await LockDebtAsync(caller.CompanyId, allocationRequest.SupplierDebtId, cancellationToken);
                 if (debt is null || debt.SupplierId != note.SupplierId || debt.CurrencyCode != note.CurrencyCode
                     || debt.Status is not (SupplierConstants.OpenDebtStatus or SupplierConstants.PartiallySettledDebtStatus)
+                    || debt.ProjectId is { } debtProjectId
+                        && projectControls.All(control => control.ProjectId != debtProjectId)
                     || !await ApprovedExpense(caller.CompanyId, debt.ExpenseId, cancellationToken))
                     return await Rollback<SupplierCreditNoteDetails>(transaction, AccessResultStatus.Invalid, cancellationToken);
                 var pending = await PendingDebtAllocations(caller.CompanyId, debt.SupplierDebtId, null, cancellationToken);
                 if ((debt.OutstandingAmount ?? 0m) - pending < allocationRequest.Amount)
                     return await Rollback<SupplierCreditNoteDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
+                lockedDebts.Add(debt);
                 dbContext.SupplierCreditNoteAllocations.Add(new SupplierCreditNoteAllocation
                 {
                     SupplierCreditNoteAllocationId = Guid.NewGuid(), CompanyId = caller.CompanyId,
@@ -861,9 +913,12 @@ public sealed class SupplierService(
                     allocationRequest.Amount, creditNoteId, "SupplierCreditNote", caller.UserId,
                     "Approved supplier credit note applied to debt.");
             }
+            if (!ProjectSetMatches(projectControls, lockedDebts))
+                return await Rollback<SupplierCreditNoteDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
             note.VersionNumber++;
             AddAudit(caller, "SupplierCreditNote", creditNoteId, note.VersionNumber,
                 "SupplierCreditNoteAllocated", "Allocate", "Approved supplier credit allocated to debt.");
+            projectFinancialGate.AdvanceRevisions(projectControls);
             await dbContext.SaveChangesAsync(cancellationToken);
             var result = await LoadCredit(caller.CompanyId, creditNoteId, cancellationToken);
             if (result is null) return await Rollback<SupplierCreditNoteDetails>(transaction, AccessResultStatus.Conflict, cancellationToken);
@@ -955,8 +1010,9 @@ public sealed class SupplierService(
                 && (value.Status == SupplierConstants.OpenDebtStatus
                     || value.Status == SupplierConstants.PartiallySettledDebtStatus))
             .GroupBy(value => value.CurrencyCode)
+            .OrderBy(group => group.Key)
             .Select(group => new SupplierBalanceSummary(group.Key, group.Sum(value => value.OutstandingAmount ?? 0m), group.Count()))
-            .OrderBy(value => value.CurrencyCode).ToArrayAsync(cancellationToken);
+            .ToArrayAsync(cancellationToken);
 
     private static SupplierSummary MapSupplier(Supplier value) => new(
         value.SupplierId, value.SupplierCode, value.SupplierName, value.SupplierType,
@@ -1150,6 +1206,48 @@ public sealed class SupplierService(
                 => !string.IsNullOrWhiteSpace(proof),
             _ => true
         };
+    }
+
+    private async Task<Guid[]> ProjectIdsForDebts(
+        Guid companyId,
+        IEnumerable<Guid> debtIds,
+        CancellationToken cancellationToken)
+    {
+        var requestedDebtIds = debtIds.Distinct().ToArray();
+        if (requestedDebtIds.Length == 0)
+        {
+            return [];
+        }
+
+        return await dbContext.SupplierDebts.AsNoTracking()
+            .Where(debt => debt.CompanyId == companyId
+                && requestedDebtIds.Contains(debt.SupplierDebtId)
+                && debt.ProjectId != null)
+            .Select(debt => debt.ProjectId!.Value)
+            .Distinct()
+            .ToArrayAsync(cancellationToken);
+    }
+
+    private Task<Guid[]> ProjectIdsForPayment(
+        Guid companyId,
+        Guid paymentId,
+        CancellationToken cancellationToken) =>
+        dbContext.SupplierPaymentDebtAllocations.AsNoTracking()
+            .Where(allocation => allocation.CompanyId == companyId
+                && allocation.SupplierPaymentId == paymentId
+                && allocation.SupplierDebt.ProjectId != null)
+            .Select(allocation => allocation.SupplierDebt.ProjectId!.Value)
+            .Distinct()
+            .ToArrayAsync(cancellationToken);
+
+    private static bool ProjectSetMatches(
+        IReadOnlyList<ProjectFinancialControl> controls,
+        IEnumerable<SupplierDebt> debts)
+    {
+        var expected = controls.Select(control => control.ProjectId).ToHashSet();
+        var actual = debts.Where(debt => debt.ProjectId != null)
+            .Select(debt => debt.ProjectId!.Value).ToHashSet();
+        return expected.SetEquals(actual);
     }
 
     private Task<bool> ApprovedExpense(Guid companyId, Guid expenseId, CancellationToken cancellationToken) =>

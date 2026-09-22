@@ -1,5 +1,13 @@
 # Expenses foundation — backend Phase 1
 
+## Project financial write gate — Wave 1 (2026-09-21)
+
+Project-linked expense creation and review now participate in T01 in the same PostgreSQL transaction as the expense, claim/debt, balance, ledger, audit, and idempotency writes. Creation validates the project relationship, locks its `project_financial_controls` row before balance or other financial roots, rejects a missing control or `FinanciallyClosed`, and advances `financial_revision` once. Approval and rejection discover the project before locking the expense, acquire T01 first, revalidate the relationship after the expense lock, and advance the project once only after all domain checks pass. Exact replay returns the stored response without reacquiring or advancing T01; mismatch, stale review, and rollback do not advance it.
+
+The current public expense contract has no edit, project reassignment, correction-required, cancellation, reversal, claim adjustment/write-off, or claim-payment command. These are remaining writers rather than partially exposed Wave 1 behavior. Consequently, there is no project A-to-B move endpoint to enroll yet. When added, it must lock both old and new T01 controls before mutating the expense and advance each once.
+
+Attachment POST remains nonmaterial: it records new metadata as `PendingVerification` and cannot verify, revoke, approve an exception, or alter original-paper custody. It does not advance T01. Future evidence verification/revocation and policy-exception commands are certification-relevant writers and must use the gate. Reimbursement reads and the existing outstanding formula are unchanged; project-linked `PersonalFunds` creation and rejection are gated through their owning expense command.
+
 ## Scope and database findings
 
 Phase 1 uses the existing PostgreSQL 18 `ahdah` schema without migrations or generated-model edits. The implemented records are:

@@ -1,5 +1,15 @@
 # Suppliers and supplier debt foundation — backend Phase 1
 
+## Project financial write gate — Wave 1 (2026-09-21)
+
+Supplier invoice/debt creation now locks the optional project T01 before supplier and debt roots, rejects missing or `FinanciallyClosed` controls, and advances the project revision once with the atomic expense/debt/ledger/idempotency transaction. Expense approval or rejection supplies the next project revision through the expense gate; rejection still cancels only an untouched debt.
+
+Supplier payment creation derives the complete distinct project set from all requested debt allocations in one query, locks T01 controls in PostgreSQL UUID order, then locks debts and funding roots in canonical order. Pending payment creation advances each affected project once because its allocations change settlement readiness, while authoritative debt `paid_amount` remains unchanged. Confirmation and rejection rediscover and lock the allocation project set, re-read and lock every debt before funding, and advance every affected project once. Reverse request order therefore cannot reverse T01 or debt lock order. Exact replay does not advance revisions.
+
+Applying an approved supplier credit follows the same multi-project protocol and advances each allocated debt project once. Credit creation and approval remain company/supplier-level and do not advance a project because the current header carries no project intent. T23/T24 project credit intent is still deferred, so an unused approved credit is not inferred to belong to a project.
+
+No debt adjustment, write-off, cancellation/reversal, payment cancellation/reversal, or supplier refund writer is currently published. Those remain Wave 2 work. Supplier metadata and payment-account metadata are also outside T01 because they do not alter a project financial position.
+
 ## Scope and schema findings
 
 This phase uses the existing PostgreSQL 18 `ahdah` schema without migrations or generated-model edits. There is no `supplier_invoices` table. A supplier invoice is an `expenses` row with payment mode `SupplierCredit`, paired one-to-one with `supplier_debts` through unique `(company_id, expense_id)`. Optional invoice lines use `expense_items`.

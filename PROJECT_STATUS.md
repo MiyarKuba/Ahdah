@@ -1,5 +1,15 @@
 # Project status
 
+## Project financial write gate — Wave 1 — 2026-09-22
+
+The existing expense and supplier writer surfaces now use `ProjectFinancialGate` in their authoritative PostgreSQL transactions. Covered commands are project expense create/approve/reject (including the expense-owned personal claim create/cancel and supplier-debt rejection effect), supplier invoice/debt create, supplier payment create/confirm/reject across one or more debt projects, and approved supplier-credit allocation. Missing T01 and `FinanciallyClosed` fail closed. Multi-project commands discover the complete project set in one query, lock T01 in database UUID order, revalidate locked debt lineage, and advance each distinct project exactly once after successful domain validation. Exact idempotent replay and failed commands do not advance revision.
+
+Pending supplier payments remain excluded from `paid_amount` and computed debt outstanding while their allocations still advance project revision as a settlement-readiness change. Pending expense document metadata is nonmaterial; verification/revocation, evidence exceptions, and paper custody remain deferred. No existing public command supports expense reassignment/edit/correction/cancel/reverse, claim payment/adjustment/write-off, supplier debt adjustment/write-off, or payment reversal, so these remain explicit writer inventory rather than invented APIs.
+
+Database-First generated files and settlement DDL are unchanged. Flutter is unchanged. Global enforcement, settlement approval, financial closure, reopening, and `canSettle=true` remain disabled. `financial_revision` is the current staleness authority for future snapshots.
+
+Verification used only the repository-local PostgreSQL 18 endpoint `127.0.0.1:55440` and a disposable `ahdah_custody_app_test` clone. Both focused real-PostgreSQL Wave 1 tests passed and executed their database paths: the expense atomic/replay/concurrent-review test and the supplier multi-project payment/allocation/debt test. The first runs exposed two EF query-ordering translation failures, and fixture timestamps exposed two PostgreSQL verified-after-creation constraints; these were corrected before the final run. `dotnet restore`, `dotnet build` (zero warnings/errors), and the full `dotnet test` suite passed: 361 backend tests, zero failed or skipped. The disposable database was dropped and its absence verified. No command targeted production `ahdah_db`; `94_activate_enforcement.sql` was not run.
+
 ## Financial control and custody backend — 2026-09-21
 
 The verified PostgreSQL settlement schema has been scaffolded Database-First from `127.0.0.1:55432/ahdah_settlement_staging` on `feat/financial-control-custody`. The generated model now maps 117 `ahdah` tables, including T01-T26 and the reviewed currency columns. Handwritten partial configuration marks mutable T01, T02, T03, and T05 `version_number` properties as concurrency tokens; PostgreSQL remains authoritative for deferred triggers, immutable history, expression indexes, and `UNIQUE NULLS NOT DISTINCT` behavior.
@@ -16,7 +26,7 @@ Real PostgreSQL tests use disposable `ahdah_custody_app_test`, cloned from the v
 
 ## Current phase
 
-**Project financial control and custody attribution backend foundation implemented over the verified DDL.** Policy v1 meaning is unchanged. No settlement approval or financial closure capability has been enabled.
+**Project financial write gate Wave 1 implemented over the verified custody foundation.** Policy v1 meaning is unchanged. No settlement approval or financial closure capability has been enabled.
 
 ## Baselines and branch
 
@@ -49,4 +59,4 @@ Trigger behavior, database binding, privileges, packet sealing concurrency and a
 
 ## Exact next task
 
-Upgrade the remaining project-affecting financial writers to the shared T01 gate and financial-revision protocol, starting with expenses, claims/reimbursements, supplier debt/invoices, and their payment/allocation paths. Do not begin settlement approval or financial closure until universal writer coverage is complete.
+Implement Project Financial Write Gate Wave 2: enroll returns/refunds, contract and owner operations, manager-contribution project effects, missing claim/debt resolution and payment writers, remaining custody transfer/return paths, T23/T24 credit intent/effects, and certification-relevant evidence changes. Do not activate T01 enforcement or begin settlement approval/financial closure until universal writer coverage is implemented and proven.

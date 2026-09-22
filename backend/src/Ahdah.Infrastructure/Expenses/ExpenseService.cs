@@ -14,6 +14,7 @@ using Ahdah.Application.Expenses.Models;
 using Ahdah.Application.Expenses.Services;
 using Ahdah.Application.Identity;
 using Ahdah.Application.Suppliers;
+using Ahdah.Infrastructure.FinancialControl;
 using Ahdah.Infrastructure.Persistence.Generated.Context;
 using Ahdah.Infrastructure.Persistence.Generated.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ namespace Ahdah.Infrastructure.Expenses;
 public sealed class ExpenseService(
     AhdahDbContext dbContext,
     ICurrentUserContext currentUserContext,
+    ProjectFinancialGate projectFinancialGate,
     TimeProvider timeProvider) : IExpenseService
 {
     public async Task<AccessResult<PagedResult<ExpenseCategorySummary>>> ListCategoriesAsync(
@@ -304,6 +306,16 @@ public sealed class ExpenseService(
                 return AccessResult<ExpenseDetails>.Failure(AccessResultStatus.Forbidden);
             }
 
+            var projectControls = await projectFinancialGate.LockOpenAsync(
+                caller.CompanyId,
+                request.ProjectId is { } gatedProjectId ? [gatedProjectId] : [],
+                cancellationToken);
+            if (projectControls is null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return AccessResult<ExpenseDetails>.Failure(AccessResultStatus.Conflict);
+            }
+
             var settings = await dbContext.CompanySettings.AsNoTracking().SingleOrDefaultAsync(value =>
                 value.CompanyId == caller.CompanyId && value.IsActive, cancellationToken);
             if (settings?.MaxSingleExpenseAmount is { } maximum && request.Amount > maximum)
@@ -427,6 +439,7 @@ public sealed class ExpenseService(
             }
 
             AddExpenseAudit(caller, expense, "ExpenseCreated", "Create", "Expense submitted for review.");
+            projectFinancialGate.AdvanceRevisions(projectControls);
             await dbContext.SaveChangesAsync(cancellationToken);
             var details = await LoadDetailsValueAsync(caller, expenseId, cancellationToken);
             if (details is null)
@@ -863,11 +876,37 @@ public sealed class ExpenseService(
                 return AccessResult<ExpenseDetails>.Success(replay);
             }
 
+            var expenseProject = await dbContext.Expenses.AsNoTracking()
+                .Where(value => value.CompanyId == caller.CompanyId && value.ExpenseId == expenseId)
+                .Select(value => new { value.ProjectId })
+                .SingleOrDefaultAsync(cancellationToken);
+            if (expenseProject is null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return AccessResult<ExpenseDetails>.Failure(AccessResultStatus.NotFound);
+            }
+
+            var projectControls = await projectFinancialGate.LockOpenAsync(
+                caller.CompanyId,
+                expenseProject.ProjectId is { } gatedProjectId ? [gatedProjectId] : [],
+                cancellationToken);
+            if (projectControls is null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return AccessResult<ExpenseDetails>.Failure(AccessResultStatus.Conflict);
+            }
+
             var expense = await LockExpenseAsync(caller.CompanyId, expenseId, cancellationToken);
             if (expense is null)
             {
                 await transaction.RollbackAsync(cancellationToken);
                 return AccessResult<ExpenseDetails>.Failure(AccessResultStatus.NotFound);
+            }
+
+            if (expense.ProjectId != expenseProject.ProjectId)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return AccessResult<ExpenseDetails>.Failure(AccessResultStatus.Conflict);
             }
 
             if (expense.Status != ExpenseConstants.PendingReviewStatus
@@ -1070,6 +1109,7 @@ public sealed class ExpenseService(
                 AddExpenseAudit(caller, expense, "ExpenseRejected", "Reject", "Expense rejected.");
             }
 
+            projectFinancialGate.AdvanceRevisions(projectControls);
             await dbContext.SaveChangesAsync(cancellationToken);
             var details = await LoadDetailsValueAsync(caller, expenseId, cancellationToken);
             if (details is null)
@@ -1134,10 +1174,10 @@ public sealed class ExpenseService(
                 allocation.AllocatedAmount,
                 ToUtc(allocation.CreatedAt)))
             .ToArrayAsync(cancellationToken);
-        var documents = await SelectDocuments(dbContext.ExpenseDocuments.AsNoTracking().Where(document =>
-                document.CompanyId == caller.CompanyId && document.ExpenseId == expenseId))
-            .OrderByDescending(document => document.CreatedAtUtc)
-            .ThenBy(document => document.ExpenseDocumentId)
+        var documents = await SelectDocuments(dbContext.ExpenseDocuments.AsNoTracking()
+            .Where(document => document.CompanyId == caller.CompanyId && document.ExpenseId == expenseId)
+            .OrderByDescending(document => document.CreatedAt)
+            .ThenBy(document => document.ExpenseDocumentId))
             .ToArrayAsync(cancellationToken);
         var items = await dbContext.ExpenseItems.AsNoTracking()
             .Where(item => item.CompanyId == caller.CompanyId && item.ExpenseId == expenseId)
