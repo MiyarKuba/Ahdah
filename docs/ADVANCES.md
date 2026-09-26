@@ -1,5 +1,9 @@
 # Advances foundation — backend Phase 1
 
+## Wave 2B writer audit (2026-09-26)
+
+The W01-W48 audit reconfirmed that advance creation and unassigned delivery Opening have no project financial lineage. Current Designate and project-attributed InternalTransfer/BalanceReturn reserve, confirm, and reject commands remain T01-gated with exact custody conservation and one revision per affected project. No standalone manager-contribution writer or automatic contribution-to-claim conversion exists; contribution remains funding unless a future explicit approved classification creates an obligation.
+
 ## Custody attribution integration (2026-09-21)
 
 AdvanceDelivery confirmation remains the only live Opening source. When confirmation creates the recipient's authoritative `user_advance_balances` row and `BalanceCreated` ledger entry, the same transaction creates exactly one unassigned T02 position, a Posted T03 `Opening`, and one immutable T04 receipt linked to that ledger entry and transfer. It does not designate a project, create T12 authority, or advance a project revision. The existing confirmation idempotency record also identifies the Opening, so same-key replay creates no duplicate position, operation, or effect.

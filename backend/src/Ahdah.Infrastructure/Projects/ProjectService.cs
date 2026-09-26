@@ -8,6 +8,7 @@ using Ahdah.Application.Projects;
 using Ahdah.Application.Projects.Contracts;
 using Ahdah.Application.Projects.Models;
 using Ahdah.Application.Projects.Services;
+using Ahdah.Infrastructure.FinancialControl;
 using Ahdah.Infrastructure.Persistence.Generated.Context;
 using Ahdah.Infrastructure.Persistence.Generated.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,7 @@ namespace Ahdah.Infrastructure.Projects;
 public sealed class ProjectService(
     AhdahDbContext dbContext,
     ICurrentUserContext currentUserContext,
+    ProjectFinancialGate financialGate,
     TimeProvider timeProvider) : IProjectService
 {
     public async Task<AccessResult<PagedResult<ProjectDetails>>> ListAsync(
@@ -258,80 +260,142 @@ public sealed class ProjectService(
             return AccessResult<ProjectDetails>.Failure(AccessResultStatus.Invalid);
         }
 
-        var project = await dbContext.Projects
-            .SingleOrDefaultAsync(candidate =>
-                candidate.CompanyId == caller.CompanyId
-                && candidate.ProjectId == projectId,
-                cancellationToken);
+        var requestsMaterialChange = request.ProjectOwnerId is not null
+            || request.ContractDate is not null
+            || request.StartDate is not null
+            || request.ExpectedEndDate is not null
+            || request.Status is not null;
 
-        if (project is null)
+        if (requestsMaterialChange
+            && !await dbContext.Projects.AsNoTracking().AnyAsync(candidate =>
+                candidate.CompanyId == caller.CompanyId && candidate.ProjectId == projectId,
+                cancellationToken))
         {
             return AccessResult<ProjectDetails>.Failure(AccessResultStatus.NotFound);
         }
 
-        if (project.VersionNumber != request.ExpectedVersion)
-        {
-            return AccessResult<ProjectDetails>.Failure(AccessResultStatus.Conflict);
-        }
-
-        if (!ProjectLifecycleRules.IsMutableStatus(project.Status))
-        {
-            return AccessResult<ProjectDetails>.Failure(AccessResultStatus.Invalid);
-        }
-
-        if (request.ProjectOwnerId is { } ownerId)
-        {
-            var ownerExists = await dbContext.ProjectOwners
-                .AsNoTracking()
-                .AnyAsync(owner =>
-                    owner.CompanyId == caller.CompanyId
-                    && owner.ProjectOwnerId == ownerId
-                    && owner.IsActive,
-                    cancellationToken);
-            if (!ownerExists)
-            {
-                return AccessResult<ProjectDetails>.Failure(AccessResultStatus.Invalid);
-            }
-
-            project.ProjectOwnerId = ownerId;
-        }
-
-        var effectiveStartDate = request.StartDate ?? project.StartDate;
-        var effectiveExpectedEndDate = request.ExpectedEndDate ?? project.ExpectedEndDate;
-        if (!ProjectRequestRules.AreDatesValid(effectiveStartDate, effectiveExpectedEndDate)
-            || project.ActualEndDate is { } actualEndDate && actualEndDate < effectiveStartDate)
-        {
-            return AccessResult<ProjectDetails>.Failure(AccessResultStatus.Invalid);
-        }
-
-        project.ProjectName = request.ProjectName?.Trim() ?? project.ProjectName;
-        project.SiteAddress = request.SiteAddress?.Trim() ?? project.SiteAddress;
-        project.ContactPhoneNumber = request.ContactPhoneNumber is null
-            ? project.ContactPhoneNumber
-            : NormalizeOptional(request.ContactPhoneNumber);
-        project.ContractDate = request.ContractDate ?? project.ContractDate;
-        project.StartDate = effectiveStartDate;
-        project.ExpectedEndDate = effectiveExpectedEndDate;
-        project.Status = request.Status ?? project.Status;
-        project.Description = request.Description is null
-            ? project.Description
-            : NormalizeOptional(request.Description);
-        project.Notes = request.Notes is null ? project.Notes : NormalizeOptional(request.Notes);
-        project.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
-        project.VersionNumber++;
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(
+            IsolationLevel.ReadCommitted,
+            cancellationToken);
 
         try
         {
+            ProjectFinancialControl? control = null;
+            if (requestsMaterialChange)
+            {
+                var controls = await financialGate.LockOpenAsync(
+                    caller.CompanyId,
+                    [projectId],
+                    cancellationToken);
+                if (controls is null)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return AccessResult<ProjectDetails>.Failure(AccessResultStatus.Conflict);
+                }
+
+                control = controls.Single();
+            }
+
+            var project = await dbContext.Projects
+                .FromSqlInterpolated(
+                    $"SELECT * FROM ahdah.projects WHERE company_id = {caller.CompanyId} AND project_id = {projectId} FOR UPDATE")
+                .SingleOrDefaultAsync(cancellationToken);
+
+            if (project is null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return AccessResult<ProjectDetails>.Failure(AccessResultStatus.NotFound);
+            }
+
+            if (project.VersionNumber != request.ExpectedVersion)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return AccessResult<ProjectDetails>.Failure(AccessResultStatus.Conflict);
+            }
+
+            if (!ProjectLifecycleRules.IsMutableStatus(project.Status))
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return AccessResult<ProjectDetails>.Failure(AccessResultStatus.Invalid);
+            }
+
+            var originalOwnerId = project.ProjectOwnerId;
+            var originalContractDate = project.ContractDate;
+            var originalStartDate = project.StartDate;
+            var originalExpectedEndDate = project.ExpectedEndDate;
+            var originalStatus = project.Status;
+
+            if (request.ProjectOwnerId is { } ownerId)
+            {
+                var ownerExists = await dbContext.ProjectOwners
+                    .AsNoTracking()
+                    .AnyAsync(owner =>
+                        owner.CompanyId == caller.CompanyId
+                        && owner.ProjectOwnerId == ownerId
+                        && owner.IsActive,
+                        cancellationToken);
+                if (!ownerExists)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return AccessResult<ProjectDetails>.Failure(AccessResultStatus.Invalid);
+                }
+
+                project.ProjectOwnerId = ownerId;
+            }
+
+            var effectiveStartDate = request.StartDate ?? project.StartDate;
+            var effectiveExpectedEndDate = request.ExpectedEndDate ?? project.ExpectedEndDate;
+            if (!ProjectRequestRules.AreDatesValid(effectiveStartDate, effectiveExpectedEndDate)
+                || project.ActualEndDate is { } actualEndDate && actualEndDate < effectiveStartDate)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return AccessResult<ProjectDetails>.Failure(AccessResultStatus.Invalid);
+            }
+
+            project.ProjectName = request.ProjectName?.Trim() ?? project.ProjectName;
+            project.SiteAddress = request.SiteAddress?.Trim() ?? project.SiteAddress;
+            project.ContactPhoneNumber = request.ContactPhoneNumber is null
+                ? project.ContactPhoneNumber
+                : NormalizeOptional(request.ContactPhoneNumber);
+            project.ContractDate = request.ContractDate ?? project.ContractDate;
+            project.StartDate = effectiveStartDate;
+            project.ExpectedEndDate = effectiveExpectedEndDate;
+            project.Status = request.Status ?? project.Status;
+            project.Description = request.Description is null
+                ? project.Description
+                : NormalizeOptional(request.Description);
+            project.Notes = request.Notes is null ? project.Notes : NormalizeOptional(request.Notes);
+            project.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
+            project.VersionNumber++;
+
+            var changedMaterialFact = project.ProjectOwnerId != originalOwnerId
+                || project.ContractDate != originalContractDate
+                || project.StartDate != originalStartDate
+                || project.ExpectedEndDate != originalExpectedEndDate
+                || project.Status != originalStatus;
+            if (changedMaterialFact)
+            {
+                financialGate.AdvanceRevision(control!);
+            }
+
             await dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
             return await LoadVisibleProjectAsync(caller, projectId, cancellationToken);
         }
         catch (DbUpdateConcurrencyException)
         {
+            await transaction.RollbackAsync(cancellationToken);
             return AccessResult<ProjectDetails>.Failure(AccessResultStatus.Conflict);
         }
         catch (DbUpdateException exception) when (IsUniqueViolation(exception))
         {
+            await transaction.RollbackAsync(cancellationToken);
             return AccessResult<ProjectDetails>.Failure(AccessResultStatus.Conflict);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
         }
     }
 

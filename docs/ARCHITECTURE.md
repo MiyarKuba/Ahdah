@@ -58,6 +58,14 @@ The one-time invitation creation token is returned directly to dialog-local stat
 
 ## ASP.NET Core Web API
 
+### Universal current-writer coverage
+
+Wave 2B completed the W01-W48 audit across controllers, application interfaces, infrastructure services, direct `DbContext` mutation, raw SQL, tests, and job/import/admin surfaces. The machine-readable register at `backend/tests/Ahdah.IntegrationTests/ProjectFinancialWriterCoverage.json` is copied into the integration-test output and executable verification rejects a missing inventory ID or any current material writer that is not gated, revision-aware, and covered by a named integration test.
+
+Project PATCH is the Wave 2B implementation change. Contract date, project owner, operating dates, and Active/Paused state lock T01 before the project row and increment `financial_revision` once when the stored material value changes. Cosmetic metadata and supervisor assignment do not increment it. Contract value has no update command. The database tables for contract changes, owner finance, manager-contribution classification, operational events, credit intent, verified evidence, paper custody, and policy exceptions have no application command surface and remain future workflows.
+
+The shared T01 protocol now covers every current material project mutation. Physical enforcement triggers remain disabled until the dedicated enforcement rehearsal. Readiness and closure commands remain disabled.
+
 The .NET 10 API is controller based and owns the public HTTP contract. It is responsible for authentication and authorization when introduced, tenant context resolution, input validation, application orchestration, transaction boundaries, persistence access, audit production, and safe integration with external services.
 
 The initial project dependency direction is:

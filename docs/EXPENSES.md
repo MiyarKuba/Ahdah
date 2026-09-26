@@ -1,5 +1,9 @@
 # Expenses foundation — backend Phase 1
 
+## Wave 2B evidence audit (2026-09-26)
+
+The only current attachment writer creates pending metadata. It cannot verify durable bytes, revoke verification, establish original-paper custody, or approve an evidence exception, so it remains nonmaterial and revision-neutral. No T18, T16, or T17 application writer exists. Wave 2B does not treat storage paths or temporary access as verified evidence and does not invent paper or exception authority; these remain conservative settlement blockers until durable storage and approved workflows exist.
+
 ## Project financial write gate — Wave 1 (2026-09-21)
 
 Project-linked expense creation and review now participate in T01 in the same PostgreSQL transaction as the expense, claim/debt, balance, ledger, audit, and idempotency writes. Creation validates the project relationship, locks its `project_financial_controls` row before balance or other financial roots, rejects a missing control or `FinanciallyClosed`, and advances `financial_revision` once. Approval and rejection discover the project before locking the expense, acquire T01 first, revalidate the relationship after the expense lock, and advance the project once only after all domain checks pass. Exact replay returns the stored response without reacquiring or advancing T01; mismatch, stale review, and rollback do not advance it.

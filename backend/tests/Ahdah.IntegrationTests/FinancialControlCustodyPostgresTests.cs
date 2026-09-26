@@ -32,7 +32,7 @@ public sealed class FinancialControlCustodyPostgresTests
         var manager = new TestCurrentUser(ids.CompanyId, ids.ManagerId, "Manager");
         await using (var projectDb = Db(connectionString))
         {
-            var projects = new ProjectService(projectDb, manager, TimeProvider.System);
+            var projects = new ProjectService(projectDb, manager, new ProjectFinancialGate(projectDb, TimeProvider.System), TimeProvider.System);
             var created = await projects.CreateAsync(new CreateProjectRequest
             {
                 ProjectName = "Custody Integration Project",
@@ -325,7 +325,7 @@ public sealed class FinancialControlCustodyPostgresTests
         async Task<Guid> CreateProject(string name)
         {
             await using var context = Db(connectionString);
-            var created = await new ProjectService(context, manager, TimeProvider.System).CreateAsync(
+            var created = await new ProjectService(context, manager, new ProjectFinancialGate(context, TimeProvider.System), TimeProvider.System).CreateAsync(
                 new CreateProjectRequest
                 {
                     ProjectName = name, SiteAddress = "Tripoli", ContractValue = 1000m,

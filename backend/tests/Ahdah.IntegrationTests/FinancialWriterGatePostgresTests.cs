@@ -19,6 +19,114 @@ namespace Ahdah.IntegrationTests;
 public sealed class FinancialWriterGatePostgresTests
 {
     [Fact]
+    public async Task Project_material_update_gates_revision_serializes_races_and_rejects_closed_state()
+    {
+        var connectionString = Environment.GetEnvironmentVariable("AHDAH_CUSTODY_TEST_CONNECTION");
+        if (string.IsNullOrWhiteSpace(connectionString)) return;
+
+        var ids = new FixtureIds();
+        await SeedIdentityAsync(Db(connectionString), ids);
+        var manager = User(ids.CompanyId, ids.ManagerId, "Manager");
+        ids.ProjectA = await CreateProject(connectionString, manager, "Project Update Gate");
+
+        Guid replacementOwnerId;
+        await using (var ownerDb = Db(connectionString))
+        {
+            var replacementOwner = new ProjectOwner
+            {
+                CompanyId = ids.CompanyId,
+                OwnerName = "Replacement owner",
+                PhoneNumber = $"+21894{Random.Shared.Next(1000000, 9999999)}",
+                IsActive = true,
+                CreatedByUserId = ids.ManagerId
+            };
+            ownerDb.ProjectOwners.Add(replacementOwner);
+            await ownerDb.SaveChangesAsync();
+            replacementOwnerId = replacementOwner.ProjectOwnerId;
+        }
+
+        var changedContractDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1));
+        await using (var materialDb = Db(connectionString))
+        {
+            var updated = await Projects(materialDb, manager).UpdateAsync(ids.ProjectA,
+                new UpdateProjectRequest
+                {
+                    ExpectedVersion = 1,
+                    ContractDate = changedContractDate,
+                    ProjectOwnerId = replacementOwnerId
+                }, default);
+            Assert.Equal(AccessResultStatus.Success, updated.Status);
+            Assert.Equal(replacementOwnerId, updated.Value!.Owner.ProjectOwnerId);
+            Assert.Equal(changedContractDate, updated.Value!.ContractDate);
+            Assert.Equal(2, await Revision(materialDb, ids.CompanyId, ids.ProjectA));
+        }
+
+        await using (var replayDb = Db(connectionString))
+        {
+            var replay = await Projects(replayDb, manager).UpdateAsync(ids.ProjectA,
+                new UpdateProjectRequest
+                {
+                    ExpectedVersion = 1,
+                    ContractDate = changedContractDate,
+                    ProjectOwnerId = replacementOwnerId
+                }, default);
+            Assert.Equal(AccessResultStatus.Conflict, replay.Status);
+            Assert.Equal(2, await Revision(replayDb, ids.CompanyId, ids.ProjectA));
+        }
+
+        await using (var cosmeticDb = Db(connectionString))
+        {
+            var updated = await Projects(cosmeticDb, manager).UpdateAsync(ids.ProjectA,
+                new UpdateProjectRequest
+                {
+                    ExpectedVersion = 2,
+                    ProjectName = "Cosmetic project rename"
+                }, default);
+            Assert.Equal(AccessResultStatus.Success, updated.Status);
+            Assert.Equal(2, await Revision(cosmeticDb, ids.CompanyId, ids.ProjectA));
+        }
+
+        async Task<AccessResult<Ahdah.Application.Projects.Models.ProjectDetails>> Race(
+            UpdateProjectRequest request)
+        {
+            await using var context = Db(connectionString);
+            return await Projects(context, manager).UpdateAsync(ids.ProjectA, request, default);
+        }
+
+        var races = await Task.WhenAll(
+            Race(new UpdateProjectRequest { ExpectedVersion = 3, Status = "Paused" }),
+            Race(new UpdateProjectRequest
+            {
+                ExpectedVersion = 3,
+                ContractDate = changedContractDate.AddDays(1)
+            }));
+        Assert.Single(races, result => result.Status == AccessResultStatus.Success);
+        Assert.Single(races, result => result.Status == AccessResultStatus.Conflict);
+
+        await using (var closeDb = Db(connectionString))
+        {
+            Assert.Equal(3, await Revision(closeDb, ids.CompanyId, ids.ProjectA));
+            await SeedStructurallyClosedControlAsync(closeDb, ids);
+        }
+
+        await using (var closedDb = Db(connectionString))
+        {
+            var projectVersion = await closedDb.Projects.AsNoTracking()
+                .Where(value => value.CompanyId == ids.CompanyId && value.ProjectId == ids.ProjectA)
+                .Select(value => value.VersionNumber)
+                .SingleAsync();
+            var rejected = await Projects(closedDb, manager).UpdateAsync(ids.ProjectA,
+                new UpdateProjectRequest
+                {
+                    ExpectedVersion = projectVersion,
+                    ContractDate = changedContractDate.AddDays(2)
+                }, default);
+            Assert.Equal(AccessResultStatus.Conflict, rejected.Status);
+            Assert.Equal(3, await Revision(closedDb, ids.CompanyId, ids.ProjectA));
+        }
+    }
+
+    [Fact]
     public async Task Expense_gate_is_atomic_replay_safe_and_serializes_concurrent_review()
     {
         var connectionString = Environment.GetEnvironmentVariable("AHDAH_CUSTODY_TEST_CONNECTION");
@@ -285,6 +393,9 @@ public sealed class FinancialWriterGatePostgresTests
     private static SupplierService Suppliers(AhdahDbContext db, ICurrentUserContext user) =>
         new(db, user, new ProjectFinancialGate(db, TimeProvider.System), TimeProvider.System);
 
+    private static ProjectService Projects(AhdahDbContext db, ICurrentUserContext user) =>
+        new(db, user, new ProjectFinancialGate(db, TimeProvider.System), TimeProvider.System);
+
     private static TestCurrentUser User(Guid companyId, Guid userId, string role) =>
         new(companyId, userId, role);
 
@@ -300,7 +411,7 @@ public sealed class FinancialWriterGatePostgresTests
         string connectionString, ICurrentUserContext manager, string name)
     {
         await using var db = Db(connectionString);
-        var result = await new ProjectService(db, manager, TimeProvider.System).CreateAsync(
+        var result = await new ProjectService(db, manager, new ProjectFinancialGate(db, TimeProvider.System), TimeProvider.System).CreateAsync(
             new CreateProjectRequest
             {
                 ProjectName = name,
@@ -402,6 +513,221 @@ public sealed class FinancialWriterGatePostgresTests
         });
         await db.SaveChangesAsync();
     }
+
+    private static async Task SeedStructurallyClosedControlAsync(AhdahDbContext db, FixtureIds ids)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync();
+        db.Database.AutoSavepointsEnabled = false;
+        var now = DateTime.UtcNow;
+        var policyId = Guid.NewGuid();
+        var authorizationId = Guid.NewGuid();
+        var idempotencyId = Guid.NewGuid();
+        var settlementId = Guid.NewGuid();
+        var approvalSnapshotId = Guid.NewGuid();
+        var closureSnapshotId = Guid.NewGuid();
+        var certificateId = Guid.NewGuid();
+        var approvalHash = Enumerable.Repeat((byte)0x2a, 32).ToArray();
+        var closureHash = Enumerable.Repeat((byte)0x3b, 32).ToArray();
+
+        var project = await db.Projects.SingleAsync(value =>
+            value.CompanyId == ids.CompanyId && value.ProjectId == ids.ProjectA);
+        var control = await db.ProjectFinancialControls.SingleAsync(value =>
+            value.CompanyId == ids.CompanyId && value.ProjectId == ids.ProjectA);
+        var postCloseVersion = project.VersionNumber + 1;
+
+        db.SettlementPolicyVersions.Add(new SettlementPolicyVersion
+        {
+            SettlementPolicyVersionId = policyId,
+            CompanyId = ids.CompanyId,
+            PolicyCode = "TEST-CLOSED-GATE",
+            MajorVersion = 1,
+            ConfigurationVersion = 1,
+            PolicyText = "Structurally valid closed-state integration fixture",
+            CanonicalRules = [1],
+            Rules = "{}",
+            ContentHash = Enumerable.Repeat((byte)0x1a, 32).ToArray(),
+            ApprovedByUserId = ids.ManagerId,
+            ApprovedAt = now.AddMinutes(-1),
+            EffectiveFrom = now.AddMinutes(-1),
+            CreatedAt = now.AddMinutes(-2)
+        });
+        db.IdempotencyRecords.Add(new IdempotencyRecord
+        {
+            IdempotencyRecordId = idempotencyId,
+            CompanyId = ids.CompanyId,
+            IdempotencyKey = $"closed-fixture-{Guid.NewGuid():N}",
+            OperationName = "project.close_fixture",
+            RequestMethod = "POST",
+            RequestPath = $"/integration/projects/{ids.ProjectA}/close-fixture",
+            RequestSource = "Application",
+            RequestFingerprintHash = new string('a', 64),
+            RequestPayloadHash = new string('b', 64),
+            ActorType = "User",
+            ActorUserId = ids.ManagerId,
+            Status = "Completed",
+            AttemptCount = 1,
+            ResponseHttpStatus = 200,
+            ResponseContentType = "application/json",
+            ResponsePayload = "{}",
+            ResourceType = "ProjectClosureCertificate",
+            ResourceId = certificateId,
+            ResourceVersionNumber = 1,
+            ReplayCount = 0,
+            CorrelationId = Guid.NewGuid(),
+            StartedAt = now.AddSeconds(-1),
+            CompletedAt = now,
+            ExpiresAt = now.AddHours(24),
+            CreatedAt = now.AddSeconds(-1),
+            UpdatedAt = now
+        });
+        db.ProjectAuthorizationDecisions.Add(new ProjectAuthorizationDecision
+        {
+            ProjectAuthorizationDecisionId = authorizationId,
+            CompanyId = ids.CompanyId,
+            ProjectId = ids.ProjectA,
+            ActionCode = "Close",
+            ActorUserId = ids.ManagerId,
+            ActorRole = "Manager",
+            DecidedAt = now,
+            Decision = "Allowed",
+            PolicyVersionId = policyId,
+            ConflictDetected = false,
+            RequestHash = Enumerable.Repeat((byte)0x4c, 32).ToArray(),
+            Details = "{}",
+            CreatedAt = now
+        });
+        var settlement = new ProjectSettlement
+        {
+            ProjectSettlementId = settlementId,
+            CompanyId = ids.CompanyId,
+            ProjectId = ids.ProjectA,
+            CycleNumber = 1,
+            Status = "Draft",
+            OperationalBasis = "Completed",
+            CapturedProjectVersion = postCloseVersion,
+            CapturedFinancialRevision = control.FinancialRevision,
+            PolicyVersionId = policyId,
+            EvaluatorVersion = "integration-fixture",
+            SnapshotSchemaVersion = 1,
+            PreparedByUserId = ids.DeputyId,
+            VersionNumber = 1,
+            CreatedAt = now.AddSeconds(-1),
+            UpdatedAt = now.AddSeconds(-1)
+        };
+        db.ProjectSettlements.Add(settlement);
+        await db.SaveChangesAsync();
+
+        db.ProjectSettlementSnapshotCategories.AddRange(
+            SnapshotCategory(ids, approvalSnapshotId, "ApprovalFixture", now),
+            SnapshotCategory(ids, closureSnapshotId, "ClosureFixture", now));
+        await db.SaveChangesAsync();
+
+        db.ProjectSettlementSnapshots.AddRange(
+            Snapshot(ids, settlementId, approvalSnapshotId, policyId, 1, "ApprovalCheck",
+                postCloseVersion, control.FinancialRevision, approvalHash, now),
+            Snapshot(ids, settlementId, closureSnapshotId, policyId, 2, "ClosureCheck",
+                postCloseVersion, control.FinancialRevision, closureHash, now));
+        await db.SaveChangesAsync();
+
+        settlement.Status = "Approved";
+        settlement.EvaluatedAt = now;
+        settlement.SubmittedByUserId = ids.AccountantId;
+        settlement.SubmittedAt = now;
+        settlement.ApprovedByUserId = ids.ManagerId;
+        settlement.ApprovedAt = now;
+        settlement.SnapshotId = approvalSnapshotId;
+        settlement.SnapshotHash = approvalHash;
+        settlement.VersionNumber++;
+        settlement.UpdatedAt = now;
+        await db.SaveChangesAsync();
+
+        db.ProjectClosureCertificates.Add(new ProjectClosureCertificate
+        {
+            ProjectClosureCertificateId = certificateId,
+            CompanyId = ids.CompanyId,
+            ProjectId = ids.ProjectA,
+            ProjectSettlementId = settlementId,
+            ApprovedSnapshotId = approvalSnapshotId,
+            ClosureSnapshotId = closureSnapshotId,
+            FinancialRevision = control.FinancialRevision,
+            PolicyVersionId = policyId,
+            ClosureBasis = "Completed",
+            ClosedByUserId = ids.ManagerId,
+            ActorRole = "Manager",
+            ClosedAt = now,
+            Reason = "Closed-state writer rejection integration fixture",
+            PreCloseProjectVersion = project.VersionNumber,
+            PostCloseProjectVersion = postCloseVersion,
+            ApprovedSnapshotHash = approvalHash,
+            ClosureSnapshotHash = closureHash,
+            ClosureVersion = 1,
+            AuthorizationDecisionId = authorizationId,
+            IdempotencyRecordId = idempotencyId,
+            CreatedAt = now
+        });
+        project.Status = "FinanciallyClosed";
+        project.ActualEndDate = DateOnly.FromDateTime(now);
+        project.CompletedAt = now;
+        project.VersionNumber = postCloseVersion;
+        project.UpdatedAt = now;
+        control.FinancialState = "FinanciallyClosed";
+        control.ActiveSettlementId = settlementId;
+        control.ActiveClosureId = certificateId;
+        control.VersionNumber++;
+        control.UpdatedAt = now;
+        await db.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
+
+    private static ProjectSettlementSnapshotCategory SnapshotCategory(
+        FixtureIds ids, Guid snapshotId, string category, DateTime now) => new()
+        {
+            ProjectSettlementSnapshotCategoryId = Guid.NewGuid(),
+            CompanyId = ids.CompanyId,
+            ProjectId = ids.ProjectA,
+            SnapshotId = snapshotId,
+            CategoryCode = category,
+            EvaluationStatus = "Evaluated",
+            AmountMeaning = "NotApplicable",
+            BlockerCount = 0,
+            GapCount = 0,
+            Details = "[]",
+            CreatedAt = now
+        };
+
+    private static ProjectSettlementSnapshot Snapshot(
+        FixtureIds ids,
+        Guid settlementId,
+        Guid snapshotId,
+        Guid policyId,
+        int number,
+        string purpose,
+        int projectVersion,
+        long financialRevision,
+        byte[] hash,
+        DateTime now) => new()
+        {
+            ProjectSettlementSnapshotId = snapshotId,
+            CompanyId = ids.CompanyId,
+            ProjectId = ids.ProjectA,
+            ProjectSettlementId = settlementId,
+            SnapshotNumber = number,
+            Purpose = purpose,
+            ProjectVersion = projectVersion,
+            FinancialRevision = financialRevision,
+            PolicyVersionId = policyId,
+            EvaluatorVersion = "integration-fixture",
+            SchemaVersion = 1,
+            EvaluatedAt = now,
+            CanonicalPayload = [(byte)number],
+            Payload = "{}",
+            HashAlgorithm = "SHA256",
+            SnapshotHash = hash,
+            EvaluatedByUserId = ids.ManagerId,
+            BlockerCount = 0,
+            MandatoryGapCount = 0,
+            CreatedAt = now
+        };
 
     private static CreateSupplierPaymentRequest Payment(
         FixtureIds ids, Guid firstDebtId, Guid secondDebtId, decimal first, decimal second) => new()

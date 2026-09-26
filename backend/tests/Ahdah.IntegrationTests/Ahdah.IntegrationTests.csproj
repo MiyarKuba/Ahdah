@@ -23,6 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="ProjectFinancialWriterCoverage.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Ahdah.Api\Ahdah.Api.csproj" />
     <ProjectReference Include="..\..\src\Ahdah.Infrastructure\Ahdah.Infrastructure.csproj" />
   </ItemGroup>

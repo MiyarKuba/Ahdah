@@ -1,5 +1,13 @@
 # Settlement and closure foundation — Phase 1
 
+## Project financial write gate — Wave 2B (2026-09-26)
+
+The complete W01-W48 application audit is maintained in the test-backed `ProjectFinancialWriterCoverage.json` register. The only remaining current material bypass was project PATCH: contract date, owner, start/expected-end dates, and Active/Paused state can change settlement basis. Those supplied fields now acquire the open T01 gate before the project row; an actual material change advances the project once, while cosmetic metadata does not. Optimistic-version competition permits one commit and zero revision from the loser. A structurally valid closed-control fixture proves ordinary project mutation is rejected without revision.
+
+The remaining catalog entries are absent application workflows, not hidden writers: contract-change lifecycle rows; owner receipt/allocation/refund and reconciliation; manager-contribution classification; completion/cancellation/acknowledgment; credit intent creation/application; verified binary evidence; paper custody; and policy exceptions. T23/T24 cannot be safely added until explicit intent creation/approval authority exists, and current credit allocation cannot infer intent from debt history. T18 remains deferred because there is no durable binary-storage verifier; T16 and T17 have no published custody or exception authority. These gaps continue to prevent true settlement readiness.
+
+All current material application writers are now registered and gated. Enforcement activation is still a separate rehearsal milestone. Settlement submission/approval, `canSettle=true`, certification, closure, and reopening remain disabled.
+
 ## Project financial write gate — Wave 2A (2026-09-26)
 
 InternalTransfer and BalanceReturn now preserve explicit project/unassigned custody through T02-T05. Reserve, confirm, and reject are separate material commands; each locks the complete sorted project gate set and advances each affected project once. Reverse request order cannot reverse T01 or holder-balance lock order. Exact replay does not duplicate operations, movements, reservations, balance effects, or revisions, while a changed payload under the same key conflicts.

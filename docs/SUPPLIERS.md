@@ -1,5 +1,9 @@
 # Suppliers and supplier debt foundation — backend Phase 1
 
+## Wave 2B credit-intent audit (2026-09-26)
+
+T23/T24 are mapped Database-First tables with no application command. Approved policy requires explicit Project or CompanyUnassigned intent, but it does not yet define who creates and approves that intent. Wave 2B therefore does not infer intent from later debt allocations or reinterpret an intent as a second credit. Existing approved-credit allocation remains a T01-gated, exact-decimal, multi-project command over authoritative debt projects. Credit intent creation, consumption, release, reversal, and application history remain a deferred feature requiring approved role semantics.
+
 ## Project financial write gate — Wave 1 (2026-09-21)
 
 Supplier invoice/debt creation now locks the optional project T01 before supplier and debt roots, rejects missing or `FinanciallyClosed` controls, and advances the project revision once with the atomic expense/debt/ledger/idempotency transaction. Expense approval or rejection supplies the next project revision through the expense gate; rejection still cancels only an untouched debt.
