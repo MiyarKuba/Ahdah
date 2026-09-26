@@ -1,12 +1,18 @@
 # Settlement and closure foundation — Phase 1
 
+## Project financial write gate — Wave 2A (2026-09-26)
+
+InternalTransfer and BalanceReturn now preserve explicit project/unassigned custody through T02-T05. Reserve, confirm, and reject are separate material commands; each locks the complete sorted project gate set and advances each affected project once. Reverse request order cannot reverse T01 or holder-balance lock order. Exact replay does not duplicate operations, movements, reservations, balance effects, or revisions, while a changed payload under the same key conflicts.
+
+No published expense-return, supplier-refund, owner-refund, claim-resolution, or supplier-debt-resolution writer exists yet, so Wave 2A creates no T22 effects. T22 remains reserved for the approved typed economic effects of future real writers. Global enforcement, settlement approval, certification, and financial closure remain disabled.
+
 ## Project financial write gate — Wave 1 (2026-09-21)
 
 The first existing-writer enrollment covers project expense creation and review, the expense-owned personal claim create/reject effects, supplier invoice/debt creation, supplier payment create/confirm/reject, and approved supplier-credit allocation. Each command discovers all affected projects before mutation, locks T01 controls in database UUID order in the command's own transaction, fails closed for missing T01 or `FinanciallyClosed`, revalidates financial lineage after root locks, and advances each affected project revision exactly once. Multi-project supplier commands query the project set as a batch and never increment inside allocation loops.
 
 Pending supplier payments still do not reduce debt outstanding, but their project allocations change readiness and therefore advance revision. Expense document upload remains pending metadata and is not a material revision; verification, revocation, exceptions, and paper custody remain deferred. The current API has no expense move/edit, claim payment/adjustment/write-off, or debt adjustment/write-off command, so no rule was invented for absent writers. `financial_revision` is the staleness authority that later settlement snapshots must bind to; `canSettle` remains conservative and cannot become true in this wave.
 
-Global enforcement, settlement approval, financial closure, reopening, and cycle activation remain disabled. Remaining enrollment includes returns/refunds, contract and owner operations, manager-contribution project effects, claim payments/resolutions, expense moves and corrections, supplier debt resolutions, remaining custody transfer/return paths, T23/T24 credit intent/effects, and certification-relevant evidence transitions.
+Global enforcement, settlement approval, financial closure, reopening, and cycle activation remain disabled. Wave 2B enrollment includes contract and owner operations, manager-contribution project effects, T23/T24 credit intent/effects, verified evidence and paper events, policy exceptions, and operational completion/cancellation financial-basis changes. Future published return/refund, claim/debt resolution, expense correction, and reversal writers must join the gate and use typed T22 effects where the approved design requires them.
 
 ## Financial-control and custody application foundation (2026-09-21)
 
@@ -18,7 +24,7 @@ T02-T05 custody ownership is implemented for reads, live Opening, and Designate.
 
 Confirmed AdvanceDelivery creates the unassigned T02 projection, Posted T03 Opening, and one T04 receipt linked to the authoritative `BalanceCreated` ledger entry in the same transaction. Opening has no T12 authority and no project financial revision. Accountant or Deputy may create an idempotent pending Designate request; Manager approval revalidates the original fingerprint, locks T01 then balance then positions, records an `Allowed` project-scoped T12 `Designate` decision, moves only available custody with paired immutable T04 rows, and advances the destination project revision once. The unassigned movement has no project revision; the project movement carries the post-command revision. PostgreSQL evaluates final authority/conservation through deferred constraints at commit.
 
-Release, Reallocate, and broad Correction application commands are deferred. Existing settlement GET remains conservative and does not return `canSettle=true`. Global enforcement, settlement approval, closure, and reopening remain disabled. InternalTransfer and BalanceReturn currently return a conflict once either affected holder participates in T02; designation-preserving transfer effects are part of the remaining-writer milestone.
+Release, Reallocate, and broad Correction application commands are deferred. Existing settlement GET remains conservative and does not return `canSettle=true`. Global enforcement, settlement approval, closure, and reopening remain disabled. InternalTransfer and BalanceReturn preserve explicit T02 designations through T03-T05; attributed requests without complete custody allocations fail closed.
 
 ## Database-First design follow-up (2026-09-16)
 

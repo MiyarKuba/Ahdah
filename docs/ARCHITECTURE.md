@@ -115,6 +115,8 @@ Application owns explicit advance requests/responses, money validation, exact li
 
 `advances` represents a top-level Manager-to-Deputy custody issue. Its unique direct `AdvanceDelivery` uses `money_transfers`; later `InternalTransfer` and `BalanceReturn` records link through `transfer_advance_allocations`. A distribution does not create a child advance. `user_advance_balances` is current-state authority, while `balance_ledger_entries` and `funding_source_ledger_entries` preserve immutable history.
 
+Attributed InternalTransfer and BalanceReturn requests carry explicit T02 position allocations. The service locks all affected T01 rows before canonical balance/position roots and records the reserve, confirm, or reject phase in T03-T05. Recipient positions retain the source project/unassigned designation, and each affected project revision advances once per committed phase.
+
 Creation locks and allocates existing usable `funding_sources`, reserves their authoritative availability, and creates the pending advance delivery atomically. Confirmation consumes the reservation and creates the recipient balance. Distribution and return initiation lock the holder balance before reserving availability; confirmation creates paired sender/recipient ledger effects. PostgreSQL row locks and EF concurrency tokens protect every mutable financial aggregate. SQLSTATE `23505` and optimistic-concurrency failures map to safe conflict responses.
 
 Every financial command requires tenant-scoped `Idempotency-Key` handling through the existing `idempotency_records` table. Identical completed commands replay their original safe response; key reuse by another actor, operation, or payload conflicts. Writes are never automatically retried.

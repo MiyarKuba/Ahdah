@@ -71,6 +71,13 @@ public abstract record AdvanceTransferRequestBase : IValidatableObject
     }
 }
 
+public sealed record AdvanceCustodyAllocationRequest
+{
+    public Guid ProjectCustodyPositionId { get; init; }
+
+    public decimal Amount { get; init; }
+}
+
 public sealed record CreateAdvanceRequest : AdvanceTransferRequestBase
 {
     public Guid RecipientUserId { get; init; }
@@ -129,6 +136,9 @@ public sealed record CreateAdvanceDistributionRequest : AdvanceTransferRequestBa
 {
     public Guid RecipientUserId { get; init; }
 
+    [MaxLength(100)]
+    public IReadOnlyList<AdvanceCustodyAllocationRequest> CustodyAllocations { get; init; } = [];
+
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         foreach (var result in base.Validate(validationContext))
@@ -140,10 +150,53 @@ public sealed record CreateAdvanceDistributionRequest : AdvanceTransferRequestBa
         {
             yield return new ValidationResult("Recipient user ID is required.", [nameof(RecipientUserId)]);
         }
+
+        foreach (var result in ValidateCustodyAllocations(CustodyAllocations, Amount))
+        {
+            yield return result;
+        }
+    }
+
+
+    internal static IEnumerable<ValidationResult> ValidateCustodyAllocations(
+        IReadOnlyList<AdvanceCustodyAllocationRequest> allocations, decimal total)
+    {
+        if (allocations.Count == 0)
+        {
+            yield break;
+        }
+
+        if (allocations.Any(value => value.ProjectCustodyPositionId == Guid.Empty
+                || !AdvanceRules.IsValidMoney(value.Amount))
+            || allocations.Select(value => value.ProjectCustodyPositionId).Distinct().Count() != allocations.Count
+            || allocations.Sum(value => value.Amount) != total)
+        {
+            yield return new ValidationResult(
+                "Custody allocations must be unique, valid, and total the transfer amount.",
+                [nameof(CustodyAllocations), nameof(Amount)]);
+        }
     }
 }
 
-public sealed record CreateAdvanceReturnRequest : AdvanceTransferRequestBase;
+public sealed record CreateAdvanceReturnRequest : AdvanceTransferRequestBase
+{
+    [MaxLength(100)]
+    public IReadOnlyList<AdvanceCustodyAllocationRequest> CustodyAllocations { get; init; } = [];
+
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        foreach (var result in base.Validate(validationContext))
+        {
+            yield return result;
+        }
+
+        foreach (var result in CreateAdvanceDistributionRequest.ValidateCustodyAllocations(
+                     CustodyAllocations, Amount))
+        {
+            yield return result;
+        }
+    }
+}
 
 public sealed record RejectAdvanceTransferRequest
 {

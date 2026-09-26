@@ -13,6 +13,7 @@ using Ahdah.Application.Advances.Services;
 using Ahdah.Application.Identity;
 using Ahdah.Infrastructure.Persistence.Generated.Context;
 using Ahdah.Infrastructure.Persistence.Generated.Entities;
+using Ahdah.Infrastructure.FinancialControl;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -21,6 +22,7 @@ namespace Ahdah.Infrastructure.Advances;
 public sealed class AdvanceService(
     AhdahDbContext dbContext,
     ICurrentUserContext currentUserContext,
+    ProjectFinancialGate financialGate,
     TimeProvider timeProvider) : IAdvanceService
 {
     public async Task<AccessResult<PagedResult<AdvanceSummary>>> ListAsync(
@@ -464,14 +466,10 @@ public sealed class AdvanceService(
                 return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Invalid);
             }
 
-            var balance = await LockBalanceAsync(
-                caller.CompanyId,
-                advanceId,
-                caller.UserId,
-                cancellationToken);
-            if (balance is null
-                || balance.Status != AdvanceConstants.ActiveBalanceStatus
-                || balance.AvailableAmount < request.Amount)
+            var custodyPlan = await PrepareCustodyReservationAsync(
+                caller, advanceId, request.Amount, request.CustodyAllocations, cancellationToken);
+            var balance = custodyPlan?.Balance;
+            if (balance is null)
             {
                 await transaction.RollbackAsync(cancellationToken);
                 return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Conflict);
@@ -505,32 +503,21 @@ public sealed class AdvanceService(
             await dbContext.SaveChangesAsync(cancellationToken);
             var transferId = transfer.MoneyTransferId;
 
-            balance.AvailableAmount -= request.Amount;
-            balance.ReservedAmount += request.Amount;
-            balance.VersionNumber++;
-            AddBalanceLedger(
-                balance,
-                "TransferReserved",
-                0m,
-                0m,
-                0m,
-                0m,
-                0m,
-                -request.Amount,
-                request.Amount,
-                caller.UserId,
-                transferId,
-                "Reserved for transfer confirmation.");
-
-            dbContext.TransferAdvanceAllocations.Add(new TransferAdvanceAllocation
+            var transferAllocation = new TransferAdvanceAllocation
             {
+                TransferAdvanceAllocationId = Guid.NewGuid(),
                 CompanyId = caller.CompanyId,
                 MoneyTransferId = transferId,
                 AdvanceId = advanceId,
                 AllocatedAmount = request.Amount,
                 AllocatedByUserId = caller.UserId,
                 Notes = NormalizeOptional(request.Notes)
-            });
+            };
+            dbContext.TransferAdvanceAllocations.Add(transferAllocation);
+            var custodyOperation = ApplyCustodyReservation(
+                caller, custodyPlan!, transfer, transferAllocation, idempotency.Record!, isReturn: false);
+            await dbContext.SaveChangesAsync(cancellationToken);
+            PostCustodyOperation(custodyOperation);
 
             CompleteIdempotency(
                 idempotency.Record!,
@@ -559,6 +546,10 @@ public sealed class AdvanceService(
         catch (DbUpdateException exception) when (IsUniqueViolation(exception))
         {
             await transaction.RollbackAsync(cancellationToken);
+            return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Conflict);
+        }
+        catch (PostgresException exception) when (IsPostgresConflict(exception))
+        {
             return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Conflict);
         }
         catch
@@ -636,14 +627,10 @@ public sealed class AdvanceService(
                 return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Invalid);
             }
 
-            var balance = await LockBalanceAsync(
-                caller.CompanyId,
-                advanceId,
-                caller.UserId,
-                cancellationToken);
-            if (balance is null
-                || balance.Status != AdvanceConstants.ActiveBalanceStatus
-                || balance.AvailableAmount < request.Amount)
+            var custodyPlan = await PrepareCustodyReservationAsync(
+                caller, advanceId, request.Amount, request.CustodyAllocations, cancellationToken);
+            var balance = custodyPlan?.Balance;
+            if (balance is null)
             {
                 await transaction.RollbackAsync(cancellationToken);
                 return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Conflict);
@@ -701,32 +688,21 @@ public sealed class AdvanceService(
             await dbContext.SaveChangesAsync(cancellationToken);
             var transferId = transfer.MoneyTransferId;
 
-            balance.AvailableAmount -= request.Amount;
-            balance.ReservedAmount += request.Amount;
-            balance.VersionNumber++;
-            AddBalanceLedger(
-                balance,
-                "BalanceReturnReserved",
-                0m,
-                0m,
-                0m,
-                0m,
-                0m,
-                -request.Amount,
-                request.Amount,
-                caller.UserId,
-                transferId,
-                "Reserved for unused-balance return confirmation.");
-
-            dbContext.TransferAdvanceAllocations.Add(new TransferAdvanceAllocation
+            var transferAllocation = new TransferAdvanceAllocation
             {
+                TransferAdvanceAllocationId = Guid.NewGuid(),
                 CompanyId = caller.CompanyId,
                 MoneyTransferId = transferId,
                 AdvanceId = advanceId,
                 AllocatedAmount = request.Amount,
                 AllocatedByUserId = caller.UserId,
                 Notes = NormalizeOptional(request.Notes)
-            });
+            };
+            dbContext.TransferAdvanceAllocations.Add(transferAllocation);
+            var custodyOperation = ApplyCustodyReservation(
+                caller, custodyPlan!, transfer, transferAllocation, idempotency.Record!, isReturn: true);
+            await dbContext.SaveChangesAsync(cancellationToken);
+            PostCustodyOperation(custodyOperation);
 
             CompleteIdempotency(
                 idempotency.Record!,
@@ -755,6 +731,10 @@ public sealed class AdvanceService(
         catch (DbUpdateException exception) when (IsUniqueViolation(exception))
         {
             await transaction.RollbackAsync(cancellationToken);
+            return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Conflict);
+        }
+        catch (PostgresException exception) when (IsPostgresConflict(exception))
+        {
             return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Conflict);
         }
         catch
@@ -815,6 +795,16 @@ public sealed class AdvanceService(
                 return AccessResult<AdvanceTransferDetails>.Success(replay);
             }
 
+            var affectedProjectIds = await DiscoverTransferProjectIdsAsync(
+                caller.CompanyId, transferId, cancellationToken);
+            var controls = await financialGate.LockOpenAsync(
+                caller.CompanyId, affectedProjectIds, cancellationToken);
+            if (controls is null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Conflict);
+            }
+
             var transfer = await LockTransferAsync(caller.CompanyId, transferId, cancellationToken);
             if (transfer is null)
             {
@@ -867,11 +857,15 @@ public sealed class AdvanceService(
                 AdvanceConstants.InternalTransferType => await ConfirmAllocatedTransferAsync(
                     caller,
                     transfer,
+                    idempotency.Record!,
+                    controls,
                     isReturn: false,
                     cancellationToken),
                 AdvanceConstants.BalanceReturnTransferType => await ConfirmAllocatedTransferAsync(
                     caller,
                     transfer,
+                    idempotency.Record!,
+                    controls,
                     isReturn: true,
                     cancellationToken),
                 _ => false
@@ -915,6 +909,10 @@ public sealed class AdvanceService(
         catch (DbUpdateException exception) when (IsUniqueViolation(exception))
         {
             await transaction.RollbackAsync(cancellationToken);
+            return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Conflict);
+        }
+        catch (PostgresException exception) when (IsPostgresConflict(exception))
+        {
             return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Conflict);
         }
         catch
@@ -977,6 +975,16 @@ public sealed class AdvanceService(
                 return AccessResult<AdvanceTransferDetails>.Success(replay);
             }
 
+            var affectedProjectIds = await DiscoverTransferProjectIdsAsync(
+                caller.CompanyId, transferId, cancellationToken);
+            var controls = await financialGate.LockOpenAsync(
+                caller.CompanyId, affectedProjectIds, cancellationToken);
+            if (controls is null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Conflict);
+            }
+
             var transfer = await LockTransferAsync(caller.CompanyId, transferId, cancellationToken);
             if (transfer is null || transfer.RecipientUserId != caller.UserId)
             {
@@ -1025,33 +1033,12 @@ public sealed class AdvanceService(
                 return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Conflict);
             }
 
-            var senderBalance = await LockBalanceAsync(
-                caller.CompanyId,
-                allocation.AdvanceId,
-                transfer.SenderUserId,
-                cancellationToken);
-            if (senderBalance is null || senderBalance.ReservedAmount < transfer.TransferAmount)
+            if (!await RejectCustodyReservationAsync(
+                    caller, transfer, allocation, idempotency.Record!, controls, cancellationToken))
             {
                 await transaction.RollbackAsync(cancellationToken);
                 return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Conflict);
             }
-
-            senderBalance.AvailableAmount += transfer.TransferAmount;
-            senderBalance.ReservedAmount -= transfer.TransferAmount;
-            senderBalance.VersionNumber++;
-            AddBalanceLedger(
-                senderBalance,
-                "TransferReservationReleased",
-                0m,
-                0m,
-                0m,
-                0m,
-                0m,
-                transfer.TransferAmount,
-                -transfer.TransferAmount,
-                caller.UserId,
-                transferId,
-                "Reservation released after recipient rejection.");
 
             transfer.Status = AdvanceConstants.RejectedTransferStatus;
             transfer.RejectedByUserId = caller.UserId;
@@ -1086,6 +1073,10 @@ public sealed class AdvanceService(
         catch (DbUpdateException exception) when (IsUniqueViolation(exception))
         {
             await transaction.RollbackAsync(cancellationToken);
+            return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Conflict);
+        }
+        catch (PostgresException exception) when (IsPostgresConflict(exception))
+        {
             return AccessResult<AdvanceTransferDetails>.Failure(AccessResultStatus.Conflict);
         }
         catch
@@ -1364,6 +1355,8 @@ public sealed class AdvanceService(
     private async Task<bool> ConfirmAllocatedTransferAsync(
         Caller caller,
         MoneyTransfer transfer,
+        IdempotencyRecord idempotency,
+        IReadOnlyList<ProjectFinancialControl> controls,
         bool isReturn,
         CancellationToken cancellationToken)
     {
@@ -1377,23 +1370,9 @@ public sealed class AdvanceService(
             return false;
         }
 
-        // Transfer/return preservation across project slices is a later writer-integration milestone.
-        // Fail closed once custody attribution exists so legacy writers cannot bypass T02/T05.
-        var attributedBalanceExists = await dbContext.ProjectCustodyPositions.AsNoTracking()
-            .AnyAsync(position => position.CompanyId == caller.CompanyId
-                && (position.UserAdvanceBalance.AdvanceId == allocation.AdvanceId)
-                && (position.UserAdvanceBalance.UserId == transfer.SenderUserId
-                    || position.UserAdvanceBalance.UserId == caller.UserId), cancellationToken);
-        if (attributedBalanceExists)
-        {
-            return false;
-        }
-
-        var senderBalance = await LockBalanceAsync(
-            caller.CompanyId,
-            allocation.AdvanceId,
-            transfer.SenderUserId,
-            cancellationToken);
+        var balances = await LockBalancesAsync(caller.CompanyId, allocation.AdvanceId,
+            [transfer.SenderUserId, caller.UserId], cancellationToken);
+        var senderBalance = balances.SingleOrDefault(value => value.UserId == transfer.SenderUserId);
         if (senderBalance is null
             || senderBalance.Status != AdvanceConstants.ActiveBalanceStatus
             || senderBalance.ReservedAmount < transfer.TransferAmount)
@@ -1401,11 +1380,8 @@ public sealed class AdvanceService(
             return false;
         }
 
-        var recipientBalance = await LockBalanceAsync(
-            caller.CompanyId,
-            allocation.AdvanceId,
-            caller.UserId,
-            cancellationToken);
+        var recipientBalance = balances.SingleOrDefault(value => value.UserId == caller.UserId);
+        var recipientWasCreated = recipientBalance is null;
         if (recipientBalance is null)
         {
             recipientBalance = NewBalance(
@@ -1421,7 +1397,8 @@ public sealed class AdvanceService(
         {
             return false;
         }
-        else
+
+        if (!recipientWasCreated)
         {
             if (isReturn)
             {
@@ -1447,32 +1424,250 @@ public sealed class AdvanceService(
         }
 
         senderBalance.VersionNumber++;
-        AddBalanceLedger(
-            senderBalance,
-            isReturn ? "BalanceReturnConfirmed" : "TransferOutConfirmed",
-            0m,
-            0m,
-            0m,
-            isReturn ? 0m : transfer.TransferAmount,
-            isReturn ? transfer.TransferAmount : 0m,
-            0m,
-            -transfer.TransferAmount,
-            caller.UserId,
-            transfer.MoneyTransferId,
-            isReturn ? "Unused balance returned." : "Transfer confirmed by recipient.");
-        AddBalanceLedger(
-            recipientBalance,
-            isReturn ? "AmountRestored" : "TransferInConfirmed",
-            isReturn ? 0m : transfer.TransferAmount,
-            isReturn ? transfer.TransferAmount : 0m,
-            0m,
-            0m,
-            0m,
-            transfer.TransferAmount,
-            0m,
-            caller.UserId,
-            transfer.MoneyTransferId,
-            isReturn ? "Returned balance restored to upstream holder." : "Incoming transfer confirmed.");
+
+        var reservations = await dbContext.CustodyReservations
+            .FromSqlInterpolated($"SELECT reservation.* FROM ahdah.custody_reservations reservation JOIN ahdah.transfer_advance_allocations allocation ON allocation.company_id = reservation.company_id AND allocation.transfer_advance_allocation_id = reservation.transfer_advance_allocation_id WHERE reservation.company_id = {caller.CompanyId} AND allocation.money_transfer_id = {transfer.MoneyTransferId} ORDER BY reservation.project_custody_position_id FOR UPDATE OF reservation")
+            .ToArrayAsync(cancellationToken);
+        if (reservations.Length == 0)
+        {
+            var attributedBalanceExists = await dbContext.ProjectCustodyPositions.AsNoTracking()
+                .AnyAsync(position => position.CompanyId == caller.CompanyId
+                    && position.UserAdvanceBalance.AdvanceId == allocation.AdvanceId
+                    && (position.UserAdvanceBalance.UserId == transfer.SenderUserId
+                        || position.UserAdvanceBalance.UserId == caller.UserId), cancellationToken);
+            if (attributedBalanceExists || controls.Count != 0)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (reservations.Any(value => value.Status != "Reserved")
+                || reservations.Sum(value => value.Amount) != transfer.TransferAmount)
+            {
+                return false;
+            }
+
+            var sourceIds = reservations.Select(value => value.ProjectCustodyPositionId)
+                .OrderBy(value => value).ToArray();
+            var sources = await dbContext.ProjectCustodyPositions
+                .FromSqlInterpolated($"SELECT * FROM ahdah.project_custody_positions WHERE company_id = {caller.CompanyId} AND project_custody_position_id = ANY ({sourceIds}) ORDER BY project_custody_position_id FOR UPDATE")
+                .ToArrayAsync(cancellationToken);
+            if (sources.Length != reservations.Length
+                || sources.Any(value => value.UserAdvanceBalanceId != senderBalance.UserAdvanceBalanceId))
+            {
+                return false;
+            }
+
+            var recipientPositions = await dbContext.ProjectCustodyPositions
+                .FromSqlInterpolated($"SELECT * FROM ahdah.project_custody_positions WHERE company_id = {caller.CompanyId} AND user_advance_balance_id = {recipientBalance.UserAdvanceBalanceId} ORDER BY project_custody_position_id FOR UPDATE")
+                .ToListAsync(cancellationToken);
+            if (recipientPositions.All(value => value.ProjectId is not null))
+            {
+                var unassigned = new ProjectCustodyPosition
+                {
+                    ProjectCustodyPositionId = Guid.NewGuid(), CompanyId = caller.CompanyId,
+                    UserAdvanceBalanceId = recipientBalance.UserAdvanceBalanceId,
+                    ProjectId = null, AvailableAmount = 0m, ReservedAmount = 0m, VersionNumber = 1
+                };
+                recipientPositions.Add(unassigned);
+                dbContext.ProjectCustodyPositions.Add(unassigned);
+            }
+            financialGate.AdvanceRevisions(controls);
+            var revisions = controls.ToDictionary(value => value.ProjectId, value => value.FinancialRevision);
+            var now = timeProvider.GetUtcNow().UtcDateTime;
+            var operation = new CustodyOperation
+            {
+                CustodyOperationId = Guid.NewGuid(), CompanyId = caller.CompanyId,
+                OperationType = "ConfirmTransfer", Status = "Draft",
+                RequestedByUserId = caller.UserId, RequestedAt = now,
+                Reason = isReturn ? "Confirmed balance return with preserved custody designation."
+                    : "Confirmed internal transfer with preserved custody designation.",
+                IdempotencyRecordId = idempotency.IdempotencyRecordId,
+                MoneyTransferId = transfer.MoneyTransferId, VersionNumber = 1
+            };
+            dbContext.CustodyOperations.Add(operation);
+
+            var sourceLedger = AddBalanceLedger(senderBalance,
+                isReturn ? "BalanceReturnConfirmed" : "TransferOutConfirmed",
+                0m, 0m, 0m, isReturn ? 0m : transfer.TransferAmount,
+                isReturn ? transfer.TransferAmount : 0m, 0m, -transfer.TransferAmount,
+                caller.UserId, transfer.MoneyTransferId,
+                isReturn ? "Unused balance returned." : "Transfer confirmed by recipient.");
+            var recipientLedger = AddBalanceLedger(recipientBalance,
+                isReturn ? "AmountRestored" : "TransferInConfirmed",
+                isReturn ? 0m : transfer.TransferAmount,
+                isReturn ? transfer.TransferAmount : 0m,
+                0m, 0m, 0m, transfer.TransferAmount, 0m,
+                caller.UserId, transfer.MoneyTransferId,
+                isReturn ? "Returned balance restored to upstream holder."
+                    : "Incoming transfer confirmed.");
+
+            var entryNumber = 1;
+            foreach (var reservation in reservations)
+            {
+                var source = sources.Single(value =>
+                    value.ProjectCustodyPositionId == reservation.ProjectCustodyPositionId);
+                if (source.ReservedAmount < reservation.Amount)
+                {
+                    return false;
+                }
+
+                var target = recipientPositions.SingleOrDefault(value => value.ProjectId == source.ProjectId);
+                if (target is null)
+                {
+                    target = new ProjectCustodyPosition
+                    {
+                        ProjectCustodyPositionId = Guid.NewGuid(), CompanyId = caller.CompanyId,
+                        UserAdvanceBalanceId = recipientBalance.UserAdvanceBalanceId,
+                        ProjectId = source.ProjectId, AvailableAmount = 0m,
+                        ReservedAmount = 0m, VersionNumber = 1
+                    };
+                    recipientPositions.Add(target);
+                    dbContext.ProjectCustodyPositions.Add(target);
+                }
+
+                var revision = source.ProjectId is { } projectId ? revisions[projectId] : (long?)null;
+                var sourceBefore = source.VersionNumber;
+                source.ReservedAmount -= reservation.Amount;
+                source.VersionNumber++;
+                source.UpdatedAt = now;
+                var targetBefore = target.VersionNumber;
+                target.AvailableAmount += reservation.Amount;
+                target.VersionNumber++;
+                target.UpdatedAt = now;
+                dbContext.CustodyMovementEntries.AddRange(
+                    TransferMovement(operation, source, entryNumber++, 0m, -reservation.Amount,
+                        isReturn ? 0m : reservation.Amount, isReturn ? reservation.Amount : 0m,
+                        sourceLedger, caller.UserId, sourceBefore, source.VersionNumber, revision, now),
+                    TransferMovement(operation, target, entryNumber++, reservation.Amount, 0m,
+                        0m, 0m, recipientLedger, caller.UserId, targetBefore,
+                        target.VersionNumber, revision, now,
+                        received: isReturn ? 0m : reservation.Amount,
+                        restored: isReturn ? reservation.Amount : 0m));
+                reservation.Status = "Consumed";
+                reservation.ResolvedByOperationId = operation.CustodyOperationId;
+                reservation.VersionNumber++;
+                reservation.UpdatedAt = now;
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            PostCustodyOperation(operation);
+        }
+        if (reservations.Length == 0)
+        {
+            AddBalanceLedger(senderBalance, isReturn ? "BalanceReturnConfirmed" : "TransferOutConfirmed",
+                0m, 0m, 0m, isReturn ? 0m : transfer.TransferAmount,
+                isReturn ? transfer.TransferAmount : 0m, 0m, -transfer.TransferAmount,
+                caller.UserId, transfer.MoneyTransferId,
+                isReturn ? "Unused balance returned." : "Transfer confirmed by recipient.");
+            AddBalanceLedger(recipientBalance, isReturn ? "AmountRestored" : "TransferInConfirmed",
+                isReturn ? 0m : transfer.TransferAmount, isReturn ? transfer.TransferAmount : 0m,
+                0m, 0m, 0m, transfer.TransferAmount, 0m, caller.UserId,
+                transfer.MoneyTransferId,
+                isReturn ? "Returned balance restored to upstream holder."
+                    : "Incoming transfer confirmed.");
+        }
+        return true;
+    }
+
+    private async Task<bool> RejectCustodyReservationAsync(
+        Caller caller,
+        MoneyTransfer transfer,
+        TransferAdvanceAllocation allocation,
+        IdempotencyRecord idempotency,
+        IReadOnlyList<ProjectFinancialControl> controls,
+        CancellationToken cancellationToken)
+    {
+        var senderBalance = await LockBalanceAsync(
+            caller.CompanyId, allocation.AdvanceId, transfer.SenderUserId, cancellationToken);
+        if (senderBalance is null || senderBalance.ReservedAmount < transfer.TransferAmount)
+        {
+            return false;
+        }
+
+        var reservations = await dbContext.CustodyReservations
+            .FromSqlInterpolated($"SELECT reservation.* FROM ahdah.custody_reservations reservation JOIN ahdah.transfer_advance_allocations transfer_allocation ON transfer_allocation.company_id = reservation.company_id AND transfer_allocation.transfer_advance_allocation_id = reservation.transfer_advance_allocation_id WHERE reservation.company_id = {caller.CompanyId} AND transfer_allocation.money_transfer_id = {transfer.MoneyTransferId} ORDER BY reservation.project_custody_position_id FOR UPDATE OF reservation")
+            .ToArrayAsync(cancellationToken);
+        if (reservations.Length == 0)
+        {
+            if (controls.Count != 0 || await dbContext.ProjectCustodyPositions.AsNoTracking().AnyAsync(
+                    value => value.CompanyId == caller.CompanyId
+                        && value.UserAdvanceBalanceId == senderBalance.UserAdvanceBalanceId,
+                    cancellationToken))
+            {
+                return false;
+            }
+        }
+        else if (reservations.Any(value => value.Status != "Reserved")
+                 || reservations.Sum(value => value.Amount) != transfer.TransferAmount)
+        {
+            return false;
+        }
+
+        senderBalance.AvailableAmount += transfer.TransferAmount;
+        senderBalance.ReservedAmount -= transfer.TransferAmount;
+        senderBalance.VersionNumber++;
+        var ledger = AddBalanceLedger(senderBalance, "TransferReservationReleased",
+            0m, 0m, 0m, 0m, 0m, transfer.TransferAmount, -transfer.TransferAmount,
+            caller.UserId, transfer.MoneyTransferId,
+            "Reservation released after recipient rejection.");
+        if (reservations.Length == 0)
+        {
+            return true;
+        }
+
+        var positionIds = reservations.Select(value => value.ProjectCustodyPositionId)
+            .OrderBy(value => value).ToArray();
+        var positions = await dbContext.ProjectCustodyPositions
+            .FromSqlInterpolated($"SELECT * FROM ahdah.project_custody_positions WHERE company_id = {caller.CompanyId} AND project_custody_position_id = ANY ({positionIds}) ORDER BY project_custody_position_id FOR UPDATE")
+            .ToArrayAsync(cancellationToken);
+        if (positions.Length != reservations.Length
+            || positions.Any(value => value.UserAdvanceBalanceId != senderBalance.UserAdvanceBalanceId))
+        {
+            return false;
+        }
+
+        financialGate.AdvanceRevisions(controls);
+        var revisions = controls.ToDictionary(value => value.ProjectId, value => value.FinancialRevision);
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var operation = new CustodyOperation
+        {
+            CustodyOperationId = Guid.NewGuid(), CompanyId = caller.CompanyId,
+            OperationType = "RejectTransfer", Status = "Draft",
+            RequestedByUserId = caller.UserId, RequestedAt = now,
+            Reason = "Released explicit custody slices after transfer rejection.",
+            IdempotencyRecordId = idempotency.IdempotencyRecordId,
+            MoneyTransferId = transfer.MoneyTransferId, VersionNumber = 1
+        };
+        dbContext.CustodyOperations.Add(operation);
+        var entryNumber = 1;
+        foreach (var reservation in reservations)
+        {
+            var position = positions.Single(value =>
+                value.ProjectCustodyPositionId == reservation.ProjectCustodyPositionId);
+            if (position.ReservedAmount < reservation.Amount)
+            {
+                return false;
+            }
+
+            var before = position.VersionNumber;
+            position.AvailableAmount += reservation.Amount;
+            position.ReservedAmount -= reservation.Amount;
+            position.VersionNumber++;
+            position.UpdatedAt = now;
+            dbContext.CustodyMovementEntries.Add(TransferMovement(
+                operation, position, entryNumber++, reservation.Amount, -reservation.Amount,
+                0m, 0m, ledger, caller.UserId, before, position.VersionNumber,
+                position.ProjectId is { } projectId ? revisions[projectId] : null, now));
+            reservation.Status = "Released";
+            reservation.ResolvedByOperationId = operation.CustodyOperationId;
+            reservation.VersionNumber++;
+            reservation.UpdatedAt = now;
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        PostCustodyOperation(operation);
         return true;
     }
 
@@ -1771,6 +1966,215 @@ public sealed class AdvanceService(
                 $"SELECT * FROM ahdah.user_advance_balances WHERE company_id = {companyId} AND advance_id = {advanceId} AND user_id = {userId} FOR UPDATE")
             .SingleOrDefaultAsync(cancellationToken);
 
+    private Task<UserAdvanceBalance[]> LockBalancesAsync(
+        Guid companyId,
+        Guid advanceId,
+        Guid[] userIds,
+        CancellationToken cancellationToken) =>
+        dbContext.UserAdvanceBalances
+            .FromSqlInterpolated(
+                $"SELECT * FROM ahdah.user_advance_balances WHERE company_id = {companyId} AND advance_id = {advanceId} AND user_id = ANY ({userIds.Distinct().OrderBy(value => value).ToArray()}) ORDER BY user_advance_balance_id FOR UPDATE")
+            .ToArrayAsync(cancellationToken);
+
+    private Task<Guid[]> DiscoverTransferProjectIdsAsync(
+        Guid companyId,
+        Guid transferId,
+        CancellationToken cancellationToken) =>
+        dbContext.CustodyReservations.AsNoTracking()
+            .Where(value => value.CompanyId == companyId
+                && value.TransferAdvanceAllocation!.MoneyTransferId == transferId
+                && value.ProjectCustodyPosition.ProjectId != null)
+            .Select(value => value.ProjectCustodyPosition.ProjectId!.Value)
+            .Distinct().OrderBy(value => value).ToArrayAsync(cancellationToken);
+
+    private static CustodyMovementEntry TransferMovement(
+        CustodyOperation operation,
+        ProjectCustodyPosition position,
+        int entryNumber,
+        decimal availableDelta,
+        decimal reservedDelta,
+        decimal transferredOut,
+        decimal returned,
+        BalanceLedgerEntry ledger,
+        Guid actor,
+        int versionBefore,
+        int versionAfter,
+        long? revision,
+        DateTime occurredAt,
+        decimal received = 0m,
+        decimal restored = 0m) => new()
+        {
+            CustodyMovementEntryId = Guid.NewGuid(), CompanyId = operation.CompanyId,
+            CustodyOperation = operation, ProjectCustodyPosition = position,
+            EntryNumber = entryNumber, DeltaAvailableAmount = availableDelta,
+            DeltaReservedAmount = reservedDelta, ReceivedAmount = received,
+            RestoredAmount = restored, TransferredOutAmount = transferredOut,
+            ReturnedAmount = returned, BalanceLedgerEntry = ledger,
+            OccurredAt = occurredAt, ActorUserId = actor,
+            PositionVersionBefore = versionBefore, PositionVersionAfter = versionAfter,
+            FinancialRevisionAfter = revision
+        };
+
+    private async Task<CustodyReservationPlan?> PrepareCustodyReservationAsync(
+        Caller caller,
+        Guid advanceId,
+        decimal amount,
+        IReadOnlyList<AdvanceCustodyAllocationRequest> requestedAllocations,
+        CancellationToken cancellationToken)
+    {
+        var balanceId = await dbContext.UserAdvanceBalances.AsNoTracking()
+            .Where(value => value.CompanyId == caller.CompanyId
+                && value.AdvanceId == advanceId && value.UserId == caller.UserId)
+            .Select(value => (Guid?)value.UserAdvanceBalanceId)
+            .SingleOrDefaultAsync(cancellationToken);
+        if (balanceId is null)
+        {
+            return null;
+        }
+
+        var hasCustody = await dbContext.ProjectCustodyPositions.AsNoTracking().AnyAsync(
+            value => value.CompanyId == caller.CompanyId
+                && value.UserAdvanceBalanceId == balanceId.Value, cancellationToken);
+        if (!hasCustody)
+        {
+            if (requestedAllocations.Count != 0)
+            {
+                return null;
+            }
+
+            var legacyBalance = await LockBalanceAsync(
+                caller.CompanyId, advanceId, caller.UserId, cancellationToken);
+            return IsUsableBalance(legacyBalance, amount)
+                ? new CustodyReservationPlan(legacyBalance!, [], [])
+                : null;
+        }
+
+        if (requestedAllocations.Count == 0)
+        {
+            return null;
+        }
+
+        var requestedIds = requestedAllocations.Select(value => value.ProjectCustodyPositionId)
+            .Distinct().OrderBy(value => value).ToArray();
+        var discovered = await dbContext.ProjectCustodyPositions.AsNoTracking()
+            .Where(value => value.CompanyId == caller.CompanyId
+                && value.UserAdvanceBalanceId == balanceId.Value
+                && requestedIds.Contains(value.ProjectCustodyPositionId))
+            .Select(value => new { value.ProjectCustodyPositionId, value.ProjectId })
+            .ToArrayAsync(cancellationToken);
+        if (discovered.Length != requestedIds.Length)
+        {
+            return null;
+        }
+
+        var controls = await financialGate.LockOpenAsync(
+            caller.CompanyId, discovered.Where(value => value.ProjectId != null)
+                .Select(value => value.ProjectId!.Value), cancellationToken);
+        if (controls is null)
+        {
+            return null;
+        }
+
+        var balance = await LockBalanceAsync(caller.CompanyId, advanceId, caller.UserId, cancellationToken);
+        if (!IsUsableBalance(balance, amount))
+        {
+            return null;
+        }
+
+        var positions = await dbContext.ProjectCustodyPositions
+            .FromSqlInterpolated($"SELECT * FROM ahdah.project_custody_positions WHERE company_id = {caller.CompanyId} AND user_advance_balance_id = {balanceId.Value} AND project_custody_position_id = ANY ({requestedIds}) ORDER BY project_custody_position_id FOR UPDATE")
+            .ToArrayAsync(cancellationToken);
+        var amounts = requestedAllocations.ToDictionary(
+            value => value.ProjectCustodyPositionId, value => value.Amount);
+        if (positions.Length != requestedIds.Length
+            || positions.Any(value => value.AvailableAmount < amounts[value.ProjectCustodyPositionId]))
+        {
+            return null;
+        }
+
+        return new CustodyReservationPlan(balance!, positions.Select(value =>
+            new CustodySlice(value, amounts[value.ProjectCustodyPositionId])).ToArray(), controls);
+    }
+
+    private CustodyOperation? ApplyCustodyReservation(
+        Caller caller,
+        CustodyReservationPlan plan,
+        MoneyTransfer transfer,
+        TransferAdvanceAllocation allocation,
+        IdempotencyRecord idempotency,
+        bool isReturn)
+    {
+        plan.Balance.AvailableAmount -= transfer.TransferAmount;
+        plan.Balance.ReservedAmount += transfer.TransferAmount;
+        plan.Balance.VersionNumber++;
+        var ledger = AddBalanceLedger(plan.Balance,
+            isReturn ? "BalanceReturnReserved" : "TransferReserved",
+            0m, 0m, 0m, 0m, 0m, -transfer.TransferAmount, transfer.TransferAmount,
+            caller.UserId, transfer.MoneyTransferId,
+            isReturn ? "Reserved for unused-balance return confirmation."
+                : "Reserved for transfer confirmation.");
+        if (plan.Slices.Count == 0)
+        {
+            return null;
+        }
+
+        financialGate.AdvanceRevisions(plan.Controls);
+        var revisions = plan.Controls.ToDictionary(value => value.ProjectId, value => value.FinancialRevision);
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var operation = new CustodyOperation
+        {
+            CustodyOperationId = Guid.NewGuid(), CompanyId = caller.CompanyId,
+            OperationType = "ReserveTransfer", Status = "Draft",
+            RequestedByUserId = caller.UserId, RequestedAt = now,
+            Reason = isReturn ? "Reserved explicit custody slices for balance return."
+                : "Reserved explicit custody slices for internal transfer.",
+            IdempotencyRecordId = idempotency.IdempotencyRecordId,
+            MoneyTransferId = transfer.MoneyTransferId, VersionNumber = 1
+        };
+        dbContext.CustodyOperations.Add(operation);
+        var entryNumber = 1;
+        foreach (var slice in plan.Slices)
+        {
+            var before = slice.Position.VersionNumber;
+            slice.Position.AvailableAmount -= slice.Amount;
+            slice.Position.ReservedAmount += slice.Amount;
+            slice.Position.VersionNumber++;
+            slice.Position.UpdatedAt = now;
+            dbContext.CustodyMovementEntries.Add(new CustodyMovementEntry
+            {
+                CustodyMovementEntryId = Guid.NewGuid(), CompanyId = caller.CompanyId,
+                CustodyOperation = operation, ProjectCustodyPosition = slice.Position,
+                EntryNumber = entryNumber++, DeltaAvailableAmount = -slice.Amount,
+                DeltaReservedAmount = slice.Amount, BalanceLedgerEntry = ledger,
+                OccurredAt = now, ActorUserId = caller.UserId,
+                PositionVersionBefore = before, PositionVersionAfter = slice.Position.VersionNumber,
+                FinancialRevisionAfter = slice.Position.ProjectId is { } projectId
+                    ? revisions[projectId] : null
+            });
+            dbContext.CustodyReservations.Add(new CustodyReservation
+            {
+                CustodyReservationId = Guid.NewGuid(), CompanyId = caller.CompanyId,
+                CustodyOperation = operation, ProjectCustodyPosition = slice.Position,
+                TransferAdvanceAllocation = allocation, Amount = slice.Amount,
+                Status = "Reserved", VersionNumber = 1
+            });
+        }
+
+        return operation;
+    }
+
+    private void PostCustodyOperation(CustodyOperation? operation)
+    {
+        if (operation is null) return;
+        operation.Status = "Posted";
+        operation.VersionNumber++;
+        operation.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
+    }
+
+    private static bool IsUsableBalance(UserAdvanceBalance? balance, decimal amount) =>
+        balance is not null && balance.Status == AdvanceConstants.ActiveBalanceStatus
+        && balance.AvailableAmount >= amount;
+
     private Task<MoneyTransfer?> LockTransferAsync(
         Guid companyId,
         Guid transferId,
@@ -1817,6 +2221,7 @@ public sealed class AdvanceService(
         decimal receivedAmount,
         decimal restoredAmount) => new()
         {
+            UserAdvanceBalanceId = Guid.NewGuid(),
             CompanyId = companyId,
             AdvanceId = advanceId,
             UserId = userId,
@@ -2062,6 +2467,12 @@ public sealed class AdvanceService(
     private static bool IsUniqueViolation(DbUpdateException exception) =>
         exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
 
+    private static bool IsPostgresConflict(PostgresException exception) =>
+        exception.SqlState is PostgresErrorCodes.CheckViolation
+            or PostgresErrorCodes.SerializationFailure
+            or PostgresErrorCodes.DeadlockDetected
+            or PostgresErrorCodes.RaiseException;
+
     private sealed record Caller(
         Guid CompanyId,
         Guid UserId,
@@ -2072,6 +2483,13 @@ public sealed class AdvanceService(
         IdempotencyRecord? Record,
         Guid? ReplayResourceId,
         bool Conflict);
+
+    private sealed record CustodySlice(ProjectCustodyPosition Position, decimal Amount);
+
+    private sealed record CustodyReservationPlan(
+        UserAdvanceBalance Balance,
+        IReadOnlyList<CustodySlice> Slices,
+        IReadOnlyList<ProjectFinancialControl> Controls);
 
     private sealed record AdvanceRow(
         Guid AdvanceId,

@@ -6,6 +6,8 @@ Project-linked expense creation and review now participate in T01 in the same Po
 
 The current public expense contract has no edit, project reassignment, correction-required, cancellation, reversal, claim adjustment/write-off, or claim-payment command. These are remaining writers rather than partially exposed Wave 1 behavior. Consequently, there is no project A-to-B move endpoint to enroll yet. When added, it must lock both old and new T01 controls before mutating the expense and advance each once.
 
+Wave 2A inventory also confirmed there is no published expense-return lifecycle or personal-claim adjustment, write-off, payment, correction, or reversal command. The existing expense rejection remains the only implemented claim cancellation path and was gated in Wave 1. No return restoration or T22 effect is invented in Wave 2A.
+
 Attachment POST remains nonmaterial: it records new metadata as `PendingVerification` and cannot verify, revoke, approve an exception, or alter original-paper custody. It does not advance T01. Future evidence verification/revocation and policy-exception commands are certification-relevant writers and must use the gate. Reimbursement reads and the existing outstanding formula are unchanged; project-linked `PersonalFunds` creation and rejection are gated through their owning expense command.
 
 ## Scope and database findings

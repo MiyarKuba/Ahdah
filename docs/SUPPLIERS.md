@@ -10,6 +10,8 @@ Applying an approved supplier credit follows the same multi-project protocol and
 
 No debt adjustment, write-off, cancellation/reversal, payment cancellation/reversal, or supplier refund writer is currently published. Those remain Wave 2 work. Supplier metadata and payment-account metadata are also outside T01 because they do not alter a project financial position.
 
+Wave 2A rechecked these surfaces and found them still read-only or absent: supplier refunds, debt adjustment/write-off/correction/reversal, and payment reversal. Owner-payment refunds likewise have no published service writer. No T22 economic effect or refund restoration is posted until those authoritative lifecycles and their allocation lineage exist.
+
 ## Scope and schema findings
 
 This phase uses the existing PostgreSQL 18 `ahdah` schema without migrations or generated-model edits. There is no `supplier_invoices` table. A supplier invoice is an `expenses` row with payment mode `SupplierCredit`, paired one-to-one with `supplier_debts` through unique `(company_id, expense_id)`. Optional invoice lines use `expense_items`.

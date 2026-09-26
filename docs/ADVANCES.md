@@ -6,7 +6,9 @@ AdvanceDelivery confirmation remains the only live Opening source. When confirma
 
 Custody reads are available at `GET /api/v1/advance-balances/{balanceId}/custody`; project-oriented positions are available at `GET /api/v1/projects/{projectId}/custody`. Values stay in their authoritative advance currency and are never aggregated across currencies.
 
-InternalTransfer and BalanceReturn have not yet been upgraded to preserve unassigned/project slices and reservations. Their confirmation path therefore fails with a state conflict if a source or recipient balance already has any T02 position. This prevents a legacy balance update from silently diverging from custody. The behavior is temporary, covered by PostgreSQL integration tests, and must remain until those writers post the matching T03-T05 effects.
+InternalTransfer and BalanceReturn now preserve unassigned and project T02 slices through explicit `custodyAllocations`. An attributed source must name each custody-position ID and exact amount; omitted or mismatched allocations fail with a business conflict instead of guessing a project. Initiation posts `ReserveTransfer` and T05 reservations, confirmation posts paired `ConfirmTransfer` movements to the same designation, and rejection posts `RejectTransfer` while releasing the exact reservations. Each phase gates and advances every distinct affected project once.
+
+Balances and positions are locked in canonical identifier order after the complete sorted T01 set. Reserved custody cannot be moved as available, and the T05 reservation is consumed or released rather than silently discarded. A new recipient balance receives the transferred slices plus the required zero unassigned position; it never receives a fake Opening. BalanceReturn uses the same explicit designation preservation and returns to the single authoritative upstream holder. Pure unassigned operations do not advance a project revision.
 
 ## Scope and database findings
 
@@ -145,6 +147,8 @@ Every command creates 32 cryptographically secure random bytes and sends unpadde
 Arabic/English localization covers routes, values, forms, errors, confirmation summaries, and uncertain operations. The same responsive Material 3 pages support Android, iOS, tablet, and Web. Automated tests use fakes/controlled Dio only and make no live financial call.
 
 Expense-backed balance reservation/confirmation/release is now implemented by the backend. Flutter expenses, settlement, closure, cancellation, reversal, supplier debt, arbitrary balance adjustment, funding-source mutation, offline write queues, and background synchronization remain absent.
+
+The backend transfer/return contract now requires explicit custody-position allocations whenever T02 attribution exists. Flutter was intentionally not changed in Wave 2A, so its existing forms cannot submit an attributed transfer or return until a later frontend milestone exposes safe slice selection.
 
 ## Safety statement
 

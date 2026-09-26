@@ -235,7 +235,11 @@ public sealed class DatabasePersistenceTests
         Assert.Contains("company_id = {caller.CompanyId} AND funding_source_id", source);
         Assert.Contains("company_id = {companyId} AND advance_id = {advanceId} AND user_id = {userId} FOR UPDATE", source);
         Assert.Contains("company_id = {companyId} AND money_transfer_id = {transferId} FOR UPDATE", source);
-        Assert.Contains("balance.AvailableAmount < request.Amount", source);
+        Assert.Contains("balance.AvailableAmount >= amount", source);
+        Assert.Contains("ProjectFinancialGate financialGate", source);
+        Assert.Contains("OperationType = \"ReserveTransfer\"", source);
+        Assert.Contains("OperationType = \"ConfirmTransfer\"", source);
+        Assert.Contains("OperationType = \"RejectTransfer\"", source);
         Assert.Contains("source.AvailableAmount < funding.Amount", source);
         Assert.Contains("BeginTransactionAsync", source);
         Assert.Contains("BalanceLedgerEntries.Add", source);
