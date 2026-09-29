@@ -1,12 +1,18 @@
 # Settlement DDL review
 
+**Enforcement rehearsal update, 2026-09-27: PASSED ON DISPOSABLE POSTGRESQL ONLY.** Five invalid activation fixtures failed closed, a forced late trigger failure rolled back the earlier enable, and valid activation enabled the projects, balance, and advance triggers. Runtime acceptance used a non-owner role with exact grants from `95_runtime_writer_privileges.sql`. The rehearsal exposed and corrected the project trigger's missing same-transaction T01 check for material project fields. This is a reviewed enforcement-artifact correction, not a table redesign or production approval.
+
+Final validation restored a fresh 91-table baseline, installed the current DDL through 09/10, passed the 117-table catalog verification, applied 95, and activated 94 in 81 ms. The restricted-runtime regression then passed nine focused tests. Pglast 8.4 accepted all 19 SQL files (805 statements), 12 function definitions including the intentional 09/94 replacement, and 26 anonymous blocks; psql control flow, object-name duplication, identifier length, and install dependency order passed.
+
+T01/T02/T03/T05 are `SELECT, INSERT, UPDATE`; T04/T12 are `SELECT, INSERT`; T06–T11 and T13–T26 are SELECT-only. No settlement table grants DELETE, TRUNCATE, TRIGGER, REFERENCES, schema CREATE, ownership, or grant options. Production still requires DDL/restore validation, real-company T01/T02 cutover review, historical closed-project remediation, role/grant deployment, a write-drain window, and a forward recovery procedure.
+
 **Staging validation update, 2026-09-20: SETTLEMENT PHYSICAL DDL VALIDATED FOR APPLICATION DEVELOPMENT.** The included-file runner defect was corrected and a late module-10 SQL failure proved full rollback with psql exit 3. Clean install, catalog, runtime privilege, custody-conservation, packet-sealing, live/legacy Opening, Designate authority, and exact pre-cutover rollback checks pass. The Designate variable/alias collision was removed mechanically; all 11 functions compile with `#variable_conflict error`, and the rollback now restores the caller-recorded pre-install schema-USAGE state. This does not authorize production rollout or financial closure. See [the staging validation record](SETTLEMENT_STAGING_DDL_VALIDATION.md).
 
 **2026-09-17 — DDL preparation only; execution is not approved.** Policy v1: `f962d6119281906b5144b80fe1ffdac7e4525d9e`. Physical design: `a8df2e8d48c110959c172a1f35835ee973b495aa`. [Artifact entry point](../database/settlement/README.md), [design](SETTLEMENT_SCHEMA_CUTOVER_DESIGN.md), [policy authority](SETTLEMENT_POLICY_DECISIONS.md).
 
 ## Review outcome and counts
 
-Prepared all T01–T26 definitions, five reviewed existing-table alterations, functions/triggers, read-only metadata checks, guarded future business reconciliation, staged enforcement, empty-schema rollback and rehearsal specifications. **18 SQL files**, 26 new tables, 420 new-table columns, **500 named table constraints**, **219 indexes**, **61 triggers**, **11 new functions**. Eleven triggers are deferred constraint triggers and add eleven pg_constraint entries beyond the 500; PostgreSQL 18 automatic NOT NULL entries are not included. Two existing trigger functions are reused unchanged. No additional existing table is altered.
+Prepared all T01–T26 definitions, five reviewed existing-table alterations, functions/triggers, read-only metadata checks, guarded future business reconciliation, staged enforcement, empty-schema rollback and rehearsal specifications. **19 SQL files**, 26 new tables, 420 new-table columns, **500 named table constraints**, **219 indexes**, **61 triggers**, **11 new functions**. Eleven triggers are deferred constraint triggers and add eleven pg_constraint entries beyond the 500; PostgreSQL 18 automatic NOT NULL entries are not included. Two existing trigger functions are reused unchanged. No additional existing table is altered.
 
 ## Baseline revalidation
 

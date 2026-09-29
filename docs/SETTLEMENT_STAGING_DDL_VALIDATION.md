@@ -1,5 +1,15 @@
 # Settlement staging DDL validation — safety gate record
 
+## Universal enforcement rehearsal — 2026-09-27
+
+An isolated clone-based rehearsal on repository-local PostgreSQL 18 at `127.0.0.1:55440` passed. Activation rejected missing T01, missing T02, T02 total drift, T05 reservation drift, and uncertified `FinanciallyClosed`. Renaming the second trigger forced a late activation error; PostgreSQL rolled back the first enable. Valid activation enabled all three reviewed triggers in roughly 114 ms with no observed deadlock.
+
+The final fresh-install check restored the verified 91-table baseline rather than cloning an already installed settlement database. The current 01–10 DDL installed successfully, `90_verify_catalog.sql` confirmed all 117 tables and disabled enforcement state, 95 verified its exact matrix, and 94 enabled all three triggers in 81 ms. Nine restricted-runtime regression tests passed with zero failures or skips. Static parsing covered all 19 SQL files, 805 statements, 12 function definitions, and 26 anonymous blocks.
+
+Application acceptance ran as `ahdah_staging_runtime`, verified by `current_user`, after applying the exact writer grants in `95_runtime_writer_privileges.sql`. Direct ALTER/disable, TRUNCATE, immutable DELETE/UPDATE, schema CREATE, and unused T06 writes failed for insufficient privilege. Project/T01, balance/T02, and advance-currency bypass probes were rejected. All current real PostgreSQL writer/race paths passed. All `ahdah_enforcement_*` databases were removed; production `ahdah_db` was never targeted. The repository-local cluster was left in its pre-task running state.
+
+This does not authorize production activation. No post-history destructive rollback was attempted; `99_rollback_pre_cutover.sql` remains pre-cutover only. A reviewed operational trigger-disable/forward-recovery procedure is still a production blocker.
+
 **2026-09-20. Status: SETTLEMENT PHYSICAL DDL VALIDATED FOR APPLICATION DEVELOPMENT.** All six time-boxed core areas pass on isolated PostgreSQL 18 staging: catalog, runtime privileges, custody conservation, packet sealing, Opening/Designate authority, and exact pre-cutover rollback. This authorizes Database-First application development only. It does not authorize production rollout, enforcement activation, customer cutover, or financial closure. Reviewed baseline: `a482cba2bd1f83fcbd3217b2638d27237af2903a`; branch: `test/settlement-staging-ddl`.
 
 ## Isolated target and baseline proof

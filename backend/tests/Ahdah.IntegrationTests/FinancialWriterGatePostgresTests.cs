@@ -25,12 +25,13 @@ public sealed class FinancialWriterGatePostgresTests
         if (string.IsNullOrWhiteSpace(connectionString)) return;
 
         var ids = new FixtureIds();
-        await SeedIdentityAsync(Db(connectionString), ids);
+        await AssertRuntimeRoleAsync(connectionString);
+        await SeedIdentityAsync(Db(SetupConnection(connectionString)), ids);
         var manager = User(ids.CompanyId, ids.ManagerId, "Manager");
         ids.ProjectA = await CreateProject(connectionString, manager, "Project Update Gate");
 
         Guid replacementOwnerId;
-        await using (var ownerDb = Db(connectionString))
+        await using (var ownerDb = Db(SetupConnection(connectionString)))
         {
             var replacementOwner = new ProjectOwner
             {
@@ -103,7 +104,7 @@ public sealed class FinancialWriterGatePostgresTests
         Assert.Single(races, result => result.Status == AccessResultStatus.Success);
         Assert.Single(races, result => result.Status == AccessResultStatus.Conflict);
 
-        await using (var closeDb = Db(connectionString))
+        await using (var closeDb = Db(SetupConnection(connectionString)))
         {
             Assert.Equal(3, await Revision(closeDb, ids.CompanyId, ids.ProjectA));
             await SeedStructurallyClosedControlAsync(closeDb, ids);
@@ -133,12 +134,13 @@ public sealed class FinancialWriterGatePostgresTests
         if (string.IsNullOrWhiteSpace(connectionString)) return;
 
         var ids = new FixtureIds();
-        await SeedIdentityAsync(Db(connectionString), ids);
+        await AssertRuntimeRoleAsync(connectionString);
+        await SeedIdentityAsync(Db(SetupConnection(connectionString)), ids);
         var manager = User(ids.CompanyId, ids.ManagerId, "Manager");
         var deputy = User(ids.CompanyId, ids.DeputyId, "Deputy");
         var accountant = User(ids.CompanyId, ids.AccountantId, "Accountant");
         ids.ProjectA = await CreateProject(connectionString, manager, "Expense Gate A");
-        await SeedCategoryAsync(Db(connectionString), ids, requiresSupplier: false);
+        await SeedCategoryAsync(Db(SetupConnection(connectionString)), ids, requiresSupplier: false);
 
         var request = new CreateExpenseRequest
         {
@@ -187,7 +189,27 @@ public sealed class FinancialWriterGatePostgresTests
                 (await verifyDb.Expenses.AsNoTracking().SingleAsync(value => value.ExpenseId == expenseId)).Status);
         }
 
-        await using (var legacyDb = Db(connectionString))
+        Guid rejectedExpenseId;
+        await using (var createRejectedDb = Db(connectionString))
+        {
+            var created = await Expenses(createRejectedDb, deputy).CreateAsync(request with
+            {
+                Description = "Project expense rejection integration"
+            }, $"expense-create-{Guid.NewGuid():N}", default);
+            Assert.Equal(AccessResultStatus.Success, created.Status);
+            rejectedExpenseId = created.Value!.Expense.ExpenseId;
+            Assert.Equal(4, await Revision(createRejectedDb, ids.CompanyId, ids.ProjectA));
+        }
+        await using (var rejectExpenseDb = Db(connectionString))
+        {
+            var rejected = await Expenses(rejectExpenseDb, manager).RejectAsync(rejectedExpenseId,
+                new RejectExpenseRequest { ExpectedVersion = 1, Reason = "Invalid receipt" },
+                $"expense-reject-{Guid.NewGuid():N}", default);
+            Assert.Equal(AccessResultStatus.Success, rejected.Status);
+            Assert.Equal(5, await Revision(rejectExpenseDb, ids.CompanyId, ids.ProjectA));
+        }
+
+        await using (var legacyDb = Db(SetupConnection(connectionString)))
         {
             var ownerId = await legacyDb.ProjectOwners.AsNoTracking()
                 .Where(value => value.CompanyId == ids.CompanyId)
@@ -207,6 +229,11 @@ public sealed class FinancialWriterGatePostgresTests
                 CreatedByUserId = ids.ManagerId,
                 VersionNumber = 1
             });
+            if (EnforcementEnabled)
+            {
+                await Assert.ThrowsAsync<DbUpdateException>(() => legacyDb.SaveChangesAsync());
+                return;
+            }
             await legacyDb.SaveChangesAsync();
         }
         await using (var missingGateDb = Db(connectionString))
@@ -229,12 +256,14 @@ public sealed class FinancialWriterGatePostgresTests
         if (string.IsNullOrWhiteSpace(connectionString)) return;
 
         var ids = new FixtureIds();
-        await SeedIdentityAsync(Db(connectionString), ids);
+        await AssertRuntimeRoleAsync(connectionString);
+        await SeedIdentityAsync(Db(SetupConnection(connectionString)), ids);
+        await SeedCompanySettingsAsync(Db(SetupConnection(connectionString)), ids);
         var manager = User(ids.CompanyId, ids.ManagerId, "Manager");
         var accountant = User(ids.CompanyId, ids.AccountantId, "Accountant");
         ids.ProjectA = await CreateProject(connectionString, manager, "Supplier Gate A");
         ids.ProjectB = await CreateProject(connectionString, manager, "Supplier Gate B");
-        await SeedCategoryAsync(Db(connectionString), ids, requiresSupplier: true);
+        await SeedCategoryAsync(Db(SetupConnection(connectionString)), ids, requiresSupplier: true);
 
         await using (var supplierDb = Db(connectionString))
         {
@@ -282,7 +311,7 @@ public sealed class FinancialWriterGatePostgresTests
 
         var debtA = await CreateAndApproveInvoice(ids.ProjectA, "Project A supplier invoice");
         var debtB = await CreateAndApproveInvoice(ids.ProjectB, "Project B supplier invoice");
-        await using (var seededDb = Db(connectionString))
+        await using (var seededDb = Db(SetupConnection(connectionString)))
         {
             Assert.Equal(3, await Revision(seededDb, ids.CompanyId, ids.ProjectA));
             Assert.Equal(3, await Revision(seededDb, ids.CompanyId, ids.ProjectB));
@@ -385,6 +414,27 @@ public sealed class FinancialWriterGatePostgresTests
             Assert.Equal(8, await Revision(verifyDb, ids.CompanyId, ids.ProjectA));
             Assert.Equal(8, await Revision(verifyDb, ids.CompanyId, ids.ProjectB));
         }
+
+        Guid confirmedPaymentId;
+        await using (var createConfirmedDb = Db(connectionString))
+        {
+            var created = await Suppliers(createConfirmedDb, manager).CreatePaymentAsync(
+                Payment(ids, debtA.DebtId, debtB.DebtId, 1m, 1m),
+                $"supplier-payment-confirm-create-{Guid.NewGuid():N}", default);
+            Assert.Equal(AccessResultStatus.Success, created.Status);
+            confirmedPaymentId = created.Value!.Payment.SupplierPaymentId;
+            Assert.Equal(9, await Revision(createConfirmedDb, ids.CompanyId, ids.ProjectA));
+            Assert.Equal(9, await Revision(createConfirmedDb, ids.CompanyId, ids.ProjectB));
+        }
+        await using (var confirmPaymentDb = Db(connectionString))
+        {
+            var confirmed = await Suppliers(confirmPaymentDb, accountant).ConfirmPaymentAsync(
+                confirmedPaymentId, new ReviewSupplierPaymentRequest { ExpectedVersion = 1 },
+                $"supplier-payment-confirm-{Guid.NewGuid():N}", default);
+            Assert.Equal(AccessResultStatus.Success, confirmed.Status);
+            Assert.Equal(10, await Revision(confirmPaymentDb, ids.CompanyId, ids.ProjectA));
+            Assert.Equal(10, await Revision(confirmPaymentDb, ids.CompanyId, ids.ProjectB));
+        }
     }
 
     private static ExpenseService Expenses(AhdahDbContext db, ICurrentUserContext user) =>
@@ -401,6 +451,22 @@ public sealed class FinancialWriterGatePostgresTests
 
     private static AhdahDbContext Db(string connection) => new(
         new DbContextOptionsBuilder<AhdahDbContext>().UseNpgsql(connection).Options);
+
+    private static string SetupConnection(string fallback) =>
+        Environment.GetEnvironmentVariable("AHDAH_CUSTODY_TEST_SETUP_CONNECTION") ?? fallback;
+
+    private static bool EnforcementEnabled =>
+        string.Equals(Environment.GetEnvironmentVariable("AHDAH_ENFORCEMENT_TEST"), "true",
+            StringComparison.OrdinalIgnoreCase);
+
+    private static async Task AssertRuntimeRoleAsync(string connection)
+    {
+        var expected = Environment.GetEnvironmentVariable("AHDAH_CUSTODY_TEST_RUNTIME_ROLE");
+        if (string.IsNullOrWhiteSpace(expected)) return;
+        await using var db = Db(connection);
+        var actual = await db.Database.SqlQueryRaw<string>("SELECT current_user AS \"Value\"").SingleAsync();
+        Assert.Equal(expected, actual);
+    }
 
     private static async Task<long> Revision(AhdahDbContext db, Guid companyId, Guid projectId) =>
         await db.ProjectFinancialControls.AsNoTracking()
@@ -466,6 +532,20 @@ public sealed class FinancialWriterGatePostgresTests
                 VersionNumber = 1
             });
             await db.SaveChangesAsync();
+        }
+    }
+
+    private static async Task SeedCompanySettingsAsync(AhdahDbContext db, FixtureIds ids)
+    {
+        await using (db)
+        {
+            await db.Database.ExecuteSqlInterpolatedAsync($"""
+                INSERT INTO ahdah.company_settings(
+                    company_id,created_by_user_id,updated_by_user_id,
+                    expense_document_mode,expense_document_threshold_amount,
+                    payment_proof_mode,payment_proof_threshold_amount)
+                VALUES ({ids.CompanyId},{ids.ManagerId},{ids.ManagerId},{"Optional"},NULL,{"Optional"},NULL)
+                """);
         }
     }
 
@@ -737,6 +817,7 @@ public sealed class FinancialWriterGatePostgresTests
         PaymentAmount = first + second,
         CurrencyCode = "LYD",
         PaymentMethod = "Cash",
+        ProofFileUrl = "/integration/supplier-payment-proof.pdf",
         DebtAllocations =
         [
             new SupplierPaymentDebtAllocationRequest { SupplierDebtId = firstDebtId, Amount = first },

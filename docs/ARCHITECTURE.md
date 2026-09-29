@@ -1,5 +1,17 @@
 # Architecture
 
+## Universal financial gate boundary
+
+The reviewed global boundary has now passed an isolated activation rehearsal. `94_activate_enforcement.sql` transactionally refreshes the project-control check and enables the three existing-table triggers only after its all-company synthetic preconditions pass. Material project updates must change T01 in the same transaction; custody balances must conserve against T02/T05; an advance currency cannot change after custody exists. These database checks are structural backstops around the application protocol.
+
+The backend connection is a non-owner runtime. At activation, `95_runtime_writer_privileges.sql` grants write access only to current authority projections: T01/T02/T03/T05 are mutable, while T04 and T12 are insert-only. All remaining settlement tables stay read-only. Fixture/deployment ownership is separate from application acceptance. Production activation still requires legacy control and custody cutover, a write-drain window, and operational monitoring/recovery.
+
+## Universal financial gate boundary
+
+The reviewed global boundary has now passed an isolated activation rehearsal. `94_activate_enforcement.sql` transactionally refreshes the project-control check and enables the three existing-table triggers only after its all-company synthetic preconditions pass. Material project updates must change T01 in the same transaction; custody balances must conserve against T02/T05; an advance currency cannot change after custody exists. These database checks are structural backstops around the application protocol.
+
+The backend connection is a non-owner runtime. At activation, `95_runtime_writer_privileges.sql` grants write access only to current authority projections: T01/T02/T03/T05 are mutable, while T04 and T12 are insert-only. All remaining settlement tables stay read-only. Fixture/deployment ownership is separate from application acceptance. Production activation still requires legacy control and custody cutover, a write-drain window, and operational monitoring/recovery.
+
 ## System shape
 
 Ahdah consists of a Flutter client, an ASP.NET Core Web API, and an existing PostgreSQL database. The Flutter application communicates with the API over HTTPS using JSON REST endpoints. Only the API and approved server-side processes may communicate with PostgreSQL.

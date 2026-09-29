@@ -698,6 +698,17 @@ BEGIN
  SELECT * INTO p FROM ahdah.projects WHERE company_id=cid AND project_id=pid;
  IF NOT FOUND THEN RETURN NULL; END IF;
  IF c.project_id IS NULL THEN RAISE EXCEPTION 'Project financial control required' USING ERRCODE='23514'; END IF;
+ IF TG_TABLE_NAME='projects' AND TG_OP='UPDATE' AND
+   ((to_jsonb(OLD)->>'project_owner_id') IS DISTINCT FROM (to_jsonb(NEW)->>'project_owner_id') OR
+    (to_jsonb(OLD)->>'contract_date') IS DISTINCT FROM (to_jsonb(NEW)->>'contract_date') OR
+    (to_jsonb(OLD)->>'start_date') IS DISTINCT FROM (to_jsonb(NEW)->>'start_date') OR
+    (to_jsonb(OLD)->>'expected_end_date') IS DISTINCT FROM (to_jsonb(NEW)->>'expected_end_date') OR
+    (to_jsonb(OLD)->>'status') IS DISTINCT FROM (to_jsonb(NEW)->>'status')) AND NOT EXISTS(
+     SELECT 1 FROM ahdah.project_financial_controls mc
+     JOIN ahdah.projects mp ON mp.company_id=mc.company_id AND mp.project_id=mc.project_id
+     WHERE mc.company_id=cid AND mc.project_id=pid AND mc.xmin=mp.xmin) THEN
+  RAISE EXCEPTION 'Material project change requires matching financial revision protocol' USING ERRCODE='23514';
+ END IF;
  IF c.financial_state IN ('Settled','FinanciallyClosed') THEN
   SELECT * INTO st FROM ahdah.project_settlements WHERE company_id=cid AND project_id=pid AND project_settlement_id=c.active_settlement_id;
   IF NOT FOUND OR st.status<>'Approved' OR st.captured_financial_revision<>c.financial_revision THEN

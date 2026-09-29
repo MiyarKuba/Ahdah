@@ -1,12 +1,16 @@
 # Settlement DDL preparation artifacts
 
+**Universal enforcement rehearsal update (2026-09-27): PASSED ON DISPOSABLE POSTGRESQL ONLY.** `94_activate_enforcement.sql` now transactionally installs the reviewed material-project/T01 same-transaction check before enabling its three enforcement triggers. `95_runtime_writer_privileges.sql` is the separate fail-closed activation-time grant: T01/T02/T03/T05 get SELECT/INSERT/UPDATE, T04/T12 get SELECT/INSERT, and every other T01–T26 table remains SELECT-only. Production execution of either artifact remains unauthorized.
+
+Fresh-install verification restored the reviewed 91-table baseline, installed the current artifacts, passed the 117-table catalog check, applied 95, activated 94 in 81 ms, and passed nine restricted-runtime PostgreSQL tests. Static validation accepted 19 SQL files, 805 statements, 12 function definitions (11 unique), 26 anonymous blocks, psql control flow, names, identifiers, and dependency order. All disposable databases were removed.
+
 **Staging validation update (2026-09-20): SETTLEMENT PHYSICAL DDL VALIDATED FOR APPLICATION DEVELOPMENT.** All executable SQL entry points require `-v expected_database=<exact connected database name>`; preflight also requires an explicit caller-selected `expected_catalog_fingerprint`. Source baseline: `d697e4fbc6699faed6076d576a814d38`; proved schema-restored baseline: `b649a5ab846cc272287afd0217f33bfd`; all 450 differences were representation-only. Fail-atomic installation, catalog, runtime privilege, custody, packet, Opening/Designate and exact rollback checks pass. Production rollout, enforcement activation and financial closure remain unauthorized; see [the validation record](../../docs/SETTLEMENT_STAGING_DDL_VALIDATION.md).
 
 **2026-09-17 — PREPARATION ONLY. NOTHING HERE HAS BEEN APPLIED.** Policy baseline `f962d6119281906b5144b80fe1ffdac7e4525d9e`; reviewed physical design `a8df2e8d48c110959c172a1f35835ee973b495aa`. See [design authority](../../docs/SETTLEMENT_SCHEMA_CUTOVER_DESIGN.md) and [DDL review](../../docs/SETTLEMENT_DDL_REVIEW.md).
 
 ## Inventory and execution dependencies
 
-18 SQL files; 26 proposed tables; five altered existing tables; 420 new-table columns; 500 named table constraints (26 PK, 64 UNIQUE, 162 FK, 248 CHECK including three existing-table currency checks); 219 indexes (90 constraint-backed, 129 standalone); 61 triggers including eleven deferred constraint triggers; eleven new validation/sealing functions. Reuse two existing functions without modification. PostgreSQL 18 also creates NOT NULL catalog constraints; those implicit entries are excluded from 500. The eleven constraint-trigger catalog entries are additional to the named table-constraint count. [Every index workload](INDEX_REVIEW.md) is listed.
+19 SQL files; 26 proposed tables; five altered existing tables; 420 new-table columns; 500 named table constraints (26 PK, 64 UNIQUE, 162 FK, 248 CHECK including three existing-table currency checks); 219 indexes (90 constraint-backed, 129 standalone); 61 triggers including eleven deferred constraint triggers; eleven new validation/sealing functions. Reuse two existing functions without modification. PostgreSQL 18 also creates NOT NULL catalog constraints; those implicit entries are excluded from 500. The eleven constraint-trigger catalog entries are additional to the named table-constraint count. [Every index workload](INDEX_REVIEW.md) is listed.
 
 | File | Classification / objects | Future dependency and boundary |
 |---|---|---|
@@ -27,6 +31,7 @@
 | 92_cutover_precheck.sql | LEGACY CUTOVER | Authorized one-company baseline inventory by currency/status; never executed during preparation. |
 | 93_cutover_rehearsal.sql | Fixture-only structural rehearsal | Empty dedicated database name, synthetic rows, rollback; full command-level fixtures in REHEARSAL.md. |
 | 94_activate_enforcement.sql | CORE CONTROL / CUSTODY | Separately authorized all-company cutover checkpoint, reviewed openings and upgraded writers; enables existing-table triggers only. |
+| 95_runtime_writer_privileges.sql | CORE CONTROL / CUSTODY | Separately approved non-owner runtime grants for current writers; verifies exact verbs and rejects ownership or privileged roles. |
 | 99_rollback_pre_cutover.sql | Pre-cutover rollback | Requires exact database, approval, runtime role and captured pre-install schema-USAGE state; empty new tables, no denomination backfill, enforcement disabled, no dependent writers; fails otherwise. |
 
 DDL preparation covers every reviewed object. Operational enablement is phased: custody, policy/evidence, owner/effect/credit workflows and certification need not launch on one day. Modules are a dependency decomposition, **not independently deployable fragments** with incomplete FKs. The supplied driver installs the complete structural set atomically; a different phased DDL deployment must receive a dependency-complete execution plan first. T01 must exist before writers are upgraded; T02–T05 establish attribution; T06–T13 certification; T14–T18 evidence/policy; T19–T24 owner/effects/intent; T25–T26 cutover.

@@ -22,9 +22,10 @@ public sealed class FinancialControlCustodyPostgresTests
     {
         var connectionString = Environment.GetEnvironmentVariable("AHDAH_CUSTODY_TEST_CONNECTION");
         if (string.IsNullOrWhiteSpace(connectionString)) return;
+        await AssertRuntimeRoleAsync(connectionString);
 
         var ids = new FixtureIds();
-        await using (var setup = Db(connectionString))
+        await using (var setup = Db(SetupConnection(connectionString)))
         {
             await SeedIdentityAsync(setup, ids);
         }
@@ -54,7 +55,7 @@ public sealed class FinancialControlCustodyPostgresTests
                 (control.FinancialRevision, control.FinancialState, control.NextCycleNumber, control.AttributionStatus));
         }
 
-        await using (var setup = Db(connectionString))
+        await using (var setup = Db(SetupConnection(connectionString)))
         {
             await SeedAdvanceAndPolicyAsync(setup, ids);
         }
@@ -93,7 +94,7 @@ public sealed class FinancialControlCustodyPostgresTests
         }
 
         var guardedTransferIds = new[] { Guid.NewGuid(), Guid.NewGuid() };
-        await using (var transferSetup = Db(connectionString))
+        await using (var transferSetup = Db(SetupConnection(connectionString)))
         {
             for (var index = 0; index < guardedTransferIds.Length; index++)
             {
@@ -292,6 +293,11 @@ public sealed class FinancialControlCustodyPostgresTests
                 CreatedByUserId = ids.ManagerId, VersionNumber = 1
             };
             verify.Projects.Add(legacyProject);
+            if (EnforcementEnabled)
+            {
+                await Assert.ThrowsAsync<DbUpdateException>(() => verify.SaveChangesAsync());
+                return;
+            }
             await verify.SaveChangesAsync();
             Assert.Equal(AccessResultStatus.Conflict,
                 (await Service(verify, manager).GetProjectAsync(legacyProject.ProjectId, default)).Status);
@@ -311,9 +317,10 @@ public sealed class FinancialControlCustodyPostgresTests
     {
         var connectionString = Environment.GetEnvironmentVariable("AHDAH_CUSTODY_TEST_CONNECTION");
         if (string.IsNullOrWhiteSpace(connectionString)) return;
+        await AssertRuntimeRoleAsync(connectionString);
 
         var ids = new FixtureIds();
-        await using (var setup = Db(connectionString))
+        await using (var setup = Db(SetupConnection(connectionString)))
         {
             await SeedIdentityAsync(setup, ids);
         }
@@ -343,7 +350,7 @@ public sealed class FinancialControlCustodyPostgresTests
         ids.ProjectId = await CreateProject("Transfer Project A");
         ids.ProjectB = await CreateProject("Transfer Project B");
 
-        await using (var setup = Db(connectionString)) await SeedAdvanceAndPolicyAsync(setup, ids);
+        await using (var setup = Db(SetupConnection(connectionString))) await SeedAdvanceAndPolicyAsync(setup, ids);
         await using (var opening = Db(connectionString))
         {
             var result = await Advances(opening, deputy).ConfirmTransferAsync(
@@ -541,6 +548,22 @@ public sealed class FinancialControlCustodyPostgresTests
 
     private static AhdahDbContext Db(string connection) => new(
         new DbContextOptionsBuilder<AhdahDbContext>().UseNpgsql(connection).Options);
+
+    private static string SetupConnection(string fallback) =>
+        Environment.GetEnvironmentVariable("AHDAH_CUSTODY_TEST_SETUP_CONNECTION") ?? fallback;
+
+    private static bool EnforcementEnabled =>
+        string.Equals(Environment.GetEnvironmentVariable("AHDAH_ENFORCEMENT_TEST"), "true",
+            StringComparison.OrdinalIgnoreCase);
+
+    private static async Task AssertRuntimeRoleAsync(string connection)
+    {
+        var expected = Environment.GetEnvironmentVariable("AHDAH_CUSTODY_TEST_RUNTIME_ROLE");
+        if (string.IsNullOrWhiteSpace(expected)) return;
+        await using var db = Db(connection);
+        var actual = await db.Database.SqlQueryRaw<string>("SELECT current_user AS \"Value\"").SingleAsync();
+        Assert.Equal(expected, actual);
+    }
 
     private static async Task SeedIdentityAsync(AhdahDbContext db, FixtureIds ids)
     {

@@ -1,5 +1,11 @@
 # Settlement and closure foundation — Phase 1
 
+## Universal financial gate enforcement rehearsal (2026-09-27)
+
+Disposable PostgreSQL 18 activation passed with the three reviewed triggers enabled and every current material writer executing as the non-owner runtime role. The suite covers project create/material PATCH, expenses and claim effects, supplier debt/payment/credit flows, Opening, Designate, InternalTransfer, BalanceReturn, exact revision behavior, idempotency, multi-project ordering, races, and the structurally valid `FinanciallyClosed` guard. Direct material project updates without the matching T01 transaction, custody imbalance, and post-custody advance currency changes are rejected.
+
+This result establishes universal future revision authority only. It does not make settlement or closure ready. Owner reconciliation, evidence completeness, activated policy, legacy attribution, retention classification, resolution workflows, independent certification, reopening, and production recovery remain prerequisites. `canSettle` and `canClose` remain false/disabled, and there are no settlement approval, closure, or reopening APIs.
+
 ## Project financial write gate — Wave 2B (2026-09-26)
 
 The complete W01-W48 application audit is maintained in the test-backed `ProjectFinancialWriterCoverage.json` register. The only remaining current material bypass was project PATCH: contract date, owner, start/expected-end dates, and Active/Paused state can change settlement basis. Those supplied fields now acquire the open T01 gate before the project row; an actual material change advances the project once, while cosmetic metadata does not. Optimistic-version competition permits one commit and zero revision from the loser. A structurally valid closed-control fixture proves ordinary project mutation is rejected without revision.
